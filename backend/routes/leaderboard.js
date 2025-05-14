@@ -385,4 +385,40 @@ router.get('/export', auth, async (req, res) => {
   }
 });
 
+// Add a new endpoint to get top users by score with count limit 
+router.get('/top/:count', auth, async (req, res) => {
+  try {
+    const count = parseInt(req.params.count) || 50;
+    console.log(`Fetching top ${count} users for cohort eligibility`);
+    
+    // Filter to get only regular users (not admins)
+    const filter = { userType: { $ne: 'admin' } };
+    
+    // Fetch users sorted by totalScore in descending order
+    const users = await User.find(filter)
+      .select('_id name email rollNumber department totalScore')
+      .sort({ totalScore: -1 })
+      .limit(count);
+    
+    // Format the response as a leaderboard
+    const leaderboard = users.map((user, index) => ({
+      rank: index + 1,
+      user: {
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        rollNumber: user.rollNumber,
+        department: user.department
+      },
+      totalScore: user.totalScore || 0
+    }));
+    
+    console.log(`Found ${leaderboard.length} top users`);
+    return res.json({ leaderboard });
+  } catch (error) {
+    console.error('Error fetching top users:', error);
+    return res.status(500).json({ message: 'Error fetching top users', error: error.message });
+  }
+});
+
 module.exports = router;

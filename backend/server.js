@@ -34,12 +34,14 @@ const cron = require('node-cron');
 const Profile = require('./models/Profile');
 const User = require('./models/User');
 const platformAPI = require('./services/platformAPIs');
+const codeExecutionService = require('./services/codeExecutionService');
 const healthRoutes = require('./routes/healthRoutes');
 const passport = require('passport');
 const session = require('express-session');
 const googleAuthRoutes = require('./routes/auth/googleAuth');
 const registerCronJobs = require('./ensure-cron-jobs');
 const webPushUtil = require('./utils/webPushUtil');
+const cohortsRoutes = require('./routes/cohorts');
 
 const app = express();
 
@@ -124,6 +126,7 @@ app.use('/api/opportunities', opportunitiesRoutes);
 app.use('/api/notifications', notificationsRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/auth/google', googleAuthRoutes);
+app.use('/api/cohorts', cohortsRoutes);
 
 // Test route for CodeChef profile scraping
 app.get('/api/test/codechef/:username', async (req, res) => {
@@ -135,8 +138,7 @@ app.get('/api/test/codechef/:username', async (req, res) => {
     }
     
     console.log(`TEST: Fetching CodeChef profile for ${username}`);
-    const api = new platformAPI.PlatformAPI();
-    const profileData = await api.getCodeChefProfile(username);
+    const profileData = await platformAPI.getCodeChefProfile(username);
     
     res.json({
       success: true,
@@ -164,8 +166,7 @@ app.get('/api/test/geeksforgeeks/:username', async (req, res) => {
     }
     
     console.log(`TEST: Fetching GeeksforGeeks profile for ${username}`);
-    const api = new platformAPI.PlatformAPI();
-    const profileData = await api.getGeeksforGeeksProfile(username);
+    const profileData = await platformAPI.getGeeksforGeeksProfile(username);
     
     res.json({
       success: true,
@@ -193,8 +194,7 @@ app.get('/api/test/leetcode/:username', async (req, res) => {
     }
     
     console.log(`TEST: Fetching LeetCode profile for ${username}`);
-    const api = new platformAPI.PlatformAPI();
-    const profileData = await api.getLeetCodeProfile(username);
+    const profileData = await platformAPI.getLeetCodeProfile(username);
     
     res.json({
       success: true,
@@ -239,7 +239,6 @@ app.post('/api/profiles/verify/:platform', async (req, res) => {
     
     try {
       // Try to fetch the profile data to verify it exists
-      const api = new platformAPI.PlatformAPI();
       let profileData;
       
       // Use a timeout promise to avoid hanging
@@ -269,37 +268,37 @@ app.post('/api/profiles/verify/:platform', async (req, res) => {
           switch (platform) {
             case 'leetcode':
               profileData = await Promise.race([
-                api.getLeetCodeProfile(username),
+                platformAPI.getLeetCodeProfile(username),
                 timeoutPromise
               ]);
               break;
             case 'codeforces':
               profileData = await Promise.race([
-                api.getCodeforcesProfile(username),
+                platformAPI.getCodeforcesProfile(username),
                 timeoutPromise
               ]);
               break;
             case 'codechef':
               profileData = await Promise.race([
-                api.getCodeChefProfile(username),
+                platformAPI.getCodeChefProfile(username),
                 timeoutPromise
               ]);
               break;
             case 'geeksforgeeks':
               profileData = await Promise.race([
-                api.getGeeksforGeeksProfile(username),
+                platformAPI.getGeeksforGeeksProfile(username),
                 timeoutPromise
               ]);
               break;
             case 'hackerrank':
               profileData = await Promise.race([
-                api.getHackerRankProfile(username),
+                platformAPI.getHackerRankProfile(username),
                 timeoutPromise
               ]);
               break;
             case 'github':
               profileData = await Promise.race([
-                api.getGitHubProfile(username),
+                platformAPI.getGitHubProfile(username),
                 timeoutPromise
               ]);
               break;
@@ -371,6 +370,38 @@ app.get('/api/test/google-profile-image', (req, res) => {
     hasProfilePicture: !!req.user.profilePicture,
     googleId: req.user.googleId || null
   });
+});
+
+// Test route for code execution
+app.post('/api/test/execute-code', async (req, res) => {
+  try {
+    const { language, code, input } = req.body;
+    
+    if (!language || !code) {
+      return res.status(400).json({ 
+        success: false,
+        message: 'Language and code are required',
+        required: ['language', 'code']
+      });
+    }
+    
+    console.log(`TEST: Executing ${language} code`);
+    const result = await codeExecutionService.executeCode(language, code, input || '');
+    
+    res.json({
+      success: true,
+      message: 'Code execution completed',
+      result
+    });
+  } catch (err) {
+    console.error('Code execution test error:', err);
+    res.status(500).json({ 
+      success: false,
+      message: 'Error executing code', 
+      error: err.message,
+      stack: process.env.NODE_ENV === 'development' ? err.stack : undefined
+    });
+  }
 });
 
 // MongoDB connection

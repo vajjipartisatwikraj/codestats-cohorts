@@ -27,6 +27,14 @@ import CodePad from './components/CodePad';
 import TestGoogleImage from './components/TestGoogleImage';
 import NotificationSettingsPage from './pages/NotificationSettingsPage';
 
+// Import cohort components
+import CohortList from './components/cohort/CohortList';
+import CohortDetail from './components/cohort/CohortDetail';
+import CohortProblem from './components/cohort/CohortProblem';
+import CohortManagementTab from './components/cohort/CohortManagementTab';
+import CohortStats from './components/cohort/CohortStats';
+import QuestionReports from './components/cohort/QuestionReports';
+
 // MainContent component that uses the theme from context
 const MainContent = () => {
   const { theme, darkMode } = useTheme();
@@ -160,6 +168,43 @@ const MainContent = () => {
               <Route path="/test/google-image" element={
                 <PrivateRoute>
                   <TestGoogleImage />
+                </PrivateRoute>
+              } />
+              
+              {/* Cohort Routes */}
+              <Route path="/cohorts" element={
+                <PrivateRoute>
+                  <CohortList />
+                </PrivateRoute>
+              } />
+              <Route path="/cohorts/:id" element={
+                <PrivateRoute>
+                  <CohortDetail />
+                </PrivateRoute>
+              } />
+              <Route path="/cohorts/:cohortId/modules/:moduleId/questions/:questionId" element={
+                <PrivateRoute>
+                  <CohortProblem />
+                </PrivateRoute>
+              } />
+              <Route path="/admin/cohorts" element={
+                <PrivateRoute adminOnly={true}>
+                  <CohortManagementTab />
+                </PrivateRoute>
+              } />
+              <Route path="/admin/cohorts/:id" element={
+                <PrivateRoute adminOnly={true}>
+                  <CohortDetail />
+                </PrivateRoute>
+              } />
+              <Route path="/admin/cohorts/:id/stats" element={
+                <PrivateRoute adminOnly={true}>
+                  <CohortStats />
+                </PrivateRoute>
+              } />
+              <Route path="/cohorts/:cohortId/reports" element={
+                <PrivateRoute adminOnly={true}>
+                  <QuestionReports />
                 </PrivateRoute>
               } />
               

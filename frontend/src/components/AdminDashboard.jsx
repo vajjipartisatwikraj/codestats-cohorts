@@ -1533,9 +1533,9 @@ const AdminDashboard = () => {
 
         {/* Tabs Navigation */}
         <Box sx={{ mb: 3, overflowX: 'auto' }}>
-          <Tabs 
-            value={activeTab} 
-            onChange={handleTabChange} 
+          <Tabs
+            value={activeTab}
+            onChange={handleTabChange}
             variant={isMobile ? "scrollable" : "fullWidth"}
             scrollButtons="auto"
             sx={{ 

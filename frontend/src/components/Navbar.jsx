@@ -227,6 +227,13 @@ const Navbar = () => {
     if (user?.userType !== 'admin') {
       items.push({ text: 'CodePad', path: '/codepad' });
       
+      // Add Cohorts with "new" badge for users
+      items.push({ 
+        text: 'Cohorts', 
+        path: '/cohorts',
+        isNew: true 
+      });
+      
       // Only add Courses and Opportunities for non-admin users
       items.push(
         { text: 'Courses', path: '/courses' },
@@ -237,9 +244,10 @@ const Navbar = () => {
     if (user?.userType === 'admin') {
       // Admin-specific menu items - restored admin management options
       items.push(
-        { text: 'Manage Courses', path: '/admin/courses' },
-        { text: 'Manage Opportunities', path: '/admin/opportunities' },
-        { text: 'Manage Notifications', path: '/admin/notifications' }
+        { text: 'Cohorts', path: '/admin/cohorts', isNew: true },
+        { text: 'Courses', path: '/admin/courses' },
+        { text: 'Opportunities', path: '/admin/opportunities' },
+        { text: 'Notifications', path: '/admin/notifications' }
       );
     }
 
@@ -432,6 +440,19 @@ const Navbar = () => {
                 >
                   <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
                     {item.text}
+                    {item.isNew && (
+                      <Chip 
+                        label="New" 
+                        size="small" 
+                        color="primary" 
+                        sx={{ 
+                          height: '20px', 
+                          fontSize: '0.65rem',
+                          fontWeight: 'bold',
+                          ml: 0.5 
+                        }} 
+                      />
+                    )}
                   </Box>
                 </MenuItem>
               ))}
@@ -444,7 +465,7 @@ const Navbar = () => {
           </Box>
 
           {/* Desktop menu items */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 6, ml: 8 }}>
+          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 4, ml: 4 }}>
             {menuItems?.map((item) => (
               <Box
                 key={item.text}
@@ -457,16 +478,31 @@ const Navbar = () => {
                     color: location.pathname === item.path ? themeColors.activeItem : themeColors.text,
                     cursor: 'pointer',
                     position: 'relative',
-                    padding: '8px 16px',
+                    padding: '6px 12px',
                     borderRadius: 2,
                     transition: 'color 0.3s ease',
+                    fontSize: '1rem',
+                    fontWeight: 500,
                     '&:hover': {
                       color: themeColors.activeItem,
                     }
                   }}
                 >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
                     {item.text}
+                    {item.isNew && (
+                      <Chip 
+                        label="New" 
+                        size="small" 
+                        color="primary" 
+                        sx={{ 
+                          height: '16px', 
+                          fontSize: '0.6rem',
+                          fontWeight: 'bold',
+                          ml: 0.5 
+                        }} 
+                      />
+                    )}
                   </Box>
                 </Box>
               </Box>
