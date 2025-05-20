@@ -27,7 +27,8 @@ import {
   FormLabel,
   FormHelperText,
   Alert,
-  CircularProgress
+  CircularProgress,
+  FormGroup
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -44,7 +45,7 @@ import {
   Upload as UploadIcon,
   CloudUpload as CloudUploadIcon
 } from '@mui/icons-material';
-import compilerService from '../../utils/compilerService';
+import compilerApi from '../../utils/compilerApi';
 import { toast } from 'react-toastify';
 import Editor from '@monaco-editor/react';
 
@@ -323,8 +324,8 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
       // Get version from the language definition directly
       const version = selectedLang.version || '0';
       
-      // Execute the code using the compilerService
-      const result = await compilerService.executeCode(
+      // Use simpleExecution instead of executeCode
+      const result = await compilerApi.simpleExecution(
         testRunLanguage,
         version,
         solutionCode,
@@ -332,18 +333,20 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
       );
       
       setTestRunResult({
-        status: result.run.code === 0 ? 'success' : 'error',
-        stdout: result.run.stdout,
-        stderr: result.run.stderr,
-        time: result.run.time,
-        memory: result.run.memory,
-        exitCode: result.run.code,
-        compile: result.compile
+        status: result.status?.id === 3 ? 'success' : 'error',
+        stdout: result.stdout,
+        stderr: result.stderr,
+        time: result.time,
+        memory: result.memory,
+        exitCode: result.exit_code,
+        compile: { 
+          stdout: '',
+          stderr: result.compile_output || ''
+        }
       });
 
       // If the execution was successful, make sure the solution code is up to date
-      // (This step shouldn't be necessary since we're using the solution code directly now)
-      if (result.run.code === 0) {
+      if (result.status?.id === 3) {
         toast.success('Code execution successful!');
       }
     } catch (error) {
@@ -357,18 +360,101 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
     }
   };
 
-  // Function to test all test cases against the solution code
-  const validateAllTestCases = async () => {
+  // Test if the test case works with the solution code
+  const testTestCase = async (testCase) => {
+    // Get the default language
+    const defaultLang = formData.languages.find(lang => lang.name === formData.defaultLanguage);
+    
+    if (!defaultLang || !defaultLang.solutionCode) {
+      toast.error('Please provide a solution code for the default language in the Languages tab first');
+      return;
+    }
+    
+    setIsRunningTest(true);
+    
+    try {
+      const language = LANGUAGES.find(lang => lang.name === defaultLang.name);
+      const runtime = availableRuntimes.find(runtime => runtime.language === defaultLang.name);
+      const version = language?.version || runtime?.version || '0';
+      
+      // Use simple execution instead of executeCode
+      const result = await compilerApi.simpleExecution(
+        defaultLang.name,
+        version,
+        defaultLang.solutionCode,
+        testCase.input
+      );
+      
+      // Check if the output matches the expected output
+      const actualOutput = result.stdout?.trim() || '';
+      const expectedOutput = testCase.output.trim();
+      const matches = actualOutput === expectedOutput;
+      
+      if (matches) {
+        toast.success('Test case passed! Output matches expected result.');
+      } else {
+        toast.error(`Test case failed. Expected: "${expectedOutput}", Got: "${actualOutput}"`);
+      }
+    } catch (error) {
+      console.error('Error testing test case:', error);
+      toast.error('Failed to test the test case');
+    } finally {
+      setIsRunningTest(false);
+    }
+  };
+
+  // Simple execution to test a single test case
+  const simpleValidateTestCase = async (testCase, language, version, solutionCode) => {
+    try {
+      // Execute the code using simple execution
+      const result = await compilerApi.simpleExecution(
+        language,
+        version,
+        solutionCode,
+        testCase.input
+      );
+      
+      // Check if the output matches the expected output
+      const actualOutput = result.stdout?.trim() || '';
+      const expectedOutput = testCase.output.trim();
+      const matches = actualOutput === expectedOutput;
+      
+      // Check if execution was successful
+      const executionSuccessful = result.status?.id === 3; // 3 is "Accepted" in Judge0
+      
+      return {
+        passed: matches && executionSuccessful,
+        expected: expectedOutput,
+        actual: actualOutput,
+        error: result.stderr || result.compile_output || '',
+        executionTime: parseFloat(result.time || '0') * 1000, // Convert to ms
+        memory: parseInt(result.memory || '0')
+      };
+    } catch (error) {
+      console.error('Error in simple validation:', error);
+      return {
+        passed: false,
+        expected: testCase.output,
+        actual: '',
+        error: error.message || 'Execution failed',
+        executionTime: 0,
+        memory: 0
+      };
+    }
+  };
+
+  // Simple execution to validate all test cases
+  const simpleValidateAllTestCases = async () => {
     if (formData.testCases.length === 0) {
       toast.error('No test cases to validate');
-      return;
+      return [];
     }
     
     // Get the solution code from the default language
     const defaultLang = formData.languages.find(lang => lang.name === formData.defaultLanguage);
     if (!defaultLang || !defaultLang.solutionCode) {
       toast.error('Please provide a solution code in the Languages tab before validating test cases');
-      return;
+      return [];
     }
     
     setIsRunningTest(true);
@@ -378,40 +464,31 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
     try {
       let allPassed = true;
       // Get the version from the language definition
-      const version = defaultLang.version || '0';
+      const language = LANGUAGES.find(lang => lang.name === defaultLang.name);
+      const runtime = availableRuntimes.find(runtime => runtime.language === defaultLang.name);
+      const version = language?.version || runtime?.version || '0';
       
       // Test each test case
       for (let i = 0; i < formData.testCases.length; i++) {
         const testCase = formData.testCases[i];
         
-        // Execute the code using the compilerService with the solution code from the language
-        const result = await compilerService.executeCode(
+        // Simple validation of test case
+        const result = await simpleValidateTestCase(
+          testCase,
           defaultLang.name,
           version,
-          defaultLang.solutionCode,
-          testCase.input
+          defaultLang.solutionCode
         );
         
-        // Check if the output matches the expected output
-        const actualOutput = result.run?.stdout?.trim() || '';
-        const expectedOutput = testCase.output.trim();
-        
-        // Strict comparison of actual and expected output
-        const matches = actualOutput === expectedOutput;
+        // Add index to result
+        result.index = i;
         
         // Store the test result
-        newResults.push({
-          index: i,
-          passed: matches,
-          expected: expectedOutput,
-          actual: actualOutput,
-          error: result.run?.stderr || result.compile?.stderr || '',
-          executionTime: result.run?.time || 0
-        });
+        newResults.push(result);
         
-        if (!matches) {
+        if (!result.passed) {
           allPassed = false;
-          console.log(`Test case ${i + 1} failed. Expected: "${expectedOutput}", Got: "${actualOutput}"`);
+          console.log(`Test case ${i + 1} failed. Expected: "${result.expected}", Got: "${result.actual}"`);
         }
       }
       
@@ -423,12 +500,21 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
       } else {
         toast.error('Some test cases failed. See details below.');
       }
+      
+      return newResults;
     } catch (error) {
       console.error('Error validating test cases:', error);
       toast.error('Failed to validate test cases');
+      return [];
     } finally {
       setIsRunningTest(false);
     }
+  };
+
+  // Function to test all test cases against the solution code
+  const validateAllTestCases = async () => {
+    // Use the simple validation approach instead
+    return await simpleValidateAllTestCases();
   };
 
   // Format execution time
@@ -444,7 +530,7 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
     if (kb < 1024) return `${kb.toFixed(2)} KB`;
     return `${(kb / 1024).toFixed(2)} MB`;
   };
-
+  
   // Render test run result UI
   const renderTestRunResult = () => {
     if (!testRunResult) return null;
@@ -470,7 +556,7 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
             {time !== undefined && (
               <Chip 
                 size="small" 
-                label={`Time: ${formatTime(time)}`}
+                label={`Time: ${formatTime(parseFloat(time) * 1000)}`} 
                 color="default"
                 sx={{ fontWeight: 'bold', bgcolor: 'rgba(255,255,255,0.2)' }}
               />
@@ -778,34 +864,11 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
             return;
           }
           
-          let allPassed = true;
-          const language = LANGUAGES.find(lang => lang.name === defaultLang.name);
-          const runtime = availableRuntimes.find(runtime => runtime.language === defaultLang.name);
-          const version = language?.version || runtime?.version || '0';
+          // Use the simple validation approach
+          const results = await simpleValidateAllTestCases();
           
-          // Test each test case
-          for (let i = 0; i < formData.testCases.length; i++) {
-            const testCase = formData.testCases[i];
-            
-            // Execute the code using the compilerService
-            const result = await compilerService.executeCode(
-              defaultLang.name,
-              version,
-              defaultLang.solutionCode,
-              testCase.input
-            );
-            
-            // Check if the output matches the expected output
-            const actualOutput = result.run?.stdout?.trim() || '';
-            const expectedOutput = testCase.output.trim();
-            const matches = actualOutput === expectedOutput;
-            
-            if (!matches) {
-              allPassed = false;
-              toast.error(`Test case ${i + 1} failed. Expected: "${expectedOutput}", Got: "${actualOutput}"`);
-              break;
-            }
-          }
+          // Check if all test cases pass
+          const allPassed = results.every(result => result.passed);
           
           if (allPassed) {
             toast.success('All test cases validated successfully!');
@@ -958,49 +1021,6 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
         ...errors,
         testCases: ''
       });
-    }
-  };
-
-  // Test if the test case works with the solution code
-  const testTestCase = async (testCase) => {
-    // Get the default language
-    const defaultLang = formData.languages.find(lang => lang.name === formData.defaultLanguage);
-    
-    if (!defaultLang || !defaultLang.solutionCode) {
-      toast.error('Please provide a solution code for the default language in the Languages tab first');
-      return;
-    }
-    
-    setIsRunningTest(true);
-    
-    try {
-      const language = LANGUAGES.find(lang => lang.name === defaultLang.name);
-      const runtime = availableRuntimes.find(runtime => runtime.language === defaultLang.name);
-      const version = language?.version || runtime?.version || '0';
-      
-      // Execute the code using the compilerService
-      const result = await compilerService.executeCode(
-        defaultLang.name,
-        version,
-        defaultLang.solutionCode,
-        testCase.input
-      );
-      
-      // Check if the output matches the expected output
-      const actualOutput = result.run?.stdout?.trim() || '';
-      const expectedOutput = testCase.output.trim();
-      const matches = actualOutput === expectedOutput;
-      
-      if (matches) {
-        toast.success('Test case passed! Output matches expected result.');
-      } else {
-        toast.error(`Test case failed. Expected: "${expectedOutput}", Got: "${actualOutput}"`);
-      }
-    } catch (error) {
-      console.error('Error testing test case:', error);
-      toast.error('Failed to test the test case');
-    } finally {
-      setIsRunningTest(false);
     }
   };
 
@@ -1331,17 +1351,20 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
             </Grid>
             
             <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Description*
+              </Typography>
               <TextField
                 label="Description"
                 name="description"
                 value={formData.description}
                 onChange={handleInputChange}
-                multiline
-                rows={6}
                 fullWidth
-                required
+                multiline
+                rows={8}
                 error={!!errors.description}
                 helperText={errors.description}
+                placeholder="Enter question description..."
               />
             </Grid>
             

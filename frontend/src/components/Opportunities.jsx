@@ -216,405 +216,484 @@ const Opportunities = () => {
 
   return (
     <>
-      <Container maxWidth={false} sx={{ py: 6, px: { xs: 2, sm: 3 } }}>
-      {/* Header Section */}
-      <Box sx={{ mb: 6, textAlign: 'center' }}>
-        <Typography 
-          variant="h3" 
-          component="h1" 
-          sx={{ 
-            fontWeight: 700, 
-            mb: 2,
-            fontSize: { xs: '1.8rem', sm: '2.2rem', md: '2.5rem' },
-            background: 'linear-gradient(45deg, #0088cc 30%, #00bfff 90%)',
-            backgroundClip: 'text',
-            textFillColor: 'transparent',
-          }}
-        >
-          Competitive Programming Opportunities
-        </Typography>
-        <Typography 
-          variant="h6" 
-          color="text.secondary" 
-          sx={{ 
-            maxWidth: '800px', 
-            mx: 'auto', 
-            mb: 4,
-            fontSize: { xs: '0.9rem', sm: '1rem', md: '1.1rem' },
-            color: getTextColor(0.7)
-          }}
-        >
-          Discover competitions, hackathons, internships, and workshops to advance your programming career
-        </Typography>
-        
-        {/* Search and Filter Bar */}
-        <Box sx={{ 
-          display: 'flex', 
-          flexDirection: { xs: 'column', sm: 'row' },
-          gap: 2,
-          maxWidth: '700px',
-          mx: 'auto',
-          mb: 4
-        }}>
-          <TextField
-            fullWidth
-            placeholder="Search opportunities..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <Search sx={{ color: getTextColor(0.5) }} />
-                </InputAdornment>
-              ),
-              endAdornment: searchTerm && (
-                <InputAdornment position="end">
-                  <IconButton
-                    onClick={() => setSearchTerm('')}
-                    size="small"
-                    sx={{ 
-                      bgcolor: '#0088cc', 
-                      color: 'white', 
-                      '&:hover': { bgcolor: '#006699' },
-                      mr: -0.5,
-                      width: 30,
-                      height: 30
-                    }}
-                  >
-                    <Box component="span" sx={{ fontSize: '1.2rem', fontWeight: 'bold' }}>×</Box>
-                  </IconButton>
-                </InputAdornment>
-              ),
-            }}
-            sx={{
-              '& .MuiOutlinedInput-root': {
-                bgcolor: darkMode ? 'rgba(255,255,255,0.08)' : 'white',
-                borderRadius: 1,
-                border: '1px solid',
-                borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
-                '&:hover .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#0088cc',
-                },
-                '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                  borderColor: '#0088cc',
-                },
-              },
-            }}
-          />
-        </Box>
-        
-        {/* Category Tabs */}
-        <Tabs
-          value={tabValue}
-          onChange={handleTabChange}
-          variant={isMobile ? "scrollable" : "standard"}
-          scrollButtons={isMobile ? "auto" : false}
-          centered={!isMobile}
+      <Container maxWidth={false} sx={{ py: 6, px: { xs: 2, sm: 10 } }}>
+        {/* Programming Cohorts Section */}
+        <Box
           sx={{
-            mb: 4,
-            '& .MuiTab-root': {
-              color: getTextColor(0.5),
-              '&.Mui-selected': {
-                color: '#0088cc',
-              },
-            },
-            '& .MuiTabs-indicator': {
-              bgcolor: '#0088cc',
-            },
+            maxWidth: '1200px',
+            mx: 'auto',
+            mt: 4,
+            mb: 6,
+            bgcolor: '#0585E0',
+            border: `1px solid ${darkMode ? '#232323' : 'transparent'}`,
+            borderRadius: '20px',
+            position: 'relative',
+            display: 'flex',
+            alignItems: 'center',
+            minHeight: '100px',
+            overflow: 'visible'
           }}
         >
-          <Tab key="all" label="All Opportunities" />
-          <Tab key="competitions" label="Competitions" />
-          <Tab key="hackathons" label="Hackathons" />
-          <Tab key="internships" label="Internships" />
-          <Tab key="workshops" label="Workshops" />
-        </Tabs>
-      </Box>
-
-      {/* Opportunities Cards */}
-      <Grid container spacing={2.5}>
-        {filteredOpportunities.length > 0 ? (
-          filteredOpportunities.map((opportunity, index) => (
-            <Grid item xs={12} sm={6} md={4} key={opportunity._id}>
-              <Grow in={true} timeout={(index + 1) * 200}>
-                <Card 
-                  sx={{ 
-                    height: 'auto',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    bgcolor: getCardBgColor(),
-                    backdropFilter: 'blur(10px)',
-                    border: `1px solid ${getCardBorderColor()}`,
-                    borderRadius: '16px',
-                    overflow: 'hidden',
-                    position: 'relative',
-                    transition: 'all 0.3s ease',
-                    '&:hover': {
-                      transform: 'translateY(-8px)',
-                      boxShadow: getCardShadow(),
-                      border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.3)',
-                    }
-                  }}
-                >
-                  {/* Status Badge */}
-                  <Box
-                    sx={{
-                      position: 'absolute',
-                      top: 12,
-                      right: 12,
-                      zIndex: 2,
-                      display: 'flex',
-                      alignItems: 'center',
-                      gap: 1,
-                      px: 1.2,
-                      py: 0.3,
-                      borderRadius: '20px',
-                      backgroundColor: getStatusStyles(opportunity.status).backgroundColor,
-                      borderColor: getStatusStyles(opportunity.status).borderColor,
-                      border: '1px solid',
-                      color: getStatusStyles(opportunity.status).color
-                    }}
-                  >
-                    {getStatusStyles(opportunity.status).icon}
-                    <Typography 
-                      variant="caption" 
-                      sx={{ 
-                        fontWeight: 600,
-                        textTransform: 'capitalize',
-                        letterSpacing: '0.5px',
-                        fontSize: '0.7rem'
-                      }}
-                    >
-                      {['upcoming', 'ongoing', 'completed'].includes(opportunity.status) 
-                        ? opportunity.status 
-                        : 'ongoing'}
-                    </Typography>
-                  </Box>
-
-                  {/* Opportunity Image (if available) */}
-                  {opportunity.image && (
-                    <Box 
-                      sx={{
-                        height: 200,
-                        width: '100%',
-                        overflow: 'hidden',
-                        borderTopLeftRadius: '16px',
-                        borderTopRightRadius: '16px',
-                        position: 'relative'
-                      }}
-                    >
-                      <img 
-                        src={opportunity.image}
-                        alt={opportunity.title}
-                        style={{
-                          width: '100%',
-                          height: '100%',
-                          objectFit: 'cover'
-                        }}
-                        loading="lazy"
-                        onError={(e) => {
-                          e.target.style.display = 'none';
-                        }}
-                      />
-                    </Box>
-                  )}
-
-                  {/* Organization Logo & Title */}
-                  <Box sx={{ 
-                    p: 3, 
-                    pb: 2.5,
-                    display: 'flex',
-                    flexDirection: 'column',
-                  }}>
-                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
-                      <Avatar
-                        alt={opportunity.organizer}
-                        src={opportunity.organizerImageUrl}
-                        sx={{ 
-                          width: { xs: 40, sm: 48 }, 
-                          height: { xs: 40, sm: 48 },
-                          bgcolor: 'rgba(0,136,204,0.1)',
-                          border: '2px solid rgba(0,136,204,0.2)',
-                          color: '#0088cc',
-                          fontWeight: 'bold'
-                        }}
-                      >
-                        {opportunity.organizer ? opportunity.organizer.charAt(0).toUpperCase() : '?'}
-                      </Avatar>
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body2" sx={{ 
-                          color: getTextColor(0.6), 
-                          mb: 0.5,
-                          fontSize: { xs: '0.75rem', sm: '0.8rem' }
-                        }}>
-                          {opportunity.organizer}
-                        </Typography>
-                        <Typography variant="h6" sx={{ 
-                          fontWeight: 600, 
-                          lineHeight: 1.3, 
-                          color: getTextColor(0.9),
-                          fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.25rem' }
-                        }}>
-                          {opportunity.title}
-                        </Typography>
-                      </Box>
-                    </Box>
-
-                    {/* Tags */}
-                    <Stack direction="row" flexWrap="wrap" gap={0.8} sx={{ mb: 2 }}>
-                      {opportunity.tags.map((tag, idx) => (
-                        <Chip 
-                          key={idx} 
-                          label={tag}
-                          size="small"
-                          sx={{ 
-                            fontSize: { xs: '0.7rem', sm: '0.75rem' },
-                            height: { xs: 24, sm: 28 },
-                            bgcolor: darkMode ? 'rgba(0,136,204,0.1)' : 'rgba(0,136,204,0.05)',
-                            color: '#0088cc',
-                            border: '1px solid rgba(0,136,204,0.2)',
-                            '&:hover': {
-                              bgcolor: darkMode ? 'rgba(0,136,204,0.2)' : 'rgba(0,136,204,0.1)',
-                            }
-                          }}
-                        />
-                      ))}
-                    </Stack>
-
-                    {/* Description */}
-                    <Typography 
-                      variant="body2" 
-                      sx={{ 
-                        color: getTextColor(0.6),
-                        mb: 2,
-                        display: '-webkit-box',
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: 'vertical',
-                        overflow: 'hidden',
-                        lineHeight: 1.6,
-                        fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' }
-                      }}
-                    >
-                      {opportunity.description}
-                    </Typography>
-
-                    {/* Key Details */}
-                    <Box sx={{ 
-                      display: 'grid',
-                      gridTemplateColumns: opportunity.category === 'hackathon' && opportunity.prize ? 'repeat(2, 1fr)' : '1fr',
-                      gap: 2,
-                      mb: 2.5,
-                      p: 2,
-                      bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
-                      borderRadius: '12px'
-                    }}>
-                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                        <CalendarToday sx={{ fontSize: 18, color: '#0088cc' }} />
-                        <Typography variant="body2" sx={{ color: getTextColor(0.7) }}>
-                          {opportunity.deadline}
-                        </Typography>
-                      </Box>
-                      {opportunity.category === 'hackathon' && opportunity.prize && (
-                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                          <Star sx={{ fontSize: 18, color: '#ffd700' }} />
-                          <Typography variant="body2" sx={{ color: '#ffd700' }}>
-                            {opportunity.prize}
-                          </Typography>
-                        </Box>
-                      )}
-                    </Box>
-
-                    {/* Apply Button */}
-                    <Button 
-                      variant="contained" 
-                      fullWidth
-                      endIcon={<OpenInNew />}
-                      onClick={() => handleApplyNow(opportunity.link)}
-                      sx={{ 
-                        bgcolor: '#0088cc',
-                        py: 1.5,
-                        borderRadius: '12px',
-                        textTransform: 'none',
-                        fontSize: '1rem',
-                        fontWeight: 600,
-                        '&:hover': { 
-                          bgcolor: '#006699',
-                          transform: 'translateY(-2px)',
-                          boxShadow: '0 6px 12px rgba(0,136,204,0.3)'
-                        },
-                        transition: 'all 0.2s ease'
-                      }}
-                    >
-                      Apply Now
-                    </Button>
-                  </Box>
-                </Card>
-              </Grow>
-            </Grid>
-          ))
-        ) : (
-          <Box sx={{ width: '100%', textAlign: 'center', py: 8 }}>
-            <Typography variant="h6" sx={{ color: getTextColor(0.5) }}>
-              No opportunities found matching your criteria
-            </Typography>
-            <Button 
-              variant="outlined" 
-              sx={{ mt: 2, borderColor: '#0088cc', color: '#0088cc' }}
-              onClick={() => {
-                setSearchTerm('');
-                setTabValue(0);
+          {/* Content Section (75%) */}
+          <Box
+            sx={{
+              width: '75%',
+              p: { xs: 3, md: 3 },
+              position: 'relative',
+              zIndex: 2
+            }}
+          >
+            <Typography
+              variant="h4"
+              sx={{
+                color: '#ffffff',
+                fontWeight: 700,
+                mb: 2,
+                fontSize: { xs: '1.75rem', sm: '1.7rem' }
               }}
             >
-              Clear Filters
-            </Button>
+              Opportunities
+            </Typography>
+            <Typography
+              variant="body1"
+              sx={{
+                color: '#ffffff',
+                fontWeight: 200,
+                fontSize: { xs: '0.9rem', sm: '1rem' },
+                lineHeight: 1.6,
+                maxWidth: '600px'
+              }}
+            >
+                    Enhance your programming skills with guided learning paths and practical problem-solving. Join our cohorts to learn, practice, and excel.
+            </Typography>
           </Box>
-        )}
-      </Grid>
-    </Container>
-      
-      {/* Footer */}
-      <Box 
-        sx={{ 
-          width: '100%', 
-          mt: 4, 
-          p: { xs: 1.5, sm: 2 },
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center'
-        }}
-      >
-        <Box sx={{ display: 'flex', alignItems: 'center' }}>
-          <a 
-            href="http://scopeclub.mlrit.ac.in/teams" 
-            target="_blank" 
-            rel="noopener noreferrer"
-            style={{ display: 'flex' }}
-          >
-            <img 
-              src="/WhatsApp-Image-2025-05-05-at-18.01.19_44a57ceb.svg" 
-              alt="SCOPE CLUB Logo" 
-              style={{ 
-                width: 96, 
-                height: 56, 
-                marginRight: '16px',
-                filter: darkMode ? 'invert(1)' : 'brightness(0.8)'
-              }} 
-            />
-          </a>
-          <Typography 
-            variant="body1" 
-            sx={{ 
-              color: 'text.secondary',
-              fontWeight: 500,
-              fontSize: { xs: '0.75rem', sm: '0.8rem' }
+
+          {/* Image Section */}
+          <Box
+            sx={{
+              width: '23%',
+              position: 'absolute',
+              right: '5%',
+              bottom: 0,
+              zIndex: 1,
+              display: 'flex',
+              alignItems: 'flex-end',
+              justifyContent: 'center',
+              overflow: 'visible',
+              height: '80%'
             }}
           >
-            © 2025 SCOPE CLUB. All rights reserved.
-          </Typography>
+            <Box
+              component="img"
+              src="/opportunities.png"
+              alt="Programming Cohorts"
+              sx={{
+                width: '80%',
+                height: 'auto',
+                maxWidth: 'none',
+                bottom: -10,
+                objectFit: 'contain',
+                objectPosition: 'bottom',
+                filter: 'drop-shadow(-10px 10px 20px rgba(50, 50, 50, 0.5))',
+                animation: 'floatAnimation 6s ease-in-out infinite, fadeIn 1s ease-out',
+                '@keyframes floatAnimation': {
+                  '0%': {
+                    transform: 'translate(0px, 0px) rotate(0deg)'
+                  },
+                  '50%': {
+                    transform: 'translate(-10px, -15px) rotate(-2deg)'
+                  },
+                  '100%': {
+                    transform: 'translate(0px, 0px) rotate(0deg)'
+                  }
+                },
+                '@keyframes fadeIn': {
+                  '0%': {
+                    opacity: 0,
+                    transform: 'translate(10px, 20px)'
+                  },
+                  '100%': {
+                    opacity: 1,
+                    transform: 'translate(0, 0)'
+                  }
+                }
+              }}
+            />
+          </Box>
         </Box>
-      </Box>
-    </>
-  );
+
+        {/* Header Section */}
+        <Box sx={{ mb: 6, textAlign: 'center' }}>
+          
+          
+          {/* Search and Filter Bar */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexDirection: { xs: 'column', sm: 'row' },
+            gap: 2,
+            maxWidth: '700px',
+            mx: 'auto',
+            mb: 4
+          }}>
+            <TextField
+              fullWidth
+              placeholder="Search opportunities..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Search sx={{ color: getTextColor(0.5) }} />
+                  </InputAdornment>
+                ),
+                endAdornment: searchTerm && (
+                  <InputAdornment position="end">
+                    <IconButton
+                      onClick={() => setSearchTerm('')}
+                      size="small"
+                      sx={{ 
+                        bgcolor: '#0088cc', 
+                        color: 'white', 
+                        '&:hover': { bgcolor: '#006699' },
+                        mr: -0.5,
+                        width: 30,
+                        height: 30
+                      }}
+                    >
+                      <Box component="span" sx={{ fontSize: '1.2rem', fontWeight: 'bold' }}>×</Box>
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+              sx={{
+                '& .MuiOutlinedInput-root': {
+                  bgcolor: darkMode ? 'rgba(255,255,255,0.08)' : 'white',
+                  borderRadius: 1,
+                  border: '1px solid',
+                  borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.15)',
+                  '&:hover .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0088cc',
+                  },
+                  '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
+                    borderColor: '#0088cc',
+                  },
+                },
+              }}
+            />
+          </Box>
+          
+          {/* Category Tabs */}
+          <Tabs
+            value={tabValue}
+            onChange={handleTabChange}
+            variant={isMobile ? "scrollable" : "standard"}
+            scrollButtons={isMobile ? "auto" : false}
+            centered={!isMobile}
+            sx={{
+              mb: 4,
+              '& .MuiTab-root': {
+                color: getTextColor(0.5),
+                '&.Mui-selected': {
+                  color: '#0088cc',
+                },
+              },
+              '& .MuiTabs-indicator': {
+                bgcolor: '#0088cc',
+              },
+            }}
+          >
+            <Tab key="all" label="All Opportunities" />
+            <Tab key="competitions" label="Competitions" />
+            <Tab key="hackathons" label="Hackathons" />
+            <Tab key="internships" label="Internships" />
+            <Tab key="workshops" label="Workshops" />
+          </Tabs>
+        </Box>
+
+        {/* Opportunities Cards */}
+        <Grid container spacing={2.5}>
+          {filteredOpportunities.length > 0 ? (
+            filteredOpportunities.map((opportunity, index) => (
+              <Grid item xs={12} sm={6} md={4} key={opportunity._id}>
+                <Grow in={true} timeout={(index + 1) * 200}>
+                  <Card 
+                    sx={{ 
+                      height: 'auto',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      bgcolor: getCardBgColor(),
+                      backdropFilter: 'blur(10px)',
+                      border: `1px solid ${getCardBorderColor()}`,
+                      borderRadius: '16px',
+                      overflow: 'hidden',
+                      position: 'relative',
+                      transition: 'all 0.3s ease',
+                      '&:hover': {
+                        transform: 'translateY(-8px)',
+                        boxShadow: getCardShadow(),
+                        border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.3)',
+                      }
+                    }}
+                  >
+                    {/* Status Badge */}
+                    <Box
+                      sx={{
+                        position: 'absolute',
+                        top: 12,
+                        right: 12,
+                        zIndex: 2,
+                        display: 'flex',
+                        alignItems: 'center',
+                        gap: 1,
+                        px: 1.2,
+                        py: 0.3,
+                        borderRadius: '20px',
+                        backgroundColor: getStatusStyles(opportunity.status).backgroundColor,
+                        borderColor: getStatusStyles(opportunity.status).borderColor,
+                        border: '1px solid',
+                        color: getStatusStyles(opportunity.status).color
+                      }}
+                    >
+                      {getStatusStyles(opportunity.status).icon}
+                      <Typography 
+                        variant="caption" 
+                        sx={{ 
+                          fontWeight: 600,
+                          textTransform: 'capitalize',
+                          letterSpacing: '0.5px',
+                          fontSize: '0.7rem'
+                        }}
+                      >
+                        {['upcoming', 'ongoing', 'completed'].includes(opportunity.status) 
+                          ? opportunity.status 
+                          : 'ongoing'}
+                      </Typography>
+                    </Box>
+
+                    {/* Opportunity Image (if available) */}
+                    {opportunity.image && (
+                      <Box 
+                        sx={{
+                          height: 200,
+                          width: '100%',
+                          overflow: 'hidden',
+                          borderTopLeftRadius: '16px',
+                          borderTopRightRadius: '16px',
+                          position: 'relative'
+                        }}
+                      >
+                        <img 
+                          src={opportunity.image}
+                          alt={opportunity.title}
+                          style={{
+                            width: '100%',
+                            height: '100%',
+                            objectFit: 'cover'
+                          }}
+                          loading="lazy"
+                          onError={(e) => {
+                            e.target.style.display = 'none';
+                          }}
+                        />
+                      </Box>
+                    )}
+
+                    {/* Organization Logo & Title */}
+                    <Box sx={{ 
+                      p: 3, 
+                      pb: 2.5,
+                      display: 'flex',
+                      flexDirection: 'column',
+                    }}>
+                      <Box sx={{ display: 'flex', alignItems: 'center', gap: 2, mb: 2 }}>
+                        <Avatar
+                          alt={opportunity.organizer}
+                          src={opportunity.organizerImageUrl}
+                          sx={{ 
+                            width: { xs: 40, sm: 48 }, 
+                            height: { xs: 40, sm: 48 },
+                            bgcolor: 'rgba(0,136,204,0.1)',
+                            border: '2px solid rgba(0,136,204,0.2)',
+                            color: '#0088cc',
+                            fontWeight: 'bold'
+                          }}
+                        >
+                          {opportunity.organizer ? opportunity.organizer.charAt(0).toUpperCase() : '?'}
+                        </Avatar>
+                        <Box sx={{ flex: 1 }}>
+                          <Typography variant="body2" sx={{ 
+                            color: getTextColor(0.6), 
+                            mb: 0.5,
+                            fontSize: { xs: '0.75rem', sm: '0.8rem' }
+                          }}>
+                            {opportunity.organizer}
+                          </Typography>
+                          <Typography variant="h6" sx={{ 
+                            fontWeight: 600, 
+                            lineHeight: 1.3, 
+                            color: getTextColor(0.9),
+                            fontSize: { xs: '1.1rem', sm: '1.2rem', md: '1.25rem' }
+                          }}>
+                            {opportunity.title}
+                          </Typography>
+                        </Box>
+                      </Box>
+
+                      {/* Tags */}
+                      <Stack direction="row" flexWrap="wrap" gap={0.8} sx={{ mb: 2 }}>
+                        {opportunity.tags.map((tag, idx) => (
+                          <Chip 
+                            key={idx} 
+                            label={tag}
+                            size="small"
+                            sx={{ 
+                              fontSize: { xs: '0.7rem', sm: '0.75rem' },
+                              height: { xs: 24, sm: 28 },
+                              bgcolor: darkMode ? 'rgba(0,136,204,0.1)' : 'rgba(0,136,204,0.05)',
+                              color: '#0088cc',
+                              border: '1px solid rgba(0,136,204,0.2)',
+                              '&:hover': {
+                                bgcolor: darkMode ? 'rgba(0,136,204,0.2)' : 'rgba(0,136,204,0.1)',
+                              }
+                            }}
+                          />
+                        ))}
+                      </Stack>
+
+                      {/* Description */}
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          color: getTextColor(0.6),
+                          mb: 2,
+                          display: '-webkit-box',
+                          WebkitLineClamp: 3,
+                          WebkitBoxOrient: 'vertical',
+                          overflow: 'hidden',
+                          lineHeight: 1.6,
+                          fontSize: { xs: '0.8rem', sm: '0.85rem', md: '0.9rem' }
+                        }}
+                      >
+                        {opportunity.description}
+                      </Typography>
+
+                      {/* Key Details */}
+                      <Box sx={{ 
+                        display: 'grid',
+                        gridTemplateColumns: opportunity.category === 'hackathon' && opportunity.prize ? 'repeat(2, 1fr)' : '1fr',
+                        gap: 2,
+                        mb: 2.5,
+                        p: 2,
+                        bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
+                        borderRadius: '12px'
+                      }}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                          <CalendarToday sx={{ fontSize: 18, color: '#0088cc' }} />
+                          <Typography variant="body2" sx={{ color: getTextColor(0.7) }}>
+                            {opportunity.deadline}
+                          </Typography>
+                        </Box>
+                        {opportunity.category === 'hackathon' && opportunity.prize && (
+                          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                            <Star sx={{ fontSize: 18, color: '#ffd700' }} />
+                            <Typography variant="body2" sx={{ color: '#ffd700' }}>
+                              {opportunity.prize}
+                            </Typography>
+                          </Box>
+                        )}
+                      </Box>
+
+                      {/* Apply Button */}
+                      <Button 
+                        variant="contained" 
+                        fullWidth
+                        endIcon={<OpenInNew />}
+                        onClick={() => handleApplyNow(opportunity.link)}
+                        sx={{ 
+                          bgcolor: '#0088cc',
+                          py: 1.5,
+                          borderRadius: '12px',
+                          textTransform: 'none',
+                          fontSize: '1rem',
+                          fontWeight: 600,
+                          '&:hover': { 
+                            bgcolor: '#006699',
+                            transform: 'translateY(-2px)',
+                            boxShadow: '0 6px 12px rgba(0,136,204,0.3)'
+                          },
+                          transition: 'all 0.2s ease'
+                        }}
+                      >
+                        Apply Now
+                      </Button>
+                    </Box>
+                  </Card>
+                </Grow>
+              </Grid>
+            ))
+          ) : (
+            <Box sx={{ width: '100%', textAlign: 'center', py: 8 }}>
+              <Typography variant="h6" sx={{ color: getTextColor(0.5) }}>
+                No opportunities found matching your criteria
+              </Typography>
+              <Button 
+                variant="outlined" 
+                sx={{ mt: 2, borderColor: '#0088cc', color: '#0088cc' }}
+                onClick={() => {
+                  setSearchTerm('');
+                  setTabValue(0);
+                }}
+              >
+                Clear Filters
+              </Button>
+            </Box>
+          )}
+        </Grid>
+      </Container>
+        
+        {/* Footer */}
+        <Box 
+          sx={{ 
+            width: '100%', 
+            mt: 4, 
+            p: { xs: 1.5, sm: 2 },
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center'
+          }}
+        >
+          <Box sx={{ display: 'flex', alignItems: 'center' }}>
+            <a 
+              href="http://scopeclub.mlrit.ac.in/teams" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              style={{ display: 'flex' }}
+            >
+              <img 
+                src="/WhatsApp-Image-2025-05-05-at-18.01.19_44a57ceb.svg" 
+                alt="SCOPE CLUB Logo" 
+                style={{ 
+                  width: 96, 
+                  height: 56, 
+                  marginRight: '16px',
+                  filter: darkMode ? 'invert(1)' : 'brightness(0.8)'
+                }} 
+              />
+            </a>
+            <Typography 
+              variant="body1" 
+              sx={{ 
+                color: 'text.secondary',
+                fontWeight: 500,
+                fontSize: { xs: '0.75rem', sm: '0.8rem' }
+              }}
+            >
+              © 2025 SCOPE CLUB. All rights reserved.
+            </Typography>
+          </Box>
+        </Box>
+      </>
+    );
 };
 
 export default Opportunities;

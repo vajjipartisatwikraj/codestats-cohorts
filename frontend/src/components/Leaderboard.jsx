@@ -176,8 +176,8 @@ const Leaderboard = () => {
   // Custom scrollbar styles
   const scrollbarStyles = {
     '&::-webkit-scrollbar': {
-      width: '8px',
-      height: '8px',
+      width: '10px',
+      height: '10px',
     },
     '&::-webkit-scrollbar-track': {
       backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 136, 204, 0.05)',
@@ -1626,62 +1626,117 @@ const Leaderboard = () => {
   }
 
   return (
-    <Container 
-      maxWidth={false} 
-      sx={{ 
-        mt: { xs: 2, sm: 4 }, 
-        mb: { xs: 8, sm: 10 }, // Increase bottom margin to make room for sticky row
-        px: { xs: 2, sm: 3 },
-        maxWidth: '100vw',
-        overflowX: 'hidden'
-      }}
-    >
-      {/* Header Section */}
-      <Box sx={{ 
-        textAlign: 'center',
-        position: 'relative',
-        mb: { xs: 3, sm: 4 },
-        maxWidth: '1200px',
-        mx: 'auto'
-      }}>
-        
-        
-        <Typography 
-          variant="h3" 
-          component="h1" 
-          sx={{ 
-            fontWeight: 700,
-            background: 'linear-gradient(45deg, #0088cc 30%, #00bfff 90%)',
-            backgroundClip: 'text',
-            textFillColor: 'transparent',
-            mb: 1,
-            fontSize: { xs: '2rem', sm: '2.5rem' }
+    <Container maxWidth={false} sx={{ py: 6, px: { xs: 2, sm: 10 } }}>
+      {/* Programming Cohorts Section */}
+      <Box
+        sx={{
+          maxWidth: '1200px',
+          mx: 'auto',
+          mt: 4,
+          mb: 6,
+          bgcolor: '#0585E0',
+          border: `1px solid ${darkMode ? '#232323' : 'transparent'}`,
+          borderRadius: '20px',
+          position: 'relative',
+          display: 'flex',
+          alignItems: 'center',
+          minHeight: '100px',
+          overflow: 'visible'
+        }}
+      >
+        {/* Content Section (75%) */}
+        <Box
+          sx={{
+            width: '75%',
+            p: { xs: 3, md: 3 },
+            position: 'relative',
+            zIndex: 2
           }}
         >
-          Leaderboard
-        </Typography>
-        <Typography 
-          variant="h6" 
-          sx={{ 
-            color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)', 
-            mb: 1,
-            fontSize: { xs: '0.9rem', sm: '1rem' }
+          <Typography
+            variant="h4"
+            sx={{
+              color: '#ffffff',
+              fontWeight: 700,
+              mb: 2,
+              fontSize: { xs: '1.75rem', sm: '1.7rem' }
+            }}
+          >
+            Leaderboard
+          </Typography>
+          <Typography
+            variant="body1"
+            sx={{
+              color: '#ffffff',
+              fontWeight: 200,
+              fontSize: { xs: '0.9rem', sm: '0.9rem' },
+              lineHeight: 1.6,
+              maxWidth: '600px'
+            }}
+          >
+            Climb the ranks and track the best — explore the leaderboard to see where you stand among top coders across all competitive programming platforms!          </Typography>
+        </Box>
+
+        {/* Image Section */}
+        <Box
+          sx={{
+            width: '23%',
+            position: 'absolute',
+            right: '5%',
+            bottom: 0,
+            zIndex: 1,
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'center',
+            overflow: 'visible',
+            height: '80%'
           }}
         >
-          MLRIT's Top Competitive Programmers
-        </Typography>
-        <Typography 
-          variant="h5" 
-          sx={{ 
-            color: darkMode ? 'white' : 'black', 
-            mb: 3,
-            fontSize: { xs: '1.1rem', sm: '1.3rem' },
-            fontWeight: 600
-          }}
-        >
-          {getLeaderboardTitle()}
-        </Typography>
+          <Box
+            component="img"
+            src="/leaderboard.png"
+            alt="Programming Cohorts"
+            sx={{
+              width: '90%',
+              height: 'auto',
+              maxWidth: 'none',
+              objectFit: 'contain',
+              objectPosition: 'bottom',
+              filter: darkMode ? 'drop-shadow(-20px 20px 40px rgba(50, 50, 50, 0.9))' : 'none',
+              animation: 'trophyRise 4s ease-in-out infinite, fadeIn 1.2s ease-out',
+              transformOrigin: 'center bottom',
+              '@keyframes trophyRise': {
+                '0%, 100%': {
+                  transform: 'translateY(0) scale(1)',
+                  filter: darkMode ? 'drop-shadow(-20px 20px 40px rgba(50, 50, 50, 0.9)) brightness(1)' : 'brightness(1)'
+                },
+                '50%': {
+                  transform: 'translateY(-25px) scale(1.03)',
+                  filter: darkMode ? 'drop-shadow(-20px 20px 40px rgba(50, 50, 50, 0.9)) brightness(1.1)' : 'brightness(1.1)'
+                }
+              },
+              '@keyframes fadeIn': {
+                '0%': {
+                  opacity: 0,
+                  transform: 'translateY(30px) scale(0.9)'
+                },
+                '100%': {
+                  opacity: 1,
+                  transform: 'translateY(0) scale(1)'
+                }
+              },
+              '&:hover': {
+                animation: 'none',
+                transform: 'translateY(-15px) scale(1.02)',
+                transition: 'all 0.3s ease-out',
+                filter: darkMode ? 'drop-shadow(-25px 25px 50px rgba(50, 50, 50, 0.95)) brightness(1.1)' : 'brightness(1.1)'
+              }
+            }}
+          />
+        </Box>
       </Box>
+
+      
 
       {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
@@ -1707,8 +1762,9 @@ const Leaderboard = () => {
       {users.length > 0 && filteredUsers.slice(0, 3).length > 0 && !searchTerm && (
         <Box sx={{ 
           mb: { xs: 3, sm: 4 },
-          maxWidth: '1200px',
-          mx: 'auto'
+          width: '100%',
+          mx: 'auto',
+          boxSizing: 'border-box'
         }}>
           <Grid container spacing={2} justifyContent="center" alignItems="flex-start">
             {filteredUsers.length > 1 && (
@@ -1778,8 +1834,9 @@ const Leaderboard = () => {
         bgcolor: darkMode ? 'rgba(18, 18, 18, 0.98)' : '#ffffff',
         border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
         boxShadow: darkMode ? '0 2px 10px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)',
-        maxWidth: '1200px',
-        mx: 'auto'
+        width: '100%',
+        mx: 'auto',
+        boxSizing: 'border-box'
       }}>
         <Box sx={{
           display: 'flex',
@@ -2146,15 +2203,24 @@ const Leaderboard = () => {
         sx={{
           bgcolor: darkMode ? 'transparent' : '#ffffff',
           borderRadius: 2,
-          overflow: 'auto',
+          overflow: 'visible',
+          width: '100%',
           maxWidth: '100%',
+          boxSizing: 'border-box',
           ...scrollbarStyles
         }}
       >
         <TableContainer sx={{ 
+          width: '100%',
           maxWidth: '100%',
+          overflowX: 'auto',
+          overflowY: 'visible',
           ...scrollbarStyles,
-          position: 'relative' // Added to make relative positioning context for sticky row
+          position: 'relative', // Added to make relative positioning context for sticky row
+          '&::-webkit-scrollbar': {
+            height: '8px',
+          },
+          boxSizing: 'border-box'
         }}>
           <Table sx={{ 
             width: '100%',

@@ -20,6 +20,7 @@ import {
   StarBorder as StarBorderIcon,
   ThumbUp as ThumbUpIcon
 } from '@mui/icons-material';
+import StarRateRoundedIcon from '@mui/icons-material/StarRateRounded';
 import axios from 'axios';
 import { useAuth } from '../../contexts/AuthContext';
 import { useTheme as useAppTheme } from '../../contexts/ThemeContext';
@@ -149,15 +150,15 @@ const CohortFeedback = ({ cohortId }) => {
   
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress size={40} sx={{ color: '#0088CC' }} />
+      <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+        <CircularProgress size={32} sx={{ color: '#0088CC' }} />
       </Box>
     );
   }
   
   if (error) {
     return (
-      <Box sx={{ p: 3 }}>
+      <Box sx={{ p: 2 }}>
         <Alert severity="error">{error}</Alert>
       </Box>
     );
@@ -165,28 +166,32 @@ const CohortFeedback = ({ cohortId }) => {
   
   return (
     <Box sx={{ 
-      height: '100%', 
       display: 'flex', 
-      flexDirection: 'column'
+      flexDirection: 'column',
+      width: '100%',
+      height: '100%',
+      flexGrow: 1,
     }}>
       {/* Header */}
-      <Box sx={{ mb: 4 }}>
+      <Box sx={{ mb: 3 }}>
         <Typography 
-          variant="h4" 
+          variant="h5" 
           component="h1" 
           sx={{ 
             fontWeight: 700, 
             color: darkMode ? '#FFFFFF' : '#333333',
-            mb: 1
+            mb: 0.5,
+            fontSize: '1.25rem'
           }}
         >
           Cohort Feedback
         </Typography>
         <Typography 
-          variant="body1" 
+          variant="body2" 
           sx={{ 
             color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)',
-            mb: 2
+            mb: 1.5,
+            fontSize: '0.875rem'
           }}
         >
           Share your experience with this cohort and help others make informed decisions
@@ -195,31 +200,33 @@ const CohortFeedback = ({ cohortId }) => {
       
       {/* User Feedback Form */}
       <Card sx={{ 
-        mb: 4, 
+        mb: 3, 
         bgcolor: darkMode ? alpha('#0088CC', 0.08) : alpha('#0088CC', 0.04),
         boxShadow: 'none',
         border: `1px solid ${darkMode ? alpha('#0088CC', 0.2) : alpha('#0088CC', 0.1)}`,
-        borderRadius: '10px'
+        borderRadius: '8px'
       }}>
-        <CardContent sx={{ p: 3 }}>
+        <CardContent sx={{ p: 2, '&:last-child': { pb: 2 } }}>
           <Typography 
             variant="h6" 
             sx={{ 
               fontWeight: 600, 
-              mb: 2,
-              color: darkMode ? '#FFFFFF' : '#333333'
+              mb: 1.5,
+              color: darkMode ? '#FFFFFF' : '#333333',
+              fontSize: '1rem'
             }}
           >
             {userFeedback ? 'Your Feedback' : 'Rate This Cohort'}
           </Typography>
           
-          <Box sx={{ display: 'flex', alignItems: 'center', mb: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', mb: 2 }}>
             <Typography 
-              variant="body1" 
+              variant="body2" 
               sx={{ 
-                mr: 2,
+                mr: 1.5,
                 color: darkMode ? '#FFFFFF' : '#333333',
-                fontWeight: 500
+                fontWeight: 500,
+                fontSize: '0.875rem'
               }}
             >
               Rating:
@@ -230,9 +237,9 @@ const CohortFeedback = ({ cohortId }) => {
                 setRating(newValue);
               }}
               precision={1}
-              size="large"
-              icon={<StarIcon fontSize="inherit" sx={{ color: '#FFD700' }} />}
-              emptyIcon={<StarBorderIcon fontSize="inherit" sx={{ color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)' }} />}
+              size="small"
+              icon={<StarRateRoundedIcon fontSize="small" sx={{ color: darkMode ? 'white' : '#FFC107' }} />}
+              emptyIcon={<StarRateRoundedIcon fontSize="small" sx={{ color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)' }} />}
             />
           </Box>
           
@@ -241,11 +248,12 @@ const CohortFeedback = ({ cohortId }) => {
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             multiline
-            rows={4}
+            rows={3}
             fullWidth
             variant="outlined"
+            size="small"
             sx={{
-              mb: 3,
+              mb: 2,
               '& .MuiOutlinedInput-root': {
                 '& fieldset': {
                   borderColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)',
@@ -259,9 +267,11 @@ const CohortFeedback = ({ cohortId }) => {
               },
               '& .MuiInputLabel-root': {
                 color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                fontSize: '0.875rem'
               },
               '& .MuiInputBase-input': {
                 color: darkMode ? '#FFFFFF' : '#333333',
+                fontSize: '0.875rem'
               }
             }}
           />
@@ -269,12 +279,16 @@ const CohortFeedback = ({ cohortId }) => {
           <Box sx={{ display: 'flex', justifyContent: 'flex-end' }}>
             <Button
               variant="contained"
-              startIcon={<SendIcon />}
+              size="small"
+              startIcon={<SendIcon sx={{ fontSize: '1rem' }} />}
               onClick={handleSubmitFeedback}
               disabled={submitting || rating === 0}
               sx={{
                 bgcolor: '#0088CC',
                 color: 'white',
+                fontSize: '0.75rem',
+                py: 0.75,
+                px: 1.5,
                 '&:hover': {
                   bgcolor: alpha('#0088CC', 0.9),
                 },
@@ -293,9 +307,10 @@ const CohortFeedback = ({ cohortId }) => {
               variant="caption" 
               sx={{ 
                 display: 'block', 
-                mt: 2, 
+                mt: 1, 
                 color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
-                textAlign: 'right'
+                textAlign: 'right',
+                fontSize: '0.7rem'
               }}
             >
               Last updated: {formatDate(userFeedback.createdAt)}
@@ -304,137 +319,152 @@ const CohortFeedback = ({ cohortId }) => {
         </CardContent>
       </Card>
       
-      {/* Community Feedback */}
-      <Typography 
-        variant="h6" 
-        sx={{ 
-          fontWeight: 600, 
-          mb: 2,
-          color: darkMode ? '#FFFFFF' : '#333333'
-        }}
-      >
-        Community Feedback
-      </Typography>
-      
+      {/* Community Feedback Section */}
       <Box sx={{ 
-        flex: 1, 
-        overflowY: 'auto',
-        maxHeight: 'calc(100vh - 520px)', // Set maximum height for scrollable area
-        pr: 1, // Right padding to accommodate scrollbar
-        '&::-webkit-scrollbar': {
-          width: '6px',
-        },
-        '&::-webkit-scrollbar-track': {
-          backgroundColor: 'transparent',
-        },
-        '&::-webkit-scrollbar-thumb': {
-          backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
-          borderRadius: '3px',
-        },
-        '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-        }
+        display: 'flex', 
+        flexDirection: 'column',
+        flex: 1,
+        minHeight: 0 // Important for flexbox to allow child to scroll
       }}>
-        {allFeedbacks.length > 0 ? (
-          allFeedbacks.map((feedback, index) => (
-            <Card 
-              key={feedback._id || index} 
+        <Typography 
+          variant="h6" 
+          sx={{ 
+            fontWeight: 600, 
+            mb: 1.5,
+            color: darkMode ? '#FFFFFF' : '#333333',
+            fontSize: '1rem'
+          }}
+        >
+          Community Feedback
+        </Typography>
+        
+        {/* Scrollable Feedback Container */}
+        <Box sx={{ 
+          flex: 1,
+          overflow: 'auto',
+          pr: 1,
+          pb: 2,
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            backgroundColor: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+            borderRadius: '3px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
+          }
+        }}>
+          {allFeedbacks.length > 0 ? (
+            allFeedbacks.map((feedback, index) => (
+              <Card 
+                key={feedback._id || index} 
+                sx={{ 
+                  mb: 1.5, 
+                  bgcolor: darkMode ? alpha('#121212', 0.5) : '#FFFFFF',
+                  boxShadow: darkMode ? 'none' : '0 1px 3px rgba(0, 0, 0, 0.05)',
+                  border: darkMode ? `1px solid ${alpha('#FFFFFF', 0.1)}` : 'none',
+                  borderRadius: '8px'
+                }}
+              >
+                <CardContent sx={{ p: 1.5, '&:last-child': { pb: 1.5 } }}>
+                  <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
+                    <Avatar 
+                      src={feedback.user?.avatar} 
+                      alt={feedback.user?.name}
+                      sx={{ 
+                        width: 28, 
+                        height: 28,
+                        bgcolor: '#0088CC',
+                        color: '#FFFFFF',
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      {feedback.user?.name ? feedback.user.name[0] : 'U'}
+                    </Avatar>
+                    <Box sx={{ ml: 1 }}>
+                      <Typography 
+                        variant="body2" 
+                        sx={{ 
+                          fontWeight: 600,
+                          color: darkMode ? '#FFFFFF' : '#333333',
+                          fontSize: '0.815rem'
+                        }}
+                      >
+                        {feedback.user?.name || 'Anonymous User'}
+                      </Typography>
+                      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        <Typography 
+                          variant="caption" 
+                          sx={{ 
+                            color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                            mr: 1,
+                            fontSize: '0.7rem'
+                          }}
+                        >
+                          {formatDate(feedback.createdAt)}
+                        </Typography>
+                        <Rating 
+                          value={feedback.rating} 
+                          readOnly 
+                          size="small"
+                          icon={<StarRateRoundedIcon fontSize="small" sx={{ color: darkMode ? 'white' : '#FFC107', fontSize: '0.9rem' }} />}
+                          emptyIcon={<StarRateRoundedIcon fontSize="small" sx={{ color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)', fontSize: '0.9rem' }} />}
+                        />
+                      </Box>
+                    </Box>
+                  </Box>
+                  
+                  {feedback.comment && (
+                    <Typography 
+                      variant="body2" 
+                      sx={{ 
+                        color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
+                        ml: 5,
+                        mt: 0.25,
+                        fontSize: '0.8rem'
+                      }}
+                    >
+                      {feedback.comment}
+                    </Typography>
+                  )}
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Box 
               sx={{ 
-                mb: 2, 
-                bgcolor: darkMode ? alpha('#121212', 0.5) : '#FFFFFF',
-                boxShadow: darkMode ? 'none' : '0 2px 4px rgba(0, 0, 0, 0.05)',
-                border: darkMode ? `1px solid ${alpha('#FFFFFF', 0.1)}` : 'none',
+                p: 2, 
+                textAlign: 'center',
+                border: `1px dashed ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
                 borderRadius: '8px'
               }}
             >
-              <CardContent sx={{ '&:last-child': { pb: 2 } }}>
-                <Box sx={{ display: 'flex', alignItems: 'center', mb: 1.5 }}>
-                  <Avatar 
-                    src={feedback.user?.avatar} 
-                    alt={feedback.user?.name}
-                    sx={{ 
-                      width: 36, 
-                      height: 36,
-                      bgcolor: '#0088CC',
-                      color: '#FFFFFF'
-                    }}
-                  >
-                    {feedback.user?.name ? feedback.user.name[0] : 'U'}
-                  </Avatar>
-                  <Box sx={{ ml: 1.5 }}>
-                    <Typography 
-                      variant="body1" 
-                      sx={{ 
-                        fontWeight: 600,
-                        color: darkMode ? '#FFFFFF' : '#333333'
-                      }}
-                    >
-                      {feedback.user?.name || 'Anonymous User'}
-                    </Typography>
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                      <Typography 
-                        variant="caption" 
-                        sx={{ 
-                          color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
-                          mr: 1
-                        }}
-                      >
-                        {formatDate(feedback.createdAt)}
-                      </Typography>
-                      <Rating 
-                        value={feedback.rating} 
-                        readOnly 
-                        size="small"
-                        icon={<StarIcon fontSize="inherit" sx={{ color: '#FFD700' }} />}
-                        emptyIcon={<StarBorderIcon fontSize="inherit" sx={{ color: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.2)' }} />}
-                      />
-                    </Box>
-                  </Box>
-                </Box>
-                
-                {feedback.comment && (
-                  <Typography 
-                    variant="body2" 
-                    sx={{ 
-                      color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
-                      ml: 7,
-                      mt: 0.5
-                    }}
-                  >
-                    {feedback.comment}
-                  </Typography>
-                )}
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <Box 
-            sx={{ 
-              p: 4, 
-              textAlign: 'center',
-              border: `1px dashed ${darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.1)'}`,
-              borderRadius: '8px'
-            }}
-          >
-            <Typography 
-              variant="body1" 
-              sx={{ 
-                color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
-                mb: 1
-              }}
-            >
-              No feedback available yet
-            </Typography>
-            <Typography 
-              variant="body2" 
-              sx={{ 
-                color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
-              }}
-            >
-              Be the first to share your experience with this cohort
-            </Typography>
-          </Box>
-        )}
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)',
+                  mb: 0.5,
+                  fontSize: '0.85rem'
+                }}
+              >
+                No feedback available yet
+              </Typography>
+              <Typography 
+                variant="body2" 
+                sx={{ 
+                  color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+                  fontSize: '0.75rem'
+                }}
+              >
+                Be the first to share your experience with this cohort
+              </Typography>
+            </Box>
+          )}
+        </Box>
       </Box>
     </Box>
   );

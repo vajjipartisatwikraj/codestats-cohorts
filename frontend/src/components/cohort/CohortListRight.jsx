@@ -139,46 +139,50 @@ const CohortListRight = ({ selectedCohort }) => {
   return (
     <Box 
       sx={{ 
-        height: '100%',
-        border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+        maxHeight: 'calc(100vh - 100px)',
+        border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(15, 15, 15, 0.08)'}`,
         display: 'flex',
         flexDirection: 'column',
-        bgcolor: 'transparent',
-        color: darkMode ? '#FFFFFF' : '#333333',
+        bgcolor: darkMode ? 'transparent' : '#FFFFFF',
+        color: darkMode ? '#FFFFFF' : '#0F0F0F',
         borderRadius: '10px',
-        p: 3,
+        px: 3,
+        pb: 3,
+        pt: 2,
         width: '100%',
-        maxHeight: '100%',
         position: 'relative',
-        overflow: 'hidden'
+        overflow: 'auto',
+        boxShadow: darkMode ? 'none' : '0 6px 20px rgba(15, 15, 15, 0.08)'
       }}
     >
-      {/* Gaussian Blur Effect */}
-      <Box
-        sx={{
-          position: 'absolute',
-          top: 0,
-          left: 0,
-          right: 0,
-          bottom: 0,
-          zIndex: -1,
-          overflow: 'hidden'
-        }}
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 629 583" fill="none" style={{ position: 'absolute', top: 0, left: 0, opacity: darkMode ? 1 : 0.8 }}>
-          <g opacity="0.9" filter="url(#filter0_f_255_604)">
-            <path d="M697.5 -237L26 194L714 268L697.5 -237Z" fill="#1580CC"/>
-            <path d="M697.5 -237L26 194L714 268L697.5 -237Z" stroke="black"/>
-          </g>
-          <defs>
-            <filter id="filter0_f_255_604" x="-440.563" y="-702.996" width="1620.18" height="1436.66" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
-              <feFlood flood-opacity="0" result="BackgroundImageFix"/>
-              <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
-              <feGaussianBlur stdDeviation="232.55" result="effect1_foregroundBlur_255_604"/>
-            </filter>
-          </defs>
-        </svg>
-      </Box>
+      {/* Gaussian Blur Effect - Only for dark mode */}
+      {darkMode && (
+        <Box
+          sx={{
+            position: 'absolute',
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            zIndex: -1,
+            overflow: 'hidden'
+          }}
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" width="100%" height="100%" viewBox="0 0 629 583" fill="none" style={{ position: 'absolute', top: 0, left: 0, opacity: 1 }}>
+            <g opacity="0.9" filter="url(#filter0_f_255_604)">
+              <path d="M697.5 -237L26 194L714 268L697.5 -237Z" fill="#1580CC"/>
+              <path d="M697.5 -237L26 194L714 268L697.5 -237Z" stroke="black"/>
+            </g>
+            <defs>
+              <filter id="filter0_f_255_604" x="-440.563" y="-702.996" width="1620.18" height="1436.66" filterUnits="userSpaceOnUse" colorInterpolationFilters="sRGB">
+                <feFlood floodOpacity="0" result="BackgroundImageFix"/>
+                <feBlend mode="normal" in="SourceGraphic" in2="BackgroundImageFix" result="shape"/>
+                <feGaussianBlur stdDeviation="232.55" result="effect1_foregroundBlur_255_604"/>
+              </filter>
+            </defs>
+          </svg>
+        </Box>
+      )}
 
       {/* Cohort Title */}
       <Typography 
@@ -187,8 +191,9 @@ const CohortListRight = ({ selectedCohort }) => {
         sx={{ 
           fontWeight: 700, 
           mb: 2,
+          mt: 2,
           fontSize: '2rem',
-          color: darkMode ? '#FFFFFF' : '#333333'
+          color: darkMode ? '#FFFFFF' : '#0F0F0F'
         }}
       >
         {selectedCohort.title || "Object Oriented Programming"}
@@ -199,7 +204,7 @@ const CohortListRight = ({ selectedCohort }) => {
         variant="body1" 
         sx={{ 
           mb: 3, 
-          color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(0,0,0,0.7)',
+          color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(15,15,15,0.8)',
           lineHeight: 1.6,
           fontSize: '0.95rem'
         }}
@@ -292,13 +297,18 @@ const CohortListRight = ({ selectedCohort }) => {
 
       {/* Combined container for tabs and content */}
       <Box sx={{ 
-        bgcolor: darkMode ? 'rgba(0, 0, 0, 0.50)' : 'rgba(255, 255, 255, 0.75)',
+        bgcolor: darkMode ? 'rgba(0, 0, 0, 0.50)' : '#FFFFFF',
         borderRadius: '10px',
         overflow: 'hidden',
         mb: 2,
+        mt: 2,
         flex: 1,
-        boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 4px 20px rgba(0,0,0,0.08)',
-        backdropFilter: 'blur(10px)'
+        display: 'flex',
+        flexDirection: 'column',
+        maxHeight: 'calc(100vh - 120px)',
+        boxShadow: darkMode ? '0 4px 20px rgba(0,0,0,0.3)' : '0 6px 16px rgba(15, 15, 15, 0.06)',
+        backdropFilter: darkMode ? 'blur(10px)' : 'none',
+        border: darkMode ? 'none' : '1px solid rgba(15, 15, 15, 0.08)'
       }}>
         {/* Tab Selection */}
         <Box sx={{ display: 'flex', px: 2, pt: 2 }}>
@@ -339,7 +349,12 @@ const CohortListRight = ({ selectedCohort }) => {
 
         {/* Tab Content */}
         {activeTab === 0 && (
-          <Box sx={{ p: 3 }}>
+          <Box sx={{ 
+            p: 3,
+            pt: 2,
+            overflow: 'auto',
+            maxHeight: 'calc(100vh - 280px)',
+          }}>
             {/* Status */}
             <Box sx={{ 
               display: 'flex', 
@@ -480,8 +495,12 @@ const CohortListRight = ({ selectedCohort }) => {
         )}
 
         {activeTab === 1 && (
-          <Box sx={{ p: 3 }}>
-            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: darkMode ? 'white' : '#333333' }}>
+          <Box sx={{ 
+            p: 3,
+            overflow: 'auto',
+            maxHeight: 'calc(100vh - 180px)',
+          }}>
+            <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, color: darkMode ? 'white' : '#0F0F0F' }}>
               Recent Reviews
             </Typography>
             
@@ -491,9 +510,6 @@ const CohortListRight = ({ selectedCohort }) => {
               </Box>
             ) : (
               <Box sx={{ 
-                maxHeight: '180px', 
-                overflowY: 'auto',
-                pr: 1,
                 '&::-webkit-scrollbar': {
                   width: '4px',
                 },
@@ -501,21 +517,20 @@ const CohortListRight = ({ selectedCohort }) => {
                   backgroundColor: 'transparent',
                 },
                 '&::-webkit-scrollbar-thumb': {
-                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)',
+                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(15, 15, 15, 0.1)',
                   borderRadius: '3px',
                 },
                 '&::-webkit-scrollbar-thumb:hover': {
-                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 0, 0, 0.3)',
-                }
+                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(15, 15, 15, 0.2)',
+                },
+                overflow: 'auto',
+                height: '100%' 
               }}>
                 {feedbacksToShow.length > 0 ? feedbacksToShow.map((feedback, index) => {
                   // Get user details safely with fallbacks
                   const userName = feedback.user?.name || "Anonymous User";
                   const userInitials = getInitials(userName);
                   const userAvatar = feedback.user?.profilePicture || null;
-                  
-                  // Add debugging log to see what data is coming from the backend
-                  console.log('User feedback:', feedback.user);
                   
                   return (
                     <Box key={index} sx={{ mb: 2 }}>
@@ -549,10 +564,12 @@ const CohortListRight = ({ selectedCohort }) => {
                           
                           <Box 
                             sx={{
-                              bgcolor: 'rgba(255, 255, 255, 0.05)',
+                              bgcolor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 136, 204, 0.03)',
                               borderRadius: '6px',
                               p: 1.5,
-                              color: darkMode ? 'rgb(255, 255, 255)' : 'rgb(255, 255, 255)'
+                              color: darkMode ? 'rgb(255, 255, 255)' : '#0F0F0F',
+                              boxShadow: darkMode ? 'none' : '0 2px 8px rgba(15, 15, 15, 0.04)',
+                              border: darkMode ? 'none' : '1px solid rgba(15, 15, 15, 0.04)'
                             }}
                           >
                             <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
@@ -583,7 +600,7 @@ const CohortListRight = ({ selectedCohort }) => {
                               lineHeight: 1.5, 
                               fontSize: '0.75rem', 
                               fontWeight: 400,
-                              color: 'white',
+                              color: darkMode ? 'white' : '#0F0F0F',
                             }}>
                               {feedback.comment || "No comment provided"}
                             </Typography>
@@ -624,8 +641,8 @@ const CohortListRight = ({ selectedCohort }) => {
             startIcon={<BarChartIcon />}
             onClick={handleProgress}
             sx={{ 
-              color: darkMode ? 'white' : '#333333',
-              borderColor: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)',
+              color: darkMode ? 'white' : '#0F0F0F',
+              borderColor: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(15, 15, 15, 0.15)',
               borderRadius: '20px',
               textTransform: 'none',
               '&:hover': {

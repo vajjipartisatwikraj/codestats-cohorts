@@ -32,14 +32,14 @@ const ModuleItem = styled(ListItemButton)(({ theme, isActive }) => ({
   borderRadius: '6px',
   marginBottom: '8px',
   backgroundColor: isActive ? '#0088CC' : 'transparent',
-  border: isActive ? 'none' : `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 136, 204, 0.3)' : 'rgba(0, 136, 204, 0.2)'}`,
+  border: isActive ? 'none' : `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 136, 204, 0.3)' : 'rgba(15, 15, 15, 0.08)'}`,
   padding: '16px',
   height: '70px',
   transition: 'all 0.2s ease',
   '&:hover': {
     backgroundColor: isActive ? '#0088CC' : theme.palette.mode === 'dark' ? 'rgba(0, 136, 204, 0.1)' : 'rgba(0, 136, 204, 0.1)',
     transform: 'translateY(-1px)',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+    boxShadow: theme.palette.mode === 'light' ? '0 4px 12px rgba(15, 15, 15, 0.06)' : 'none',
   },
 }));
 
@@ -54,14 +54,14 @@ const FeedbackItem = styled(ListItemButton)(({ theme, isActive }) => ({
   borderRadius: '6px',
   marginTop: '16px',
   backgroundColor: isActive ? '#0088CC' : 'transparent',
-  border: isActive ? 'none' : `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 136, 204, 0.3)' : 'rgba(0, 136, 204, 0.2)'}`,
+  border: isActive ? 'none' : `1px solid ${theme.palette.mode === 'dark' ? 'rgba(0, 136, 204, 0.3)' : 'rgba(15, 15, 15, 0.08)'}`,
   padding: '16px',
   height: '70px',
   transition: 'all 0.2s ease',
   '&:hover': {
     backgroundColor: isActive ? '#0088CC' : theme.palette.mode === 'dark' ? 'rgba(0, 136, 204, 0.1)' : 'rgba(0, 136, 204, 0.1)',
     transform: 'translateY(-1px)',
-    boxShadow: '0 2px 5px rgba(0,0,0,0.05)',
+    boxShadow: theme.palette.mode === 'light' ? '0 4px 12px rgba(15, 15, 15, 0.06)' : 'none',
   },
 }));
 
@@ -136,13 +136,10 @@ const CohortDetailLeft = ({
         flexDirection: 'column',
         bgcolor: isDarkMode ? '#000D16' : '#ffffff',
         borderRadius: '10px',
-        boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+        boxShadow: isDarkMode ? '0 4px 15px rgba(0,0,0,0.15)' : '0 4px 12px rgba(15, 15, 15, 0.06)',
+        border: isDarkMode ? 'none' : '1px solid rgba(15, 15, 15, 0.08)',
         overflow: 'hidden',
-        position: { md: 'fixed' },
-        width: { md: '380px', lg: '420px' },
-        top: { md: 'calc(60px + 24px)' },
-        left: { md: '40px', lg: '40px' },
-        maxHeight: { md: 'calc(100vh - 60px - 48px)' }
+        flex: 1
       }}
     >
       {/* Header Section with Cohort Title - Blue top section */}
@@ -156,6 +153,7 @@ const CohortDetailLeft = ({
           borderBottomRightRadius: '0px',
           position: 'relative',
           zIndex: 1,
+          boxShadow: isDarkMode ? 'none' : '0 4px 12px rgba(0, 136, 204, 0.1)',
         }}
       >
         <Typography 
@@ -202,19 +200,7 @@ const CohortDetailLeft = ({
             <Button
               variant="contained"
               size="small"
-              onClick={() => {
-                // Handle toggle draft status via API
-                axios.put(`/cohorts/${cohort._id}`, {
-                  isDraft: !cohort.isDraft
-                })
-                .then(response => {
-                  // Update would happen in parent component
-                  console.log('Toggled draft status:', response.data);
-                })
-                .catch(err => {
-                  console.error('Error toggling draft status:', err);
-                });
-              }}
+              onClick={handleToggleDraftStatus}
               sx={{ 
                 textTransform: 'none',
                 py: 0.5, 
@@ -232,50 +218,27 @@ const CohortDetailLeft = ({
           </Box>
         )}
         
-        <Box sx={{ display: 'flex', justifyContent: 'flex-start' }}>
-          {!isAdmin && (
-            <Button
-              variant="contained"
-              startIcon={<InsightsIcon />}
-              onClick={onProgressClick}
-              sx={{
-                bgcolor: showProgress ? alpha('#FFFFFF', 0.85) : '#FFFFFF',
-                color: '#0088CC',
-                borderRadius: '50px',
-                textTransform: 'none',
-                fontWeight: 'medium',
-                px: 2.5,
-                py: 0.75,
-                '&:hover': {
-                  bgcolor: 'rgba(255,255,255,0.9)'
-                }
-              }}
-            >
-              Progress
-            </Button>
-          )}
-          
-          {isAdmin && (
-            <Button
-              variant="contained"
-              startIcon={<EqualizerIcon />}
-              onClick={onStatsClick}
-              sx={{
-                bgcolor: showStats ? alpha('#FFFFFF', 0.85) : 'rgba(255,255,255,0.7)',
-                color: '#0088CC',
-                borderRadius: '50px',
-                textTransform: 'none',
-                fontWeight: 'medium',
-                px: 2.5,
-                py: 0.75,
-                '&:hover': {
-                  bgcolor: 'rgba(255,255,255,0.9)'
-                }
-              }}
-            >
-              Statistics
-            </Button>
-          )}
+        <Box sx={{ display: 'flex', justifyContent: 'flex-start', gap: 2 }}>
+          {/* Progress button for all users (admin and regular) */}
+          <Button
+            variant="contained"
+            startIcon={<InsightsIcon />}
+            onClick={onProgressClick}
+            sx={{
+              bgcolor: showProgress ? alpha('#FFFFFF', 0.85) : '#FFFFFF',
+              color: '#0088CC',
+              borderRadius: '50px',
+              textTransform: 'none',
+              fontWeight: 'medium',
+              px: 2.5,
+              py: 0.75,
+              '&:hover': {
+                bgcolor: 'rgba(255,255,255,0.9)'
+              }
+            }}
+          >
+            Progress
+          </Button>
         </Box>
       </Box>
       
@@ -318,7 +281,6 @@ const CohortDetailLeft = ({
           overflowY: 'auto',
           px: 2,
           pb: 2,
-          height: { md: 'calc(100% - 200px)' }, // Adjusted height to make room for all content
           '&::-webkit-scrollbar': {
             width: '8px',
           },
@@ -326,14 +288,14 @@ const CohortDetailLeft = ({
             backgroundColor: 'transparent',
           },
           '&::-webkit-scrollbar-thumb': {
-            backgroundColor: alpha(isDarkMode ? '#ffffff' : '#000000', 0.2),
+            backgroundColor: alpha(isDarkMode ? '#ffffff' : '#0F0F0F', 0.2),
             borderRadius: '4px',
           },
           '&::-webkit-scrollbar-thumb:hover': {
-            backgroundColor: alpha(isDarkMode ? '#ffffff' : '#000000', 0.3),
+            backgroundColor: alpha(isDarkMode ? '#ffffff' : '#0F0F0F', 0.3),
           },
           scrollbarWidth: 'thin',
-          scrollbarColor: `${alpha(isDarkMode ? '#ffffff' : '#000000', 0.2)} transparent`
+          scrollbarColor: `${alpha(isDarkMode ? '#ffffff' : '#0F0F0F', 0.2)} transparent`
         }}
       >
         {loading ? (

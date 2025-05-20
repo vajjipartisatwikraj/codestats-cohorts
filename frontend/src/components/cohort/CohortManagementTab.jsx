@@ -27,7 +27,17 @@ import {
   FormControl,
   InputLabel,
   FormHelperText,
-  Badge
+  Badge,
+  List,
+  ListItem,
+  ListItemAvatar,
+  ListItemText,
+  Table,
+  TableHead,
+  TableBody,
+  TableRow,
+  TableCell,
+  Avatar
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -90,6 +100,11 @@ const CohortManagementTab = ({ token }) => {
   const [selectedCohort, setSelectedCohort] = useState(null);
   const [topUserCount, setTopUserCount] = useState(50);
   const [addingTopUsers, setAddingTopUsers] = useState(false);
+  const [selectedUsers, setSelectedUsers] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
+  const [loadingUsers, setLoadingUsers] = useState(false);
   
   // Form state for creating/editing cohort
   const [formData, setFormData] = useState({
@@ -104,6 +119,9 @@ const CohortManagementTab = ({ token }) => {
   });
   const [formErrors, setFormErrors] = useState({});
   const [isEditMode, setIsEditMode] = useState(false);
+  
+  // State for tracking if we're fetching eligible users
+  const [fetchingEligibleUsers, setFetchingEligibleUsers] = useState(false);
   
   // Fetch cohorts on component mount
   useEffect(() => {
@@ -332,8 +350,9 @@ const CohortManagementTab = ({ token }) => {
     window.location.href = `/admin/cohorts/${cohort._id}`;
   };
   
-  // Fetch top users based on their scores
+  // Updated fetchTopUsers to return the actual user objects
   const fetchTopUsers = async (count) => {
+    setLoadingUsers(true);
     try {
       const response = await axios.get(`${apiUrl}/leaderboard/top/${count}`, {
         headers: {
@@ -343,32 +362,94 @@ const CohortManagementTab = ({ token }) => {
       });
       
       if (response.data && response.data.leaderboard) {
-        return response.data.leaderboard.map(entry => entry.user._id);
+        const users = response.data.leaderboard.map(entry => ({
+          _id: entry.user._id,
+          name: entry.user.name || 'Unknown',
+          email: entry.user.email || 'No email',
+          department: entry.user.department || 'No department',
+          rollNumber: entry.user.rollNumber || '',
+          score: entry.totalScore || 0
+        }));
+        setSelectedUsers(users);
+        return users;
       }
       return [];
     } catch (error) {
       console.error('Error fetching top users:', error);
       toast.error('Failed to fetch top users');
       return [];
+    } finally {
+      setLoadingUsers(false);
     }
   };
   
-  // Handle adding top users to a cohort
-  const handleAddTopUsers = async (cohort) => {
-    setAddingTopUsers(true);
+  // Search for users by name or email
+  const searchUsers = async (query) => {
+    setIsSearching(true);
     try {
-      // Fetch top users
-      const topUserIds = await fetchTopUsers(topUserCount);
+      const response = await axios.get(`${apiUrl}/users/search?q=${query}`, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+          'Content-Type': 'application/json'
+        }
+      });
       
-      if (topUserIds.length === 0) {
-        toast.error('No users found in the leaderboard');
-        return;
+      if (response.data && response.data.users) {
+        const users = response.data.users.map(user => ({
+          _id: user._id,
+          name: user.name || 'Unknown',
+          email: user.email || 'No email',
+          department: user.department || 'No department',
+          rollNumber: user.rollNumber || '',
+          score: user.totalScore || 0
+        }));
+        setSearchResults(users);
+        return users;
       }
-      
-      // Add these users to the cohort
-      const response = await axios.post(
-        `${apiUrl}/cohorts/${cohort._id}/eligible-users`, 
-        { userIds: topUserIds },
+      return [];
+    } catch (error) {
+      console.error('Error searching users:', error);
+      toast.error('Failed to search users');
+      return [];
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  // Handle adding a user from search results to the selected users
+  const handleAddUserToSelection = (user) => {
+    // Check if the user is already in the selection
+    if (!selectedUsers.some(u => u._id === user._id)) {
+      setSelectedUsers([...selectedUsers, user]);
+    } else {
+      toast.info(`${user.name} is already in your selection`);
+    }
+  };
+  
+  // Handle removing a user from the selection
+  const handleRemoveUser = (userId) => {
+    setSelectedUsers(selectedUsers.filter(user => user._id !== userId));
+  };
+  
+  // Load top users based on selected shortcut
+  const handleLoadTopUsers = (count) => {
+    setTopUserCount(count);
+    fetchTopUsers(count);
+  };
+  
+  // Open the dialog for adding top users
+  const handleOpenAddUsersDialog = async (cohort) => {
+    setSelectedCohort(cohort);
+    setSearchResults([]);
+    setSearchQuery('');
+    setAddingTopUsers(true);
+    
+    // Fetch existing eligible users for this cohort
+    setFetchingEligibleUsers(true);
+    try {
+      // First get all eligible users for this cohort
+      const eligibleResponse = await axios.get(
+        `${apiUrl}/cohorts/${cohort._id}/eligible-users`,
         {
           headers: {
             Authorization: `Bearer ${token}`,
@@ -377,17 +458,87 @@ const CohortManagementTab = ({ token }) => {
         }
       );
       
-      toast.success(`Added top ${topUserIds.length} users to the cohort`);
-      
-      // Refresh the cohort list
-      fetchCohorts();
+      if (eligibleResponse.data && eligibleResponse.data.users) {
+        const eligibleUsers = eligibleResponse.data.users.map(user => ({
+          _id: user._id,
+          name: user.name || 'Unknown',
+          email: user.email || 'No email',
+          department: user.department || 'No department',
+          rollNumber: user.rollNumber || '',
+          score: user.totalScore || 0
+        }));
+        setSelectedUsers(eligibleUsers);
+      }
     } catch (error) {
-      console.error('Error adding top users:', error);
-      toast.error('Failed to add top users to the cohort');
+      console.error('Error fetching eligible users:', error);
+      toast.error('Failed to fetch current eligible users');
+      setSelectedUsers([]);
     } finally {
-      setAddingTopUsers(false);
+      setFetchingEligibleUsers(false);
     }
   };
+  
+  // Perform the actual update of eligible users for the cohort
+  const handleConfirmAddUsers = async (cohort) => {
+    setAddingTopUsers(true);
+    try {
+      const userIds = selectedUsers.map(user => user._id);
+      
+      // Update the eligible users list for this cohort
+      const response = await axios.put(
+        `${apiUrl}/cohorts/${cohort._id}/eligible-users`, 
+        { userIds: userIds },
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+      
+      toast.success(`Updated eligible users for the cohort`);
+      
+      // Refresh the cohort list to show updated numbers
+      fetchCohorts();
+      
+      // Close the dialog
+      setAddingTopUsers(false);
+    } catch (error) {
+      console.error('Error updating eligible users:', error);
+      toast.error('Failed to update eligible users for the cohort');
+    }
+  };
+  
+  // Cancel adding users
+  const handleCancelAddUsers = () => {
+      setAddingTopUsers(false);
+    setSelectedUsers([]);
+    setSearchResults([]);
+    setSearchQuery('');
+  };
+  
+  // Handle search input change
+  const handleSearchInputChange = (e) => {
+    setSearchQuery(e.target.value);
+    if (e.target.value.length >= 3) {
+      searchUsers(e.target.value);
+    } else {
+      setSearchResults([]);
+    }
+  };
+  
+  // Replace the previous renderTopUsersSelector with a button to open the dialog
+  const renderAddTopUsersButton = (cohort) => (
+    <Button
+      variant="outlined"
+      size="small"
+      onClick={() => handleOpenAddUsersDialog(cohort)}
+      startIcon={<AddCircleIcon />}
+      sx={{ mr: 1 }}
+    >
+      Manage Eligible Users
+    </Button>
+  );
   
   // Format date for display
   const formatDate = (dateString) => {
@@ -417,36 +568,8 @@ const CohortManagementTab = ({ token }) => {
     }
   };
   
-  // UI for adding top users
-  const renderTopUsersSelector = (cohort) => (
-    <Box sx={{ display: 'flex', alignItems: 'center', mt: 1, gap: 2 }}>
-      <FormControl size="small" sx={{ width: 120 }}>
-        <InputLabel>Top Users</InputLabel>
-        <Select
-          value={topUserCount}
-          label="Top Users"
-          onChange={(e) => setTopUserCount(e.target.value)}
-        >
-          <MenuItem value={10}>Top 10</MenuItem>
-          <MenuItem value={50}>Top 50</MenuItem>
-          <MenuItem value={100}>Top 100</MenuItem>
-          <MenuItem value={300}>Top 300</MenuItem>
-        </Select>
-      </FormControl>
-      <Button 
-        variant="contained" 
-        size="small"
-        onClick={() => handleAddTopUsers(cohort)}
-        disabled={addingTopUsers}
-        startIcon={addingTopUsers ? <CircularProgress size={16} /> : <GroupIcon />}
-      >
-        Add Users
-      </Button>
-    </Box>
-  );
-  
   return (
-    <>
+    <Box>
       <Box sx={{ mb: 3 }}>
         <Box sx={{ 
           display: 'flex', 
@@ -596,15 +719,7 @@ const CohortManagementTab = ({ token }) => {
                       </Box>
                       
                       <Box>
-                        <Button
-                          variant="outlined"
-                          size="small"
-                          onClick={() => handleAddTopUsers(cohort)}
-                          startIcon={<AddCircleIcon />}
-                          sx={{ mr: 1 }}
-                        >
-                          Add Top Users
-                        </Button>
+                        {renderAddTopUsersButton(cohort)}
                         <Button
                           variant="contained"
                           size="small"
@@ -723,15 +838,7 @@ const CohortManagementTab = ({ token }) => {
                         </Box>
                         
                         <Box>
-                          <Button
-                            variant="outlined"
-                            size="small"
-                            onClick={() => handleAddTopUsers(cohort)}
-                            startIcon={<AddCircleIcon />}
-                            sx={{ mr: 1 }}
-                          >
-                            Add Users
-                          </Button>
+                          {renderAddTopUsersButton(cohort)}
                           <Button
                             variant="contained"
                             size="small"
@@ -1073,50 +1180,231 @@ const CohortManagementTab = ({ token }) => {
       {/* Add Top Users Dialog */}
       <Dialog
         open={!!selectedCohort && addingTopUsers}
-        onClose={() => setAddingTopUsers(false)}
+        onClose={handleCancelAddUsers}
+        maxWidth="md"
+        fullWidth
       >
-        <DialogTitle>Add Top Users to Cohort</DialogTitle>
-        <DialogContent>
-          <Typography variant="body1" sx={{ mb: 2 }}>
-            Add top-performing users to the cohort "{selectedCohort?.title}".
+        <DialogTitle>
+          Manage Eligible Users: {selectedCohort?.title}
+          <IconButton
+            aria-label="close"
+            onClick={handleCancelAddUsers}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
+              color: (theme) => theme.palette.grey[500],
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
+        
+        <DialogContent dividers>
+          <Grid container spacing={2}>
+            {/* Quick selection options */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Quick Selection
           </Typography>
-          
-          <FormControl fullWidth sx={{ mt: 2 }}>
-            <InputLabel id="top-user-count-label">Number of Top Users</InputLabel>
-            <Select
-              labelId="top-user-count-label"
-              value={topUserCount}
-              onChange={(e) => setTopUserCount(e.target.value)}
-              label="Number of Top Users"
-            >
-              <MenuItem value={10}>Top 10</MenuItem>
-              <MenuItem value={25}>Top 25</MenuItem>
-              <MenuItem value={50}>Top 50</MenuItem>
-              <MenuItem value={100}>Top 100</MenuItem>
-              <MenuItem value={250}>Top 250</MenuItem>
-              <MenuItem value={500}>Top 500</MenuItem>
-            </Select>
-            <FormHelperText>
-              Users will be selected based on their total score across all platforms
-            </FormHelperText>
-          </FormControl>
+              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mb: 2 }}>
+                <Chip 
+                  label="Top 10" 
+                  onClick={() => handleLoadTopUsers(10)} 
+                  color="primary" 
+                  variant={topUserCount === 10 ? "filled" : "outlined"}
+                  clickable
+                />
+                <Chip 
+                  label="Top 25" 
+                  onClick={() => handleLoadTopUsers(25)} 
+                  color="primary" 
+                  variant={topUserCount === 25 ? "filled" : "outlined"}
+                  clickable
+                />
+                <Chip 
+                  label="Top 50" 
+                  onClick={() => handleLoadTopUsers(50)} 
+                  color="primary" 
+                  variant={topUserCount === 50 ? "filled" : "outlined"}
+                  clickable
+                />
+                <Chip 
+                  label="Top 100" 
+                  onClick={() => handleLoadTopUsers(100)} 
+                  color="primary" 
+                  variant={topUserCount === 100 ? "filled" : "outlined"}
+                  clickable
+                />
+                <Chip 
+                  label="Top 200" 
+                  onClick={() => handleLoadTopUsers(200)} 
+                  color="primary" 
+                  variant={topUserCount === 200 ? "filled" : "outlined"}
+                  clickable
+                />
+                <Chip 
+                  label="Top 300" 
+                  onClick={() => handleLoadTopUsers(300)} 
+                  color="primary" 
+                  variant={topUserCount === 300 ? "filled" : "outlined"}
+                  clickable
+                />
+                <Chip 
+                  label="Top 500" 
+                  onClick={() => handleLoadTopUsers(500)} 
+                  color="primary" 
+                  variant={topUserCount === 500 ? "filled" : "outlined"}
+                  clickable
+                />
+                <Chip 
+                  label="Top 1000" 
+                  onClick={() => handleLoadTopUsers(1000)} 
+                  color="primary" 
+                  variant={topUserCount === 1000 ? "filled" : "outlined"}
+                  clickable
+                />
+              </Box>
+            </Grid>
+            
+            {/* Search for users */}
+            <Grid item xs={12}>
+              <Typography variant="subtitle1" gutterBottom>
+                Search Users
+              </Typography>
+              <TextField
+                fullWidth
+                label="Search by name or email"
+                variant="outlined"
+                value={searchQuery}
+                onChange={handleSearchInputChange}
+                placeholder="Type at least 3 characters"
+                InputProps={{
+                  endAdornment: isSearching ? (
+                    <CircularProgress size={20} />
+                  ) : null
+                }}
+              />
+              {searchResults.length > 0 && (
+                <Paper variant="outlined" sx={{ mt: 1, maxHeight: '200px', overflow: 'auto' }}>
+                  <List dense>
+                    {searchResults.map(user => (
+                      <ListItem
+                        key={user._id}
+                        secondaryAction={
+                          <IconButton edge="end" onClick={() => handleAddUserToSelection(user)}>
+                            <AddIcon />
+                          </IconButton>
+                        }
+                      >
+                        <ListItemAvatar>
+                          <Avatar sx={{ bgcolor: 'primary.main' }}>
+                            {user.name?.charAt(0) || 'U'}
+                          </Avatar>
+                        </ListItemAvatar>
+                        <ListItemText
+                          primary={user.name}
+                          secondary={user.email}
+                        />
+                      </ListItem>
+                    ))}
+                  </List>
+                </Paper>
+              )}
+              {searchQuery.length >= 3 && searchResults.length === 0 && !isSearching && (
+                <Alert severity="info" sx={{ mt: 1 }}>
+                  No users found matching "{searchQuery}"
+                </Alert>
+              )}
+            </Grid>
+            
+            {/* Selected users list */}
+            <Grid item xs={12} sx={{ mt: 2 }}>
+              <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                <Typography variant="subtitle1" gutterBottom>
+                  Current Eligible Users ({selectedUsers.length})
+                </Typography>
+                {selectedUsers.length > 0 && (
+                  <Button 
+                    size="small" 
+                    onClick={() => setSelectedUsers([])}
+                    color="error"
+                    variant="outlined"
+                  >
+                    Clear All
+                  </Button>
+                )}
+              </Box>
+              
+              {fetchingEligibleUsers ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <CircularProgress />
+                  <Typography sx={{ ml: 2 }}>Loading eligible users...</Typography>
+                </Box>
+              ) : loadingUsers ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', py: 2 }}>
+                  <CircularProgress />
+                </Box>
+              ) : selectedUsers.length === 0 ? (
+                <Alert severity="info">
+                  No users are currently eligible for this cohort. Use the quick selection options or search for users to add them.
+                </Alert>
+              ) : (
+                <Paper variant="outlined" sx={{ maxHeight: '300px', overflow: 'auto' }}>
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Name</TableCell>
+                        <TableCell>Email</TableCell>
+                        <TableCell>Department</TableCell>
+                        <TableCell>Roll Number</TableCell>
+                        <TableCell align="right">Score</TableCell>
+                        <TableCell align="center">Action</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selectedUsers.map(user => (
+                        <TableRow key={user._id}>
+                          <TableCell>{user.name}</TableCell>
+                          <TableCell>{user.email}</TableCell>
+                          <TableCell>{user.department}</TableCell>
+                          <TableCell>{user.rollNumber}</TableCell>
+                          <TableCell align="right">{user.score}</TableCell>
+                          <TableCell align="center">
+                            <IconButton 
+                              size="small" 
+                              color="error" 
+                              onClick={() => handleRemoveUser(user._id)}
+                            >
+                              <DeleteIcon />
+                            </IconButton>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </Paper>
+              )}
+            </Grid>
+          </Grid>
         </DialogContent>
+        
         <DialogActions>
-          <Button onClick={() => setAddingTopUsers(false)} color="inherit">
+          <Button onClick={handleCancelAddUsers} color="inherit">
             Cancel
           </Button>
           <Button 
-            onClick={() => handleAddTopUsers(selectedCohort)}
+            onClick={() => handleConfirmAddUsers(selectedCohort)}
             color="primary"
             variant="contained"
             startIcon={<GroupIcon />}
-            disabled={loading}
+            disabled={fetchingEligibleUsers || loadingUsers}
           >
-            {loading ? 'Adding...' : 'Add Users'}
+            Update Eligible Users
           </Button>
         </DialogActions>
       </Dialog>
-    </>
+    </Box>
   );
 };
 

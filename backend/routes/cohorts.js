@@ -1080,8 +1080,8 @@ router.get('/:cohortId/modules/:moduleId/questions/:questionId', auth, async (re
       user: userId,
       question: questionId
     })
-    .sort({ submittedAt: -1 })
-    .limit(5);
+    .populate('user', 'name username avatar') // Include user details
+    .sort({ submittedAt: -1 }); // Removed .limit(100) to return all submissions
     
     const result = {
       ...question._doc,
@@ -1557,8 +1557,7 @@ router.get('/:cohortId/modules/:moduleId/questions/:questionId/all-submissions',
       cohort: cohortId
     })
     .populate('user', 'name username avatar') // Include user details
-    .sort({ submittedAt: -1 })
-    .limit(100); // Limit to last 100 submissions for performance
+    .sort({ submittedAt: -1 }); // Removed .limit(100) to return all submissions
 
     res.json(submissions);
   } catch (err) {
@@ -2127,6 +2126,137 @@ router.get('/:id/feedback/user', auth, async (req, res) => {
   } catch (err) {
     console.error('Error getting user feedback:', err);
     res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Get statistics for a cohort
+router.get('/:id/stats', auth, async (req, res) => {
+  try {
+    const cohortId = req.params.id;
+    
+    // Find the cohort
+    const cohort = await Cohort.findById(cohortId);
+    if (!cohort) {
+      return res.status(404).json({ message: 'Cohort not found' });
+    }
+    
+    // Get total eligible users for this cohort
+    const totalEnrolled = cohort.eligibleUsers ? cohort.eligibleUsers.length : 0;
+    
+    // Get users who have enrolled in the cohort
+    const enrolledUsers = await UserCohort.countDocuments({ cohort: cohortId });
+    
+    // Get users who have completed the cohort
+    const completedUsers = await UserCohort.countDocuments({ 
+      cohort: cohortId,
+      status: 'completed'
+    });
+    
+    // Calculate completion rate
+    const completionRate = enrolledUsers > 0 ? Math.round((completedUsers / enrolledUsers) * 100) : 0;
+    
+    // Get active users (users who have at least started a module)
+    const activeUsers = await UserCohort.countDocuments({ 
+      cohort: cohortId,
+      'moduleProgress.questionsCompleted': { $gt: 0 } 
+    });
+    
+    // Get all modules for this cohort
+    const modules = await Module.find({ cohort: cohortId }).select('_id title');
+    
+    // Calculate module completion rates
+    const moduleCompletionRates = [];
+    
+    for (const module of modules) {
+      // Count users who completed this module
+      const usersCompletedModule = await UserCohort.countDocuments({
+        cohort: cohortId,
+        'moduleProgress': {
+          $elemMatch: {
+            'module': module._id,
+            'completed': true
+          }
+        }
+      });
+      
+      const completionPercentage = enrolledUsers > 0 ? 
+        Math.round((usersCompletedModule / enrolledUsers) * 100) : 0;
+      
+      moduleCompletionRates.push({
+        id: module._id,
+        name: module.title,
+        completion: completionPercentage
+      });
+    }
+    
+    // Return the statistics
+    const stats = {
+      totalEnrolled,
+      enrolledUsers,
+      activeUsers,
+      completionRate,
+      moduleCompletionRates
+    };
+    
+    res.json(stats);
+  } catch (err) {
+    console.error('Error fetching cohort statistics:', err);
+    res.status(500).json({ message: 'Server error', error: err.message });
+  }
+});
+
+// Get eligible users for a cohort
+router.get('/:id/eligible-users', [auth, adminAuth], async (req, res) => {
+  try {
+    const cohortId = req.params.id;
+    
+    // Find the cohort
+    const cohort = await Cohort.findById(cohortId)
+      .populate('eligibleUsers', 'name email department rollNumber totalScore');
+    
+    if (!cohort) {
+      return res.status(404).json({ message: 'Cohort not found' });
+    }
+    
+    // Return the eligible users
+    res.json({ 
+      users: cohort.eligibleUsers || [],
+      totalCount: cohort.eligibleUsers ? cohort.eligibleUsers.length : 0
+    });
+  } catch (error) {
+    console.error('Error fetching eligible users:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
+  }
+});
+
+// Update eligible users for a cohort (replace the entire list)
+router.put('/:id/eligible-users', [auth, adminAuth], async (req, res) => {
+  try {
+    const cohortId = req.params.id;
+    const { userIds } = req.body;
+    
+    if (!userIds || !Array.isArray(userIds)) {
+      return res.status(400).json({ message: 'User IDs array is required' });
+    }
+    
+    // Find the cohort
+    const cohort = await Cohort.findById(cohortId);
+    if (!cohort) {
+      return res.status(404).json({ message: 'Cohort not found' });
+    }
+    
+    // Update the eligible users list (replacing the existing list)
+    cohort.eligibleUsers = userIds;
+    await cohort.save();
+    
+    // Return the updated cohort with count
+    res.json({
+      message: 'Eligible users updated successfully',
+      totalEligibleUsers: cohort.eligibleUsers.length
+    });
+  } catch (error) {
+    console.error('Error updating eligible users:', error);
+    res.status(500).json({ message: 'Server error', error: error.message });
   }
 });
 

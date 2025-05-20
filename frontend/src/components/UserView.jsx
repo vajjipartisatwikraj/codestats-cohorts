@@ -171,6 +171,57 @@ const formatDateRange = (startDate, endDate) => {
   }
 };
 
+// Domain Logo component to display organization logos
+const DomainLogo = ({ domain, size = 24 }) => {
+  const LOGO_TOKEN = 'pk_RBjC8X-kSE2wrzZ-kFI4-g';
+  
+  if (!domain) return null;
+  
+  const logoUrl = `https://img.logo.dev/${domain}?token=${LOGO_TOKEN}`;
+  
+  return (
+    <Box
+      component="img"
+      sx={{
+        width: size,
+        height: size,
+        objectFit: 'contain',
+        borderRadius: 1
+      }}
+      src={logoUrl}
+      alt={domain}
+      onError={(e) => {
+        e.target.src = '/placeholder-logo.png';
+      }}
+    />
+  );
+};
+
+// Helper function to get organization logo when needed
+const getOrganizationLogo = (achievement) => {
+  // Use domainLink if available, otherwise try to extract from link
+  const domain = achievement.domainLink || extractDomainFromUrl(achievement.link);
+  
+  if (!domain) return null;
+  
+  return (
+    <Tooltip title={`Organization: ${domain}`}>
+      <Box sx={{ display: 'flex', alignItems: 'center' }}>
+        <DomainLogo domain={domain} size={20} />
+      </Box>
+    </Tooltip>
+  );
+};
+
+// Get the best domain to display for an achievement
+const getBestDomain = (achievement) => {
+  // Only use domainLink if it exists
+  if (achievement.domainLink) {
+    return achievement.domainLink;
+  }
+  return null;
+};
+
 const UserView = () => {
   const { username } = useParams();
   const [loading, setLoading] = useState(true);
@@ -268,6 +319,11 @@ const UserView = () => {
       try {
         const response = await axios.get(`${apiUrl}/users/${username}`);
         const userData = response.data;
+        console.log(userData);
+        // Log the first achievement to verify domainLink is present
+        if (userData.achievements && userData.achievements.length > 0) {
+          console.log('First achievement data:', userData.achievements[0]);
+        }
         
         if (userData.codingProfiles?.github?.username) {
           // Instead of making API calls that cause 401 errors, 
@@ -289,6 +345,7 @@ const UserView = () => {
         }
         setLoading(false);
       } catch (err) {
+        console.error('Error fetching user data:', err);
         setLoading(false);
         setError('Failed to load user data. Please try again later.');
       }
@@ -1685,7 +1742,7 @@ const UserView = () => {
                               mb: 2
                             }}>
                               <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-                                {/* Icon based on achievement type */}
+                                {/* Icon based on achievement type or domain logo if available */}
                                 <Box sx={{
                                   display: 'flex',
                                   alignItems: 'center',
@@ -1694,12 +1751,20 @@ const UserView = () => {
                                   height: '40px',
                                   borderRadius: '10px',
                                   bgcolor: darkMode ? 'rgba(0, 136, 204, 0.1)' : 'rgba(0, 136, 204, 0.05)',
-                                  color: '#0088cc'
+                                  color: '#0088cc',
+                                  overflow: 'hidden'
                                 }}>
-                                  {achievement.type === 'project' && <Code fontSize="medium" />}
-                                  {achievement.type === 'internship' && <Work fontSize="medium" />}
-                                  {achievement.type === 'certification' && <VerifiedUser fontSize="medium" />}
-                                  {achievement.type === 'achievement' && <EmojiEvents fontSize="medium" />}
+                                  {/* Try to use domainLink, or extract from link */}
+                                  {getBestDomain(achievement) ? (
+                                    <DomainLogo domain={getBestDomain(achievement)} size={30} />
+                                  ) : (
+                                    <>
+                                      {achievement.type === 'project' && <Code fontSize="medium" />}
+                                      {achievement.type === 'internship' && <Work fontSize="medium" />}
+                                      {achievement.type === 'certification' && <VerifiedUser fontSize="medium" />}
+                                      {achievement.type === 'achievement' && <EmojiEvents fontSize="medium" />}
+                                    </>
+                                  )}
                                 </Box>
                                 
                                 <Typography 
@@ -1798,8 +1863,52 @@ const UserView = () => {
                               borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'
                             }} />
 
+                            {/* Organization domain and logo */}
+                            {achievement.domainLink && !achievement.tags?.length && (
+                              <Box sx={{ 
+                                display: 'flex', 
+                                alignItems: 'center', 
+                                gap: 1, 
+                                mt: 'auto',
+                                opacity: 0.8
+                              }}>
+                                <DomainLogo domain={achievement.domainLink} size={16} />
+                                <Typography variant="caption" sx={{ 
+                                  color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.6)',
+                                  fontSize: '0.75rem',
+                                  fontStyle: 'italic'
+                                }}>
+                                  {achievement.domainLink}
+                                </Typography>
+                              </Box>
+                            )}
+
                             {achievement.tags && achievement.tags.length > 0 && (
-                              <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                {/* Show domain as a special tag if it exists */}
+                {achievement.domainLink && (
+                  <Tooltip title={`Organization: ${achievement.domainLink}`}>
+                    <Chip
+                      icon={
+                        <Box sx={{ display: 'flex', alignItems: 'center', pl: 0.5 }}>
+                          <DomainLogo domain={achievement.domainLink} size={14} />
+                        </Box>
+                      }
+                      label={achievement.domainLink}
+                      size="small"
+                      sx={{
+                        bgcolor: darkMode ? 'rgba(0, 0, 0, 0.3)' : 'rgba(0, 0, 0, 0.05)',
+                        color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.8)',
+                        border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(0, 0, 0, 0.15)'}`,
+                        height: '24px',
+                        fontSize: '0.75rem'
+                      }}
+                      onClick={() => {
+                        if (achievement.domainLink) window.open(`https://${achievement.domainLink}`, '_blank');
+                      }}
+                    />
+                  </Tooltip>
+                )}
                                 {achievement.tags.map((tag, tagIndex) => (
                                   <Chip
                                     key={`tag-${achievement._id || index}-${tagIndex}`}

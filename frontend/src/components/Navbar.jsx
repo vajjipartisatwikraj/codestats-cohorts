@@ -1,4 +1,4 @@
-import React, { useState, useMemo, useEffect } from 'react';
+import React, { useState, useMemo, useEffect, useRef } from 'react';
 import { Link as RouterLink, useNavigate, useLocation } from 'react-router-dom';
 import {
   AppBar,
@@ -22,41 +22,653 @@ import {
   ListItemText,
   ListItemAvatar,
   CircularProgress,
+  InputBase,
+  Paper,
+  ClickAwayListener,
+  Popper,
 } from '@mui/material';
-import MenuIcon from '@mui/icons-material/Menu';
 import LogoutIcon from '@mui/icons-material/Logout';
 import Brightness4Icon from '@mui/icons-material/Brightness4';
 import Brightness7Icon from '@mui/icons-material/Brightness7';
 import NotificationsIcon from '@mui/icons-material/Notifications';
+import MoreVertIcon from '@mui/icons-material/MoreVert';
+import SearchIcon from '@mui/icons-material/Search';
+import PersonIcon from '@mui/icons-material/Person';
+import GroupIcon from '@mui/icons-material/Group';
+import WorkIcon from '@mui/icons-material/Work';
+import SchoolIcon from '@mui/icons-material/School';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 import axios from 'axios';
 import { apiUrl } from '../config/apiConfig';
 
-// Create a simple logo component to avoid repetition
-const Logo = () => (
-  <Typography
-    variant="h4"
-    noWrap
-    component="a"
-    href="/"
-    sx={{
-      fontWeight: 700,
-      background: 'linear-gradient(45deg, #0088cc 30%, #00bfff 90%)',
-      backgroundClip: 'text',
-      textFillColor: 'transparent',
-      textDecoration: 'none',
-      letterSpacing: '.01rem',
-    }}
-  >
-    SCOPE
-  </Typography>
-);
-
 // Common AppBar styles - LinkedIn styling
 const appBarStyles = {
   backdropFilter: 'none',
   boxShadow: '0 0 0 1px rgba(0, 0, 0, 0.08), 0 2px 4px rgba(0, 0, 0, 0.05)'
+};
+
+// Add these custom icon components at the top of the file after imports
+const CustomSunIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <path d="M12 19a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z" />
+    <path d="M18.313 16.91l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.218 -1.567l.102 .07z" />
+    <path d="M7.007 16.993a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0z" />
+    <path d="M4 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" />
+    <path d="M21 11a1 1 0 0 1 .117 1.993l-.117 .007h-1a1 1 0 0 1 -.117 -1.993l.117 -.007h1z" />
+    <path d="M6.213 4.81l.094 .083l.7 .7a1 1 0 0 1 -1.32 1.497l-.094 -.083l-.7 -.7a1 1 0 0 1 1.217 -1.567l.102 .07z" />
+    <path d="M19.107 4.893a1 1 0 0 1 .083 1.32l-.083 .094l-.7 .7a1 1 0 0 1 -1.497 -1.32l.083 -.094l.7 -.7a1 1 0 0 1 1.414 0z" />
+    <path d="M12 2a1 1 0 0 1 .993 .883l.007 .117v1a1 1 0 0 1 -1.993 .117l-.007 -.117v-1a1 1 0 0 1 1 -1z" />
+    <path d="M12 7a5 5 0 1 1 -4.995 5.217l-.005 -.217l.005 -.217a5 5 0 0 1 4.995 -4.783z" />
+  </svg>
+);
+
+const CustomMoonIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <path d="M12 12m-4 0a4 4 0 1 0 8 0a4 4 0 1 0 -8 0" />
+    <path d="M3 12h1m8 -9v1m8 8h1m-9 8v1m-6.4 -15.4l.7 .7m12.1 -.7l-.7 .7m0 11.4l.7 .7m-12.1 -.7l-.7 .7" />
+  </svg>
+);
+
+// Add new notification icon components
+const NotificationActiveIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="currentColor">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <path d="M17.451 2.344a1 1 0 0 1 1.41 -.099a12.05 12.05 0 0 1 3.048 4.064a1 1 0 1 1 -1.818 .836a10.05 10.05 0 0 0 -2.54 -3.39a1 1 0 0 1 -.1 -1.41z" />
+    <path d="M5.136 2.245a1 1 0 0 1 1.312 1.51a10.05 10.05 0 0 0 -2.54 3.39a1 1 0 1 1 -1.817 -.835a12.05 12.05 0 0 1 3.045 -4.065z" />
+    <path d="M14.235 19c.865 0 1.322 1.024 .745 1.668a3.992 3.992 0 0 1 -2.98 1.332a3.992 3.992 0 0 1 -2.98 -1.332c-.552 -.616 -.158 -1.579 .634 -1.661l.11 -.006h4.471z" />
+    <path d="M12 2c1.358 0 2.506 .903 2.875 2.141l.046 .171l.008 .043a8.013 8.013 0 0 1 4.024 6.069l.028 .287l.019 .289v2.931l.021 .136a3 3 0 0 0 1.143 1.847l.167 .117l.162 .099c.86 .487 .56 1.766 -.377 1.864l-.116 .006h-16c-1.028 0 -1.387 -1.364 -.493 -1.87a3 3 0 0 0 1.472 -2.063l.021 -.143l.001 -2.97a8 8 0 0 1 3.821 -6.454l.248 -.146l.01 -.043a3.003 3.003 0 0 1 2.562 -2.29l.182 -.017l.176 -.004z" />
+  </svg>
+);
+
+const NotificationInactiveIcon = () => (
+  <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path stroke="none" d="M0 0h24v24H0z" fill="none"/>
+    <path d="M10 5a2 2 0 0 1 4 0a7 7 0 0 1 4 6v3a4 4 0 0 0 2 3h-16a4 4 0 0 0 2 -3v-3a7 7 0 0 1 4 -6" />
+    <path d="M9 17v1a3 3 0 0 0 6 0v-1" />
+    <path d="M21 6.727a11.05 11.05 0 0 0 -2.794 -3.727" />
+    <path d="M3 6.727a11.05 11.05 0 0 1 2.792 -3.727" />
+  </svg>
+);
+
+// Animated Placeholder Component
+const AnimatedPlaceholder = ({ darkMode }) => {
+  const [currentWordIndex, setCurrentWordIndex] = useState(0);
+  const [animationState, setAnimationState] = useState('visible');
+  const searchTerms = ['Users', 'Courses', 'Opportunities', 'Cohorts'];
+  
+  useEffect(() => {
+    // Start with visible state
+    setAnimationState('visible');
+    
+    // After 2 seconds, start fade out
+    const fadeOutTimer = setTimeout(() => {
+      setAnimationState('fadeOut');
+    }, 2000);
+    
+    // After fade out, change word and fade in
+    const changeWordTimer = setTimeout(() => {
+      setAnimationState('fadeIn');
+      setCurrentWordIndex((prevIndex) => (prevIndex + 1) % searchTerms.length);
+    }, 2300);
+    
+    // Clean up timers
+    return () => {
+      clearTimeout(fadeOutTimer);
+      clearTimeout(changeWordTimer);
+    };
+  }, [currentWordIndex]);
+  
+  return (
+    <Box sx={{ display: 'inline-flex', alignItems: 'center' }}>
+      <Typography
+        variant="body2"
+        component="span"
+        sx={{ 
+          color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+          fontSize: '0.9rem',
+          whiteSpace: 'nowrap'
+        }}
+      >
+        Find 
+      </Typography>
+      <Typography
+        variant="body2"
+        component="span"
+        sx={{
+          color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+          fontSize: '0.9rem',
+          width: '110px',
+          display: 'inline-block',
+          position: 'relative',
+          overflow: 'hidden',
+          height: '20px',
+          ml: '3px'
+        }}
+      >
+        <Box
+          sx={{
+            position: 'absolute',
+            left: 0,
+            opacity: animationState === 'fadeOut' ? 0 : 1,
+            transform: animationState === 'fadeIn' 
+              ? 'translateY(-100%)' 
+              : animationState === 'fadeOut' 
+                ? 'translateY(100%)' 
+                : 'translateY(0)',
+            transition: 'transform 0.3s ease, opacity 0.3s ease',
+            whiteSpace: 'nowrap'
+          }}
+        >
+          "{searchTerms[currentWordIndex]}"
+        </Box>
+      </Typography>
+    </Box>
+  );
+};
+
+// Search component
+const SearchComponent = () => {
+  const { token } = useAuth();
+  const { darkMode } = useTheme();
+  const navigate = useNavigate();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [searchResults, setSearchResults] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isFocused, setIsFocused] = useState(false);
+  const inputRef = useRef(null);
+  const timeoutRef = useRef(null);
+  const searchBarRef = useRef(null);
+  const theme = useMuiTheme();
+
+  // Get theme-aware colors
+  const themeColors = {
+    searchBg: darkMode ? 'rgba(23, 23, 23, 0.45)' : 'rgba(0, 0, 0, 0.05)',
+    searchHoverBg: darkMode ? 'rgba(35, 35, 35, 0.4)' : 'rgba(0, 0, 0, 0.08)',
+    searchText: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
+    searchPlaceholder: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)',
+    resultsBg: darkMode ? '#0A0A0A' : '#ffffff',
+    resultsHoverBg: darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.04)',
+    resultsBorder: darkMode ? '#131313' : 'rgba(0, 0, 0, 0.1)',
+    searchBorder: darkMode ? '#232323' : 'rgba(0, 0, 0, 0.1)',
+    sectionTitle: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+    scrollbarThumb: darkMode ? 'rgba(61, 61, 61, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+    scrollbarTrack: darkMode ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
+  };
+
+  // Fetch search results when user types
+  useEffect(() => {
+    if (!token || !searchQuery.trim()) {
+      setSearchResults(null);
+      setLoading(false);
+      return;
+    }
+
+    // Clear previous timeout
+    if (timeoutRef.current) {
+      clearTimeout(timeoutRef.current);
+    }
+
+    // Set a delay to avoid making too many requests
+    timeoutRef.current = setTimeout(async () => {
+      setLoading(true);
+      try {
+        const response = await axios.get(`${apiUrl}/search?query=${searchQuery}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        setSearchResults(response.data);
+      } catch (error) {
+        console.error('Search error:', error);
+      } finally {
+        setLoading(false);
+      }
+    }, 300); // 300ms delay
+
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, [searchQuery, token]);
+
+  const handleSearchChange = (e) => {
+    setSearchQuery(e.target.value);
+    setAnchorEl(searchBarRef.current);
+  };
+
+  const handleItemClick = (type, item) => {
+    // Clear search results and query
+    setSearchResults(null);
+    setSearchQuery('');
+    setIsFocused(false);
+
+    // Navigate to appropriate page based on item type
+    switch (type) {
+      case 'user':
+        navigate(`/user-view/${item.username}`);
+        break;
+      case 'cohort':
+        navigate(`/cohorts/${item._id}`);
+        break;
+      case 'opportunity':
+        navigate(`/opportunities/${item._id}`);
+        break;
+      case 'course':
+        navigate(`/courses/${item._id}`);
+        break;
+      default:
+        break;
+    }
+  };
+
+  const handleClickAway = () => {
+    setSearchResults(null);
+    setAnchorEl(null);
+    setIsFocused(false);
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    setAnchorEl(searchBarRef.current);
+  };
+
+  const handleBlur = () => {
+    if (!searchQuery) {
+      setIsFocused(false);
+    }
+  };
+
+  const open = Boolean(anchorEl) && Boolean(searchResults);
+
+  const showAnimation = !isFocused && !searchQuery;
+
+  // Custom scrollbar style
+  const customScrollbarStyle = {
+    '&::-webkit-scrollbar': {
+      width: '4px',
+    },
+    '&::-webkit-scrollbar-track': {
+      background: themeColors.scrollbarTrack,
+      marginTop: '4px',
+      marginBottom: '4px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: themeColors.scrollbarThumb,
+      borderRadius: '10px',
+    },
+    '&::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: darkMode ? 'rgba(61, 61, 61, 0.7)' : 'rgba(0, 0, 0, 0.5)',
+    },
+    scrollbarWidth: 'thin',
+    scrollbarColor: `${themeColors.scrollbarThumb} ${themeColors.scrollbarTrack}`
+  };
+
+  return (
+    <ClickAwayListener onClickAway={handleClickAway}>
+      <Box sx={{ position: 'relative', width: '100%', maxWidth: 350 }}>
+        <Paper
+          ref={searchBarRef}
+          component="form"
+          onSubmit={(e) => e.preventDefault()}
+          sx={{
+            p: '0px 4px',
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: '20px',
+            backgroundColor: themeColors.searchBg,
+            border: `1px solid ${themeColors.searchBorder}`,
+            '&:hover': {
+              backgroundColor: themeColors.searchHoverBg,
+            },
+            boxShadow: 'none',
+            height: '40px',
+            position: 'relative',
+          }}
+        >
+          <IconButton sx={{ p: '5px', color: darkMode ? '#ffffff' : themeColors.searchPlaceholder }} aria-label="search">
+            <SearchIcon sx={{ fontSize: 20 }} />
+          </IconButton>
+          {showAnimation && (
+            <Box 
+              sx={{ 
+                position: 'absolute', 
+                left: '40px', 
+                top: '50%', 
+                transform: 'translateY(-50%)',
+                pointerEvents: 'none' 
+              }}
+            >
+              <AnimatedPlaceholder darkMode={darkMode} />
+            </Box>
+          )}
+          <InputBase
+            ref={inputRef}
+            value={searchQuery}
+            onChange={handleSearchChange}
+            onFocus={handleFocus}
+            onBlur={handleBlur}
+            sx={{
+              ml: 0.5,
+              flex: 1,
+              color: themeColors.searchText,
+              fontSize: '0.9rem',
+              '& input': {
+                padding: '0px',
+              }
+            }}
+          />
+          {loading && (
+            <CircularProgress 
+              size={16} 
+              sx={{ 
+                mr: 1, 
+                color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' 
+              }} 
+            />
+          )}
+        </Paper>
+        <Popper
+          open={open}
+          anchorEl={anchorEl}
+          placement="bottom"
+          sx={{
+            width: anchorEl ? anchorEl.clientWidth : 'auto',
+            zIndex: theme.zIndex.drawer + 10,
+            mt: '5px',
+          }}
+          modifiers={[
+            {
+              name: 'preventOverflow',
+              enabled: true,
+              options: {
+                altAxis: true,
+                boundary: document.body,
+              },
+            },
+            {
+              name: 'offset',
+              options: {
+                offset: [0, 5],
+              },
+            },
+            {
+              name: 'sameWidth',
+              enabled: true,
+              phase: 'beforeWrite',
+              requires: ['computeStyles'],
+              fn: ({ state }) => {
+                state.styles.popper.width = `${state.rects.reference.width}px`;
+              },
+            }
+          ]}
+        >
+          <Paper
+            sx={{
+              p: 1,
+              backgroundColor: themeColors.resultsBg,
+              boxShadow: darkMode 
+                ? '0 4px 20px rgba(0, 0, 0, 0.5)' 
+                : '0 4px 20px rgba(0, 0, 0, 0.1)',
+              borderRadius: '10px',
+              border: `1px solid ${themeColors.resultsBorder}`,
+              maxHeight: '60vh',
+              overflow: 'auto',
+              ...customScrollbarStyle
+            }}
+          >
+            {/* Users Section */}
+            {searchResults?.users?.length > 0 && (
+              <>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    px: 2,
+                    py: 0.5,
+                    color: themeColors.sectionTitle,
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Users
+                </Typography>
+                <List dense disablePadding>
+                  {searchResults.users.map((user) => (
+                    <ListItem
+                      key={`user-${user._id}`}
+                      button
+                      onClick={() => handleItemClick('user', user)}
+                      sx={{
+                        borderRadius: '4px',
+                        mb: 0.5,
+                        '&:hover': {
+                          backgroundColor: themeColors.resultsHoverBg
+                        }
+                      }}
+                    >
+                      <ListItemAvatar sx={{ minWidth: 40 }}>
+                        <Avatar
+                          src={user.profilePicture}
+                          alt={user.name}
+                          sx={{ width: 28, height: 28 }}
+                        >
+                          {!user.profilePicture && <PersonIcon sx={{ fontSize: 16 }} />}
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={user.name}
+                        secondary={`${user.department || 'CSE'}-${user.section || 'A'}`}
+                        primaryTypographyProps={{
+                          variant: 'body2',
+                          fontWeight: 500,
+                          color: darkMode ? 'white' : 'text.primary'
+                        }}
+                        secondaryTypographyProps={{
+                          variant: 'caption',
+                          color: 'text.secondary'
+                        }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+                <Divider sx={{ my: 1 }} />
+              </>
+            )}
+
+            {/* Cohorts Section */}
+            {searchResults?.cohorts?.length > 0 && (
+              <>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    px: 2,
+                    py: 0.5,
+                    color: themeColors.sectionTitle,
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Cohorts
+                </Typography>
+                <List dense disablePadding>
+                  {searchResults.cohorts.map((cohort) => (
+                    <ListItem
+                      key={`cohort-${cohort._id}`}
+                      button
+                      onClick={() => handleItemClick('cohort', cohort)}
+                      sx={{
+                        borderRadius: '4px',
+                        mb: 0.5,
+                        '&:hover': {
+                          backgroundColor: themeColors.resultsHoverBg
+                        }
+                      }}
+                    >
+                      <ListItemAvatar sx={{ minWidth: 40 }}>
+                        <Avatar sx={{ width: 28, height: 28, bgcolor: '#3f51b5' }}>
+                          <GroupIcon sx={{ fontSize: 16 }} />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={cohort.title}
+                        primaryTypographyProps={{
+                          variant: 'body2',
+                          fontWeight: 500,
+                          color: darkMode ? 'white' : 'text.primary'
+                        }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+                <Divider sx={{ my: 1 }} />
+              </>
+            )}
+
+            {/* Opportunities Section */}
+            {searchResults?.opportunities?.length > 0 && (
+              <>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    px: 2,
+                    py: 0.5,
+                    color: themeColors.sectionTitle,
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Opportunities
+                </Typography>
+                <List dense disablePadding>
+                  {searchResults.opportunities.map((opportunity) => (
+                    <ListItem
+                      key={`opportunity-${opportunity._id}`}
+                      button
+                      onClick={() => handleItemClick('opportunity', opportunity)}
+                      sx={{
+                        borderRadius: '4px',
+                        mb: 0.5,
+                        '&:hover': {
+                          backgroundColor: themeColors.resultsHoverBg
+                        }
+                      }}
+                    >
+                      <ListItemAvatar sx={{ minWidth: 40 }}>
+                        <Avatar sx={{ width: 28, height: 28, bgcolor: '#f50057' }}>
+                          <WorkIcon sx={{ fontSize: 16 }} />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={opportunity.title}
+                        secondary={opportunity.company}
+                        primaryTypographyProps={{
+                          variant: 'body2',
+                          fontWeight: 500,
+                          color: darkMode ? 'white' : 'text.primary'
+                        }}
+                        secondaryTypographyProps={{
+                          variant: 'caption',
+                          color: 'text.secondary'
+                        }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+                <Divider sx={{ my: 1 }} />
+              </>
+            )}
+
+            {/* Courses Section */}
+            {searchResults?.courses?.length > 0 && (
+              <>
+                <Typography
+                  variant="subtitle2"
+                  sx={{
+                    px: 2,
+                    py: 0.5,
+                    color: themeColors.sectionTitle,
+                    fontWeight: 600,
+                    fontSize: '0.75rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.5px'
+                  }}
+                >
+                  Courses
+                </Typography>
+                <List dense disablePadding>
+                  {searchResults.courses.map((course) => (
+                    <ListItem
+                      key={`course-${course._id}`}
+                      button
+                      onClick={() => handleItemClick('course', course)}
+                      sx={{
+                        borderRadius: '4px',
+                        mb: 0.5,
+                        '&:hover': {
+                          backgroundColor: themeColors.resultsHoverBg
+                        }
+                      }}
+                    >
+                      <ListItemAvatar sx={{ minWidth: 40 }}>
+                        <Avatar sx={{ width: 28, height: 28, bgcolor: '#4caf50' }}>
+                          <SchoolIcon sx={{ fontSize: 16 }} />
+                        </Avatar>
+                      </ListItemAvatar>
+                      <ListItemText
+                        primary={course.title}
+                        secondary={course.instructor}
+                        primaryTypographyProps={{
+                          variant: 'body2',
+                          fontWeight: 500,
+                          color: darkMode ? 'white' : 'text.primary'
+                        }}
+                        secondaryTypographyProps={{
+                          variant: 'caption',
+                          color: 'text.secondary'
+                        }}
+                      />
+                    </ListItem>
+                  ))}
+                </List>
+              </>
+            )}
+
+            {/* No results state */}
+            {searchResults && 
+             searchResults.users.length === 0 && 
+             searchResults.cohorts.length === 0 && 
+             searchResults.opportunities.length === 0 && 
+             searchResults.courses.length === 0 && (
+              <Box sx={{ p: 2, textAlign: 'center' }}>
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', mb: 1 }}>
+                  <img 
+                    src="/notFound.png" 
+                    alt="No results found" 
+                    style={{ 
+                      width: '120px', 
+                      height: 'auto',
+                      marginBottom: '8px'
+                    }} 
+                  />
+                  <Typography variant="body2" color="text.secondary">
+                    No results found for "{searchQuery}"
+                  </Typography>
+                </Box>
+              </Box>
+            )}
+          </Paper>
+        </Popper>
+      </Box>
+    </ClickAwayListener>
+  );
 };
 
 const Navbar = () => {
@@ -65,9 +677,9 @@ const Navbar = () => {
   const isMobile = useMediaQuery(theme.breakpoints.down('md'));
   const navigate = useNavigate();
   const location = useLocation();
-  const [anchorElNav, setAnchorElNav] = useState(null);
   const [anchorElUser, setAnchorElUser] = useState(null);
   const [anchorElNotifications, setAnchorElNotifications] = useState(null);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   
   // Add notifications state
   const [notifications, setNotifications] = useState([]);
@@ -82,6 +694,18 @@ const Navbar = () => {
 
   // Add a check for mobile screens
   const isMobileForNotifications = useMediaQuery(theme.breakpoints.down('sm'));
+  
+  // Listen to sidebar state changes
+  useEffect(() => {
+    const handleSidebarChange = (e) => {
+      if (e.detail) {
+        setIsSidebarOpen(e.detail.isOpen);
+      }
+    };
+
+    window.addEventListener('sidebarStateChange', handleSidebarChange);
+    return () => window.removeEventListener('sidebarStateChange', handleSidebarChange);
+  }, []);
   
   // Fetch notifications
   const fetchNotifications = async () => {
@@ -213,46 +837,6 @@ const Navbar = () => {
       return `${date.toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}, ${time}`;
     }
   };
-  
-  // Define menu items only if authenticated and not on auth pages
-  const menuItems = useMemo(() => {
-    if (!token || isAuthPage) return [];
-    
-    let items = [
-      { text: 'Dashboard', path: '/dashboard' },
-      { text: 'Leaderboard', path: '/leaderboard' }
-    ];
-    
-    // Only add CodePad for non-admin users
-    if (user?.userType !== 'admin') {
-      items.push({ text: 'CodePad', path: '/codepad' });
-      
-      // Add Cohorts with "new" badge for users
-      items.push({ 
-        text: 'Cohorts', 
-        path: '/cohorts',
-        isNew: true 
-      });
-      
-      // Only add Courses and Opportunities for non-admin users
-      items.push(
-        { text: 'Courses', path: '/courses' },
-        { text: 'Opportunities', path: '/opportunities' }
-      );
-    }
-
-    if (user?.userType === 'admin') {
-      // Admin-specific menu items - restored admin management options
-      items.push(
-        { text: 'Cohorts', path: '/admin/cohorts', isNew: true },
-        { text: 'Courses', path: '/admin/courses' },
-        { text: 'Opportunities', path: '/admin/opportunities' },
-        { text: 'Notifications', path: '/admin/notifications' }
-      );
-    }
-
-    return items;
-  }, [token, user?.userType, isAuthPage]);
 
   const handleLogout = () => {
     const logoutSuccessful = logout();
@@ -264,29 +848,16 @@ const Navbar = () => {
     handleCloseUserMenu();
   };
 
-  const handleOpenNavMenu = (event) => {
-    setAnchorElNav(event.currentTarget);
-  };
-
   const handleOpenUserMenu = (event) => {
     setAnchorElUser(event.currentTarget);
   };
   
-  const handleCloseNavMenu = () => {
-    setAnchorElNav(null);
-  };
-
   const handleCloseUserMenu = () => {
     setAnchorElUser(null);
   };
   
   const handleCloseNotificationsMenu = () => {
     setAnchorElNotifications(null);
-  };
-
-  const handleMenuClick = (path) => {
-    navigate(path);
-    handleCloseNavMenu();
   };
 
   // Theme-aware colors
@@ -313,11 +884,12 @@ const Navbar = () => {
         ...appBarStyles,
         background: themeColors.appBar,
         borderBottom: `1px solid ${themeColors.border}`,
+        zIndex: theme.zIndex.drawer - 1, // Make sure navbar is below sidebar
       }}>
         <Container maxWidth="xl">
           <Toolbar disableGutters>
             <Box sx={{ flexGrow: 1 }}>
-              <Logo />
+              {/* Logo has been removed here */}
             </Box>
             <Box sx={{ display: 'flex', gap: 2 }}>
               <IconButton sx={{ ml: 1 }} onClick={toggleTheme} color="inherit">
@@ -375,142 +947,51 @@ const Navbar = () => {
     <AppBar position="fixed" sx={{ 
       background: themeColors.appBar,
       backdropFilter: 'blur(10px)',
-      boxShadow: '0 4px 30px rgba(0, 0, 0, 0.1)',
-      borderBottom: `1px solid ${themeColors.border}`,
+      boxShadow: 'none',
+      borderBottom: 'none',
+      zIndex: theme.zIndex.drawer - 1,
+      width: {
+        xs: '100%',
+        md: isSidebarOpen ? 'calc(100% - 280px)' : 'calc(100% - 73px)'
+      },
+      ml: {
+        xs: 0,
+        md: isSidebarOpen ? '280px' : '73px'
+      },
+      transition: 'width 0.3s ease, margin-left 0.3s ease'
     }}>
-      <Container maxWidth="xl">
-        <Toolbar disableGutters>
-          {/* Logo for desktop */}
-          <Box sx={{ display: { xs: 'none', md: 'flex' }, mr: 2 }}>
-            <Logo />
-          </Box>
-
-          {/* Mobile menu icon */}
-          <Box sx={{ flexGrow: 0, display: { xs: 'flex', md: 'none' } }}>
-            <IconButton
-              size="large"
-              aria-label="menu"
-              aria-controls="menu-appbar"
-              aria-haspopup="true"
-              onClick={handleOpenNavMenu}
-              sx={{ color: themeColors.iconColor }}
-            >
-              <MenuIcon />
-            </IconButton>
-            <Menu
-              id="menu-appbar"
-              anchorEl={anchorElNav}
-              anchorOrigin={{
-                vertical: 'bottom',
-                horizontal: 'left',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'left',
-              }}
-              open={Boolean(anchorElNav)}
-              onClose={handleCloseNavMenu}
-              sx={{
-                display: { xs: 'block', md: 'none' },
-              }}
-              PaperProps={{
-                sx: { 
-                  backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-                  color: themeColors.text,
-                  borderRadius: '8px',
-                  boxShadow: darkMode 
-                    ? '0 4px 12px rgba(0, 0, 0, 0.4)' 
-                    : '0 0 0 1px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05)'
-                }
-              }}
-              container={() => document.getElementById('dialog-container') || document.body}
-              disableEnforceFocus
-            >
-              {menuItems?.map((item) => (
-                <MenuItem 
-                  key={item.text} 
-                  onClick={() => handleMenuClick(item.path)}
-                  sx={{
-                    color: themeColors.text,
-                    '&:hover': {
-                      background: themeColors.menuHover,
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
-                    {item.text}
-                    {item.isNew && (
-                      <Chip 
-                        label="New" 
-                        size="small" 
-                        color="primary" 
-                        sx={{ 
-                          height: '20px', 
-                          fontSize: '0.65rem',
-                          fontWeight: 'bold',
-                          ml: 0.5 
-                        }} 
-                      />
-                    )}
-                  </Box>
-                </MenuItem>
-              ))}
-            </Menu>
-          </Box>
-
-          {/* Logo for mobile */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'none' } }}>
-            <Logo />
-          </Box>
-
-          {/* Desktop menu items */}
-          <Box sx={{ flexGrow: 1, display: { xs: 'none', md: 'flex' }, gap: 4, ml: 4 }}>
-            {menuItems?.map((item) => (
-              <Box
-                key={item.text}
-              >
-                <Box
-                  onClick={() => handleMenuClick(item.path)}
-                  sx={{
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: location.pathname === item.path ? themeColors.activeItem : themeColors.text,
-                    cursor: 'pointer',
-                    position: 'relative',
-                    padding: '6px 12px',
-                    borderRadius: 2,
-                    transition: 'color 0.3s ease',
-                    fontSize: '1rem',
-                    fontWeight: 500,
-                    '&:hover': {
-                      color: themeColors.activeItem,
-                    }
-                  }}
-                >
-                  <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
-                    {item.text}
-                    {item.isNew && (
-                      <Chip 
-                        label="New" 
-                        size="small" 
-                        color="primary" 
-                        sx={{ 
-                          height: '16px', 
-                          fontSize: '0.6rem',
-                          fontWeight: 'bold',
-                          ml: 0.5 
-                        }} 
-                      />
-                    )}
-                  </Box>
-                </Box>
-              </Box>
-            ))}
+      <Container 
+        maxWidth={false}
+        sx={{
+          maxWidth: 'none',
+          px: { xs: 3, md: 3 } // Consistent padding on mobile and desktop
+        }}
+      >
+        <Toolbar 
+          disableGutters 
+          sx={{ 
+            minHeight: { xs: '64px !important', md: '75px !important' },
+            height: { xs: '64px', md: '75px' },
+            justifyContent: 'space-between'
+          }}
+        >
+          {/* Left side - Search */}
+          <Box sx={{ 
+            display: 'flex', 
+            flexGrow: 1,
+            mr: 2,
+            justifyContent: { xs: 'center', md: 'flex-start' } 
+          }}>
+            {!isMobile && <SearchComponent />}
           </Box>
             
           {/* User menu, notifications, and theme toggle */}
-          <Box sx={{ flexGrow: 0, display: 'flex', alignItems: 'center' }}>
+          <Box sx={{ 
+            flexGrow: { xs: 0, md: 0 }, // No flex grow on mobile
+            display: 'flex', 
+            alignItems: 'center',
+            justifyContent: 'flex-end' // Always right-aligned
+          }}>
             {/* Notifications */}
             <Tooltip title="Notifications">
               <IconButton
@@ -539,8 +1020,44 @@ const Navbar = () => {
                     } 
                   }}
                 >
-                  <NotificationsIcon />
+                  {unreadCount > 0 ? <NotificationActiveIcon /> : <NotificationInactiveIcon />}
                 </Badge>
+              </IconButton>
+            </Tooltip>
+
+            {/* Mobile Search Icon */}
+            {isMobile && (
+              <Tooltip title="Search">
+                <IconButton
+                  onClick={() => navigate('/search')}
+                  sx={{ 
+                    color: themeColors.iconColor,
+                    mr: 2,
+                    backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                    '&:hover': {
+                      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+                    }
+                  }}
+                >
+                  <SearchIcon />
+                </IconButton>
+              </Tooltip>
+            )}
+
+            {/* Theme Toggle */}
+            <Tooltip title="Toggle Theme">
+              <IconButton
+                onClick={toggleTheme}
+                sx={{ 
+                  color: themeColors.iconColor,
+                  mr: 2,
+                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.05)' : 'rgba(0, 0, 0, 0.02)',
+                  '&:hover': {
+                    backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.05)'
+                  }
+                }}
+              >
+                {darkMode ? <CustomMoonIcon /> : <CustomSunIcon />}
               </IconButton>
             </Tooltip>
 
@@ -810,30 +1327,75 @@ const Navbar = () => {
               </Box>
             </Menu>
             
-            <Tooltip title="Toggle Theme">
-              <IconButton onClick={toggleTheme} sx={{ color: themeColors.iconColor, mr: 2 }}>
-                {darkMode ? <Brightness7Icon /> : <Brightness4Icon />}
-              </IconButton>
-            </Tooltip>
-
-            {/* Add User Profile Section */}
-            <Tooltip title="Open Profile Menu">
-              <IconButton onClick={handleOpenUserMenu} sx={{ p: 0 }}>
-                <Avatar 
-                  alt={user?.name || 'User'} 
-                  src={user?.profilePicture} 
+            {/* User Profile Section with Details */}
+            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+              {/* Vertical Separator */}
+              <Box sx={{ 
+                height: '100%', 
+                display: 'flex', 
+                alignItems: 'center',
+                mr: 2
+              }}>
+                <Divider 
+                  orientation="vertical"
                   sx={{ 
-                    width: 40, 
-                    height: 40,
-                    border: `2px solid ${themeColors.border}`,
-                    '&:hover': {
-                      boxShadow: '0 0 5px #0088cc'
-                    }
+                    height: '24px',
+                    borderRightWidth: 1,
+                    borderColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.2)'
                   }} 
                 />
-              </IconButton>
-            </Tooltip>
-            
+              </Box>
+              
+              <Avatar 
+                alt={user?.name || 'User'} 
+                src={user?.profilePicture} 
+                sx={{ 
+                  width: 40, 
+                  height: 40,
+                  border: `2px solid ${themeColors.border}`,
+                  '&:hover': {
+                    boxShadow: '0 0 5px #0088cc'
+                  }
+                }} 
+              />
+              <Box sx={{ display: { xs: 'none', md: 'block' } }}>
+                <Typography variant="subtitle1" sx={{ 
+                  color: darkMode ? '#ffffff' : '#000000', 
+                  fontWeight: 600,
+                  lineHeight: 1.2,
+                  fontSize: '0.95rem',
+                  textTransform: 'capitalize'
+                }}>
+                  {(user?.name || "User").split(' ').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1).toLowerCase()
+                  ).join(' ')}
+                </Typography>
+                <Typography variant="caption" sx={{ 
+                  color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.6)',
+                  fontSize: '0.8rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  gap: '4px',
+                  fontWeight: 400
+                }}>
+                  {`${user?.year || 'II'} Year, ${user?.department || 'CSE'}-${user?.section || 'E'}`}
+                </Typography>
+              </Box>
+              <Tooltip title="More Options">
+                <IconButton 
+                  onClick={handleOpenUserMenu}
+                  sx={{ 
+                    color: themeColors.iconColor,
+                    '&:hover': {
+                      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'
+                    }
+                  }}
+                >
+                  <MoreVertIcon />
+                </IconButton>
+              </Tooltip>
+            </Box>
+
             {/* User menu */}
             <Menu
               sx={{ mt: '45px' }}
@@ -864,18 +1426,9 @@ const Navbar = () => {
               container={() => document.getElementById('dialog-container') || document.body}
               disableEnforceFocus
             >
-              <Box sx={{ px: 2, py: 2 }}>
-                <Typography sx={{ color: themeColors.text, fontWeight: 600 }}>
-                  {user?.name}
-                </Typography>
-                <Typography variant="body2" sx={{ color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)', mt: 0.5, fontWeight: 400 }}>
-                  {user?.email}
-                </Typography>
-              </Box>
-              <Divider sx={{ borderColor: themeColors.border }} />
               <MenuItem 
                 onClick={() => {
-                  handleMenuClick('/profile?setup=true');
+                  navigate('/profile?setup=true');
                   handleCloseUserMenu();
                 }}
                 sx={{
@@ -888,22 +1441,6 @@ const Navbar = () => {
                 }}
               >
                 <Typography>Profile</Typography>
-              </MenuItem>
-              <MenuItem 
-                onClick={() => {
-                  handleMenuClick('/notification-settings');
-                  handleCloseUserMenu();
-                }}
-                sx={{
-                  py: 1.5,
-                  px: 2,
-                  color: themeColors.text,
-                  '&:hover': {
-                    background: themeColors.menuHover,
-                  }
-                }}
-              >
-                <Typography>Notification Settings</Typography>
               </MenuItem>
               <MenuItem 
                 onClick={handleLogout}
@@ -922,6 +1459,24 @@ const Navbar = () => {
           </Box>
         </Toolbar>
       </Container>
+      
+      {/* Centered horizontal divider */}
+      <Box 
+        sx={{
+          position: 'absolute',
+          bottom: 0,
+          left: '50%',
+          height: '1px',
+          transform: 'translateX(-50%)',
+          width: '97%'
+        }}
+      >
+        <Divider 
+          sx={{
+            borderColor: darkMode ? 'rgba(52, 52, 52, 0.5)' : 'rgba(0, 0, 0, 0.2)'
+          }}
+        />
+      </Box>
     </AppBar>
   );
 };

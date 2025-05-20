@@ -35,6 +35,7 @@ const Profile = require('./models/Profile');
 const User = require('./models/User');
 const platformAPI = require('./services/platformAPIs');
 const codeExecutionService = require('./services/codeExecutionService');
+const compilerService = require('./services/compilerService');
 const healthRoutes = require('./routes/healthRoutes');
 const passport = require('passport');
 const session = require('express-session');
@@ -42,6 +43,7 @@ const googleAuthRoutes = require('./routes/auth/googleAuth');
 const registerCronJobs = require('./ensure-cron-jobs');
 const webPushUtil = require('./utils/webPushUtil');
 const cohortsRoutes = require('./routes/cohorts');
+const practiceArenaRoutes = require('./routes/practiceArena');
 
 const app = express();
 
@@ -60,7 +62,8 @@ app.use(cors({
   origin: ['http://localhost:5173'], 
   credentials: true
 }));
-app.use(express.json());
+app.use(express.json({ limit: '50mb' }));
+app.use(express.urlencoded({ limit: '50mb', extended: true }));
 
 // Set up session
 app.use(session({
@@ -127,6 +130,93 @@ app.use('/api/notifications', notificationsRoutes);
 app.use('/api/health', healthRoutes);
 app.use('/api/auth/google', googleAuthRoutes);
 app.use('/api/cohorts', cohortsRoutes);
+app.use('/api/practice-arena', practiceArenaRoutes);
+app.use('/api/search', require('./routes/search'));
+
+// Code execution endpoints using Judge0 API
+app.post('/api/compiler/execute', async (req, res) => {
+  try {
+    const { language, version, code, stdin } = req.body;
+    
+    if (!language || !code) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Language and code are required' 
+      });
+    }
+    
+    console.log(`Executing code in ${language}`);
+    const result = await compilerService.executeCode(language, version, code, stdin || '');
+    
+    res.json({
+      success: true,
+      result
+    });
+  } catch (error) {
+    console.error('Code execution error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error executing code', 
+      error: error.message 
+    });
+  }
+});
+
+app.post('/api/compiler/run-test-cases', async (req, res) => {
+  try {
+    const { language, version, code, testCases } = req.body;
+    
+    if (!language || !code || !testCases) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Language, code, and testCases are required' 
+      });
+    }
+    
+    console.log(`Running ${testCases.length} test cases for ${language} code`);
+    const results = await compilerService.runTestCases(language, version, code, testCases);
+    
+    res.json({
+      success: true,
+      results
+    });
+  } catch (error) {
+    console.error('Test cases execution error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error running test cases', 
+      error: error.message 
+    });
+  }
+});
+
+app.post('/api/compiler/simple-execution', async (req, res) => {
+  try {
+    const { language, version, code, stdin } = req.body;
+    
+    if (!language || !code) {
+      return res.status(400).json({ 
+        success: false, 
+        message: 'Language and code are required' 
+      });
+    }
+    
+    console.log(`Simple execution of ${language} code`);
+    const result = await compilerService.simpleExecution(language, version, code, stdin || '');
+    
+    res.json({
+      success: true,
+      result
+    });
+  } catch (error) {
+    console.error('Simple execution error:', error);
+    res.status(500).json({ 
+      success: false, 
+      message: 'Error in simple execution', 
+      error: error.message 
+    });
+  }
+});
 
 // Test route for CodeChef profile scraping
 app.get('/api/test/codechef/:username', async (req, res) => {

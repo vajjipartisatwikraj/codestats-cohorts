@@ -28,6 +28,10 @@ const achievementSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  domainLink: {
+    type: String,
+    trim: true
+  },
   imageUrl: {
     type: String,
     trim: true

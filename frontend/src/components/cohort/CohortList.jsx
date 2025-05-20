@@ -21,9 +21,12 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import axios from 'axios';
 import CohortListLeft from './CohortListLeft';
 import CohortListRight from './CohortListRight';
+import { he } from 'date-fns/locale';
+import { useTheme as useAppTheme } from '../../contexts/ThemeContext';
 
 const CohortList = () => {
-  const theme = useTheme();
+  const muiTheme = useTheme();
+  const { darkMode } = useAppTheme();
   const [activeTab, setActiveTab] = useState(0);
   const [searchQuery, setSearchQuery] = useState('');
   const [status, setStatus] = useState('Active');
@@ -113,15 +116,18 @@ const CohortList = () => {
     return (
             <Box 
               sx={{ 
-                height: '100%', 
-        width: '100%',
-              display: 'flex',
-        flexDirection: 'column',
-        p: 2
-            }}
-          >
+                height: '100vh', 
+                width: '100%',
+                display: 'flex',
+                flexDirection: 'column',
+                px: { xs: 2, sm: 3, md: 4, lg: 6 },
+                pt: 3,
+                pb: { xs: 4, sm: 6 },
+                overflow: 'auto',
+              }}
+            >
       {/* Main Heading (Centered) */}
-      <Box sx={{ mb: 2, textAlign: 'center' }}>
+      <Box sx={{ mb: 2, mt: 2, textAlign: 'center' }}>
               <Typography 
           variant="h2" 
           component="h1" 
@@ -129,7 +135,7 @@ const CohortList = () => {
                   fontWeight: 700,
             color: '#0088CC',
             fontSize: '2.5rem',
-            mb: 2
+            mt: 2
                 }}
               >
           Programming Cohorts
@@ -138,7 +144,7 @@ const CohortList = () => {
               <Typography 
           variant="body1" 
           sx={{ 
-            color: 'rgba(255,255,255,0.8)',
+            color: darkMode ? 'rgba(255,255,255,0.8)' : 'rgba(15,15,15,0.7)',
             fontSize: '1.1rem',
             maxWidth: '800px',
             mx: 'auto',
@@ -166,22 +172,22 @@ const CohortList = () => {
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <SearchIcon sx={{ color: 'rgba(255,255,255,0.7)' }} />
+                  <SearchIcon sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(15,15,15,0.5)' }} />
                 </InputAdornment>
               ),
             }}
             sx={{
               flex: 1,
               '& .MuiOutlinedInput-root': {
-                color: 'white',
-                bgcolor: 'rgba(255,255,255,0.05)',
+                color: darkMode ? 'white' : '#0F0F0F',
+                bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
                 borderRadius: '8px 0 0 8px',
                 height: '48px',
                 '& fieldset': {
-                  borderColor: 'rgba(255,255,255,0.1)',
+                  borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(15,15,15,0.1)',
                 },
                 '&:hover fieldset': {
-                  borderColor: 'rgba(255,255,255,0.2)',
+                  borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(15,15,15,0.2)',
                 },
                 '&.Mui-focused fieldset': {
                   borderColor: '#0088CC',
@@ -214,15 +220,15 @@ const CohortList = () => {
                   sx={{
               width: '150px',
               '& .MuiOutlinedInput-root': {
-                color: 'white',
-                bgcolor: 'rgba(255,255,255,0.05)',
+                color: darkMode ? 'white' : '#0F0F0F',
+                bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
                 height: '48px',
-                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                '& fieldset': { borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(15,15,15,0.1)' },
+                '&:hover fieldset': { borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(15,15,15,0.2)' },
                 '&.Mui-focused fieldset': { borderColor: '#0088CC' }
               },
               '& .MuiInputLabel-root': { 
-                color: 'rgba(255,255,255,0.7)',
+                color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(15,15,15,0.7)',
                 transform: 'translate(14px, 14px) scale(1)'
               },
               '& .MuiInputLabel-shrink': {
@@ -248,15 +254,15 @@ const CohortList = () => {
               sx={{ 
               width: '150px',
               '& .MuiOutlinedInput-root': {
-                color: 'white',
-                bgcolor: 'rgba(255,255,255,0.05)',
+                color: darkMode ? 'white' : '#0F0F0F',
+                bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'white',
                 height: '48px',
-                '& fieldset': { borderColor: 'rgba(255,255,255,0.1)' },
-                '&:hover fieldset': { borderColor: 'rgba(255,255,255,0.2)' },
+                '& fieldset': { borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(15,15,15,0.1)' },
+                '&:hover fieldset': { borderColor: darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(15,15,15,0.2)' },
                 '&.Mui-focused fieldset': { borderColor: '#0088CC' }
               },
               '& .MuiInputLabel-root': { 
-                color: 'rgba(255,255,255,0.7)',
+                color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(15,15,15,0.7)',
                 transform: 'translate(14px, 14px) scale(1)'
               },
               '& .MuiInputLabel-shrink': {
@@ -283,9 +289,11 @@ const CohortList = () => {
         sx={{ 
           flex: 1, 
           display: 'grid',
-          gridTemplateColumns: '0.8fr 1.6fr',
-          gap: 0,
-          height: 'calc(100% - 100px)'
+          gridTemplateColumns: { xs: '1fr', md: '0.8fr 1.6fr' },
+          gap: { xs: 4, md: 3 },
+          height: 'auto',
+          overflow: 'visible',
+          position: 'relative',
         }}
       >
         {/* Show loading, error, or content */}
@@ -301,9 +309,10 @@ const CohortList = () => {
         <>
             {/* Left Panel - Scrollable list of cohorts */}
             <Box sx={{ 
-              height: '650px',
+              height: 'auto',
               position: 'relative',
-              display: 'flex'
+              overflow: 'visible', 
+              pr: 1,
             }}>
               <CohortListLeft 
                 cohorts={filteredCohorts}
@@ -312,10 +321,21 @@ const CohortList = () => {
               />
               </Box>
               
-            {/* Right Panel - Selected cohort details */}
-            <CohortListRight selectedCohort={selectedCohort} />
+            {/* Right Panel - Fixed position to stay in place while scrolling */}
+            <Box sx={{ 
+              position: 'sticky',
+              top: 0,
+              height: 'auto',
+              alignSelf: 'flex-start',
+              display: { xs: 'block', md: 'block' },
+              maxHeight: 'calc(100vh - 0px)',
+            }}>
+              <CohortListRight selectedCohort={selectedCohort} />
+            </Box>
             </>
           )}
+          <Box sx={{ height: '1px' }}/>
+
       </Box>
     </Box>
   );

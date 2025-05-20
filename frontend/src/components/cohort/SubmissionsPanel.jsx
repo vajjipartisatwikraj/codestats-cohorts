@@ -190,6 +190,8 @@ const SubmissionsPanel = ({ submissions, allUsersSubmissions = [], darkMode, for
             <StyledTableCell darkMode={darkMode} align="center" width="20%">Status</StyledTableCell>
             <StyledTableCell darkMode={darkMode} align="center" width="20%">Language</StyledTableCell>
             <StyledTableCell darkMode={darkMode} align="center" width="20%">Score</StyledTableCell>
+            <StyledTableCell darkMode={darkMode} align="center" width="15%">Max Time</StyledTableCell>
+            <StyledTableCell darkMode={darkMode} align="center" width="15%">Max Memory</StyledTableCell>
             <StyledTableCell darkMode={darkMode} align="center" width="40%">Submitted At</StyledTableCell>
           </TableRow>
         </TableHead>
@@ -245,6 +247,16 @@ const SubmissionsPanel = ({ submissions, allUsersSubmissions = [], darkMode, for
               }}>
                 {submission.score}
               </StyledTableCell>
+              <StyledTableCell darkMode={darkMode} align="center" sx={{ fontSize: '0.75rem' }}>
+                {submission.testCaseResults && submission.testCaseResults.length > 0
+                  ? formatTime(Math.max(...submission.testCaseResults.map(tc => tc.executionTime || 0)))
+                  : 'N/A'}
+              </StyledTableCell>
+              <StyledTableCell darkMode={darkMode} align="center" sx={{ fontSize: '0.75rem' }}>
+                {submission.testCaseResults && submission.testCaseResults.length > 0
+                  ? formatMemory(Math.max(...submission.testCaseResults.map(tc => tc.memoryUsed || 0)))
+                  : 'N/A'}
+              </StyledTableCell>
               <StyledTableCell darkMode={darkMode} align="center" sx={{ 
                 color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',
                 fontSize: '0.75rem'
@@ -278,6 +290,8 @@ const SubmissionsPanel = ({ submissions, allUsersSubmissions = [], darkMode, for
             <StyledTableCell darkMode={darkMode} align="center" width="30%">User</StyledTableCell>
             <StyledTableCell darkMode={darkMode} align="center" width="15%">Language</StyledTableCell>
             <StyledTableCell darkMode={darkMode} align="center" width="15%">Score</StyledTableCell>
+            <StyledTableCell darkMode={darkMode} align="center" width="10%">Max Time</StyledTableCell>
+            <StyledTableCell darkMode={darkMode} align="center" width="10%">Max Memory</StyledTableCell>
             <StyledTableCell darkMode={darkMode} align="center" width="20%">Submitted At</StyledTableCell>
           </TableRow>
         </TableHead>
@@ -354,6 +368,16 @@ const SubmissionsPanel = ({ submissions, allUsersSubmissions = [], darkMode, for
                 fontSize: '0.75rem'
               }}>
                 {submission.score}
+              </StyledTableCell>
+              <StyledTableCell darkMode={darkMode} align="center" sx={{ fontSize: '0.75rem' }}>
+                {submission.testCaseResults && submission.testCaseResults.length > 0
+                  ? formatTime(Math.max(...submission.testCaseResults.map(tc => tc.executionTime || 0)))
+                  : 'N/A'}
+              </StyledTableCell>
+              <StyledTableCell darkMode={darkMode} align="center" sx={{ fontSize: '0.75rem' }}>
+                {submission.testCaseResults && submission.testCaseResults.length > 0
+                  ? formatMemory(Math.max(...submission.testCaseResults.map(tc => tc.memoryUsed || 0)))
+                  : 'N/A'}
               </StyledTableCell>
               <StyledTableCell darkMode={darkMode} align="center" sx={{ 
                 color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)',

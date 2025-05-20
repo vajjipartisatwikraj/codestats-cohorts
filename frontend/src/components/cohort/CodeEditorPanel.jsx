@@ -21,7 +21,8 @@ const CodeEditorPanel = ({
   onChange,
   testCasesPanelHeight,
   LANGUAGES,
-  onLanguageChange
+  onLanguageChange,
+  availableLanguages = []
 }) => {
   const editorRef = useRef(null);
   const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
@@ -95,6 +96,21 @@ const CodeEditorPanel = ({
     }
     setLanguageAnchorEl(null);
   };
+  
+  // Get available languages based on what the admin has provided
+  const getAvailableLanguages = () => {
+    // If no specific available languages are provided, use all LANGUAGES
+    if (!availableLanguages || availableLanguages.length === 0) {
+      return Object.keys(LANGUAGES);
+    }
+    
+    // Filter languages to only those that exist in both LANGUAGES object and availableLanguages array
+    return Object.keys(LANGUAGES).filter(langKey => 
+      availableLanguages.some(avLang => avLang.name === langKey)
+    );
+  };
+
+  const availableLangs = getAvailableLanguages();
 
   return (
     <Box sx={{ 
@@ -145,7 +161,7 @@ const CodeEditorPanel = ({
             open={Boolean(languageAnchorEl)}
             onClose={handleLanguageMenuClose}
           >
-            {LANGUAGES && Object.keys(LANGUAGES).map((lang) => (
+            {availableLangs.map((lang) => (
               <MenuItem 
                 key={lang} 
                 onClick={() => selectLanguage(lang)}

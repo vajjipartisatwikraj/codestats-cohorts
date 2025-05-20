@@ -37,7 +37,12 @@ import {
   Menu,
   Accordion,
   AccordionSummary,
-  AccordionDetails
+  AccordionDetails,
+  FormLabel,
+  RadioGroup,
+  FormControlLabel,
+  FormHelperText,
+  Radio
 } from '@mui/material';
 import PlayArrowIcon from '@mui/icons-material/PlayArrow';
 import SendIcon from '@mui/icons-material/Send';
@@ -72,7 +77,7 @@ import { useAuth } from '../../contexts/AuthContext';
 import { useTheme as useAppTheme } from '../../contexts/ThemeContext';
 import { isJavaScriptExecutionDisabled } from '../../utils/security';
 import { formatTime, formatMemory } from '../../utils/formatting';
-import compilerService from '../../utils/compilerService';
+import compilerApi from '../../utils/compilerApi';
 import Notes from './Notes';
 import AddIcon from '@mui/icons-material/Add';
 import DownloadIcon from '@mui/icons-material/Download';
@@ -190,7 +195,13 @@ const CohortProblem = () => {
       if (question && question.languages) {
         const languageInfo = question.languages.find(l => l.name === language);
         if (languageInfo && languageInfo.boilerplateCode) {
-          setCode(languageInfo.boilerplateCode);
+          const initialCode = languageInfo.boilerplateCode;
+          // If it's Java, extract only the Solution class to display
+          if (language === 'java') {
+            setCode(initialCode);
+          } else {
+            setCode(initialCode);
+          }
         } else if (LANGUAGES[language]) {
           setCode(LANGUAGES[language].defaultCode);
         }
@@ -203,7 +214,8 @@ const CohortProblem = () => {
         submissions.find(sub => sub.language === language) : null;
       
       if (mostRecentSubmission && mostRecentSubmission.code) {
-        setCode(mostRecentSubmission.code);
+        const submissionCode = mostRecentSubmission.code;
+        setCode(submissionCode);
       } else if (question && question.languages) {
         const languageInfo = question.languages.find(l => l.name === language);
         if (languageInfo && languageInfo.boilerplateCode) {
@@ -229,8 +241,6 @@ const CohortProblem = () => {
         }
       );
 
-      console.log("Question data:", response.data);
-      
       // Get the question data object
       const questionData = response.data;
       
@@ -256,7 +266,6 @@ const CohortProblem = () => {
       }
       
     } catch (error) {
-      console.error('Error fetching question details:', error);
       toast.error('Failed to fetch question details');
       navigate(`/cohorts/${cohortId}`);
     } finally {
@@ -279,7 +288,6 @@ const CohortProblem = () => {
       
       setAllUsersSubmissions(response.data);
     } catch (error) {
-      console.error('Error fetching all submissions:', error);
       // Don't show an error toast as this is not critical
     }
   };
@@ -303,6 +311,110 @@ const CohortProblem = () => {
     handleLanguageMenuClose();
   };
   
+  // Function to insert runtime calculation code in place of comment markers
+  const insertRuntimeCalculationCode = (sourceCode) => {
+    // Different implementations based on language
+    if (language === 'java') {
+      // Capture the indentation of the markers
+      const startMarkerMatch = sourceCode.match(/([ \t]*)\/\*RUNTIME CALC START\*\//);
+      const endMarkerMatch = sourceCode.match(/([ \t]*)\/\*RUNTIME CALC END\*\//);
+      
+      // Get indentation or default to empty string if not found
+      const startIndent = startMarkerMatch ? startMarkerMatch[1] : '';
+      const endIndent = endMarkerMatch ? endMarkerMatch[1] : '';
+      
+      // Replace start marker with the timing start code
+      let modifiedCode = sourceCode.replace(
+        /([ \t]*)\/\*RUNTIME CALC START\*\//g, 
+        `${startIndent}long startTime = System.nanoTime();`
+      );
+      
+      // Replace end marker with the timing end code
+      modifiedCode = modifiedCode.replace(
+        /([ \t]*)\/\*RUNTIME CALC END\*\//g, 
+        `${endIndent}long endTime = System.nanoTime();\n` +
+        `${endIndent}double elapsedMs = (endTime - startTime) / 1e6;\n` +
+        `${endIndent}System.out.println(elapsedMs);`
+      );
+      
+      return modifiedCode;
+    } 
+    else if (language === 'python') {
+      // Handle both comment styles: triple quotes and hash comments
+      
+      // First try to match triple quotes format
+      let startMarkerMatch = sourceCode.match(/([ \t]*)"""RUNTIME CALC START"""/);
+      let endMarkerMatch = sourceCode.match(/([ \t]*)"""RUNTIME CALC END"""/);
+      
+      // If not found, try the hash comment format
+      if (!startMarkerMatch) {
+        startMarkerMatch = sourceCode.match(/([ \t]*)#\s*RUNTIME CALC START/);
+      }
+      if (!endMarkerMatch) {
+        endMarkerMatch = sourceCode.match(/([ \t]*)#\s*RUNTIME CALC END/);
+      }
+      
+      // Get indentation or default to empty string if not found
+      const startIndent = startMarkerMatch ? startMarkerMatch[1] : '';
+      const endIndent = endMarkerMatch ? endMarkerMatch[1] : '';
+      
+            // Replace start marker (triple quotes format)
+      let modifiedCode = sourceCode.replace(
+        /([ \t]*)"""RUNTIME CALC START"""/g, 
+        `${startIndent}import time\n${startIndent}start_time = time.perf_counter()`
+      );
+
+      // Also handle hash comment format for start marker
+      modifiedCode = modifiedCode.replace(
+        /([ \t]*)#\s*RUNTIME CALC START/g, 
+        `${startIndent}import time\n${startIndent}start_time = time.perf_counter()`
+      );
+
+      // Replace end marker (triple quotes format)
+      modifiedCode = modifiedCode.replace(
+        /([ \t]*)"""RUNTIME CALC END"""/g, 
+        `${endIndent}end_time = time.perf_counter()\n${endIndent}elapsed_microseconds = int((end_time - start_time) * 1_000_000)\n${endIndent}print(elapsed_microseconds)`
+      );
+
+      // Also handle hash comment format for end marker
+      modifiedCode = modifiedCode.replace(
+        /([ \t]*)#\s*RUNTIME CALC END/g, 
+        `${endIndent}end_time = time.perf_counter()\n${endIndent}elapsed_microseconds = int((end_time - start_time) * 1_000_000)\n${endIndent}print(elapsed_microseconds)`
+      );
+
+      
+      return modifiedCode;
+    }
+    else if (language === 'cpp') {
+      // Capture the indentation of the markers
+      const startMarkerMatch = sourceCode.match(/([ \t]*)\/\*RUNTIME CALC START\*\//);
+      const endMarkerMatch = sourceCode.match(/([ \t]*)\/\*RUNTIME CALC END\*\//);
+      
+      // Get indentation or default to empty string if not found
+      const startIndent = startMarkerMatch ? startMarkerMatch[1] : '';
+      const endIndent = endMarkerMatch ? endMarkerMatch[1] : '';
+      
+      // Replace start marker with the timing start code for C++ (preserving indentation)
+      let modifiedCode = sourceCode.replace(
+        /([ \t]*)\/\*RUNTIME CALC START\*\//g, 
+        `${startIndent}auto start = std::chrono::high_resolution_clock::now();`
+      );
+      
+      // Replace end marker with the timing end code (preserving indentation)
+      modifiedCode = modifiedCode.replace(
+        /([ \t]*)\/\*RUNTIME CALC END\*\//g, 
+        `${endIndent}auto end = std::chrono::high_resolution_clock::now();\n` +
+        `${endIndent}auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);\n` +
+        `${endIndent}std::cout << duration.count() / 1000.0;`
+      );
+      
+      return modifiedCode;
+    }
+    
+    // For other languages, return the original code
+    return sourceCode;
+  };
+
   // Enhanced function to run against test cases
   const runTestCases = async (submitSolution = false) => {
     if (!question || !question.testCases || question.testCases.length === 0) {
@@ -327,23 +439,22 @@ const CohortProblem = () => {
         return null;
       }
       
-      console.log(`Running ${testCasesToRun.length} test cases for ${language} code...`);
+      // Process code for execution timing using the comment markers for all supported languages
+      let processedCode = insertRuntimeCalculationCode(code);
+      
       const results = [];
       
       // Run each test case
       for (const testCase of testCasesToRun) {
-        console.log(`Executing test case: ${testCase._id}`);
-        
         try {
-          // UPDATED: Instead of using the backend endpoint, use compilerService directly
-          const executionResponse = await compilerService.executeCode(
+          // UPDATED: Use the compilerApi to call the backend endpoint
+          const executionResponse = await compilerApi.executeCode(
             language, 
             version,
-            code,
+            processedCode,
             testCase.input
           );
-          
-          console.log(`Execution result for test case ${testCase._id}:`, executionResponse);
+          console.log(executionResponse);
           
           // Handle compilation errors specifically
           if (executionResponse.compile && executionResponse.compile.stderr) {
@@ -389,7 +500,6 @@ const CohortProblem = () => {
             error: execution.stderr || ''
           });
         } catch (error) {
-          console.error(`Error executing test case ${testCase._id}:`, error);
           results.push({
             testCaseId: testCase._id,
             passed: false,
@@ -415,7 +525,6 @@ const CohortProblem = () => {
         allPassed
       };
     } catch (error) {
-      console.error('Error running test cases:', error);
       toast.error(`Error: ${error.message || 'Failed to execute code'}`);
       return null;
     } finally {
@@ -428,295 +537,110 @@ const CohortProblem = () => {
     setSelectedMcqOption(optionId);
     setMcqSubmissionResult(null); // Clear previous result when selecting a new option
   };
-
-  // Submit MCQ answer
-  const handleSubmitMcqAnswer = async () => {
-    if (!selectedMcqOption) {
-      toast.error('Please select an option before submitting');
-      return;
-    }
-    
-    setSubmitting(true);
-    try {
-      // Prepare submission data
-      const submissionData = {
-        selectedOption: selectedMcqOption,
-        submissionType: 'mcq',
-        isCorrect: null // Let server determine if correct
-      };
-      
-      console.log('Submitting MCQ answer with data:', submissionData);
-      
-      // Submit to server
-      const response = await axios.post(
-        `${apiUrl}/cohorts/${cohortId}/modules/${moduleId}/questions/${questionId}/submit`,
-        submissionData,
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json'
-          }
-        }
-      );
-      
-      console.log('MCQ Submission response:', response.data);
-      
-      // Extract the submission from response data
-      const submission = response.data.submission;
-      
-      // Make sure we're using the correct isCorrect value from the submission
-      // and ensure it's a boolean, not an object
-      const isCorrect = typeof submission.isCorrect === 'boolean' ? submission.isCorrect : false;
-      const submissionStatus = typeof submission.status === 'string' ? submission.status : 'pending'; 
-      
-      console.log('MCQ submission isCorrect:', isCorrect);
-      console.log('MCQ submission status:', submissionStatus);
-      console.log('Module progress after submission:', response.data.userProgress?.moduleProgress);
-      console.log('Question progress after submission:', response.data.userProgress?.questionProgress);
-      console.log('Total score after submission:', response.data.userProgress?.totalScore);
-      
-      // Save the result with the correct isCorrect value and status as primitives
-      setMcqSubmissionResult({
-        ...response.data,
-        isCorrect: isCorrect,
-        status: submissionStatus
-      });
-      
-      // Show toast for the result
-      if (isCorrect) {
-        toast.success('Correct answer!');
-      } else {
-        toast.error('Incorrect answer. Try again!');
-      }
-      
-      // Always refresh data regardless of correctness
-      fetchQuestionDetails();
-      fetchAllSubmissions();
-    } catch (error) {
-      console.error('Error submitting MCQ answer:', error);
-      
-      // Add more detailed error logging
-      if (error.response) {
-        console.error('Error response data:', error.response.data);
-        console.error('Error response status:', error.response.status);
-      }
-      
-      toast.error('Failed to submit answer. Please try again.');
-    } finally {
-      setSubmitting(false);
-    }
-  };
-
-  // Render MCQ options
-  const renderMcqOptions = () => {
-    if (!question || !question.options || question.type !== 'mcq') return null;
-    
-    // Check if user has a correct submission already
-    const hasCorrectSubmission = submissions && submissions.some(sub => sub.isCorrect === true);
-    
-    return (
-      <Box 
-        sx={{ 
-          display: 'flex', 
-          flexDirection: 'column', 
-          gap: 2, 
-          width: '100%', 
-          maxWidth: '800px',
-          mx: 'auto',
-          mt: 4,
-          px: 2
-        }}
-      >
-        <Typography variant="h6" gutterBottom sx={{ fontWeight: 600 }}>
-          Select the correct option:
-        </Typography>
-        
-        {question.options.map((option, index) => {
-          const isSelected = selectedMcqOption === option._id;
-          let bgColor = undefined;
-          let borderColor = isSelected ? theme.palette.primary.main : (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)');
-          
-          // Add visual feedback based on submission result
-          if (mcqSubmissionResult && selectedMcqOption === option._id) {
-            // Get isCorrect and status from mcqSubmissionResult
-            const isCorrect = !!mcqSubmissionResult.isCorrect;
-            const status = typeof mcqSubmissionResult.status === 'string' ? 
-              mcqSubmissionResult.status : 
-              (isCorrect ? 'accepted' : 'wrong_answer');
-            
-            console.log(`Option ${option.text} selected, isCorrect: ${isCorrect}, status: ${status}`);
-            
-            // Use status for visual feedback
-            if (status === 'accepted') {
-              borderColor = theme.palette.success.main;
-              bgColor = alpha(theme.palette.success.main, 0.1);
-            } else if (status === 'pending') {
-              borderColor = theme.palette.warning.main;
-              bgColor = alpha(theme.palette.warning.main, 0.1);
-            } else {
-              borderColor = theme.palette.error.main;
-              bgColor = alpha(theme.palette.error.main, 0.1);
-            }
-          }
-          
-          // If there's a previous correct submission, highlight that option
-          if (hasCorrectSubmission && submissions) {
-            // Find the correct submission
-            const correctSub = submissions.find(sub => sub.isCorrect === true);
-            if (correctSub && correctSub.selectedOption === option._id) {
-              borderColor = theme.palette.success.main;
-              bgColor = alpha(theme.palette.success.main, 0.1);
-            }
-          }
-          
-          return (
-            <Button
-              key={option._id || index}
-              variant={isSelected ? "contained" : "outlined"}
-              sx={{
-                justifyContent: 'flex-start',
-                textAlign: 'left',
-                p: 2,
-                borderRadius: '8px',
-                borderWidth: 2,
-                borderColor: borderColor,
-                backgroundColor: bgColor,
-                '&:hover': {
-                  borderColor: isSelected ? 
-                    borderColor : 
-                    (darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.2)'),
-                  backgroundColor: isSelected && bgColor ? 
-                    alpha(bgColor, 1.5) : // slightly intensify the existing color
-                    (darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)')
-                },
-                position: 'relative'
-              }}
-              onClick={() => handleSelectMcqOption(option._id)}
-              disabled={submitting}
-            >
-              <Typography variant="body1" sx={{ fontSize: '1rem' }}>
-                {String.fromCharCode(65 + index)}. {option.text || ''}
-              </Typography>
-              
-              {/* Show appropriate icon based on submission status */}
-              {mcqSubmissionResult && selectedMcqOption === option._id && (
-                <Box 
-                  sx={{ 
-                    position: 'absolute', 
-                    right: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: mcqSubmissionResult.status === 'accepted' ? 
-                      theme.palette.success.main : 
-                      mcqSubmissionResult.status === 'pending' ?
-                        theme.palette.warning.main :
-                        theme.palette.error.main
-                  }}
-                >
-                  {mcqSubmissionResult.status === 'accepted' ? 
-                    <CheckCircleIcon /> : 
-                    mcqSubmissionResult.status === 'pending' ?
-                      <HistoryIcon /> :
-                      <CloseIcon />
-                  }
-                </Box>
-              )}
-              
-              {/* Show check mark for previously correct answer */}
-              {hasCorrectSubmission && submissions && 
-                submissions.find(sub => sub.isCorrect === true)?.selectedOption === option._id && (
-                <Box 
-                  sx={{ 
-                    position: 'absolute', 
-                    right: 16,
-                    display: 'flex',
-                    alignItems: 'center',
-                    color: theme.palette.success.main
-                  }}
-                >
-                  <CheckCircleIcon />
-                </Box>
-              )}
-            </Button>
-          );
-        })}
-        
-        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 3 }}>
-          {/* Always show Submit button */}
-          <Button
-            variant="contained"
-            color="primary"
-            size="large"
-            onClick={handleSubmitMcqAnswer}
-            disabled={!selectedMcqOption || submitting}
-            startIcon={submitting ? <CircularProgress size={20} /> : <SendIcon />}
-            sx={{ 
-              height: 36, 
-              textTransform: 'none',
-              borderRadius: '4px',
-              px: 2,
-              backgroundColor: '#2e7d32',
-              '&:hover': {
-                backgroundColor: '#1b5e20'
-              }
-            }}
-          >
-            Submit Answer
-          </Button>
-        </Box>
-      </Box>
-    );
-  };
-
-  // Update the handleRunCode function
+  
+  // Handle running code - only passes unhidden test cases to TestCasesPanel
   const handleRunCode = async () => {
     setRunning(true);
     setOutput('');
     setTestResults([]);
     
     try {
-      // Get visible test cases only (hide hidden test cases during normal run)
+      // Only get visible test cases (non-hidden)
       const visibleTestCases = question.testCases ? question.testCases.filter(tc => !tc.hidden) : [];
       
       if (!visibleTestCases || visibleTestCases.length === 0) {
-        toast.info('No test cases available to run');
+        toast.info('No visible test cases available to run');
+        setRunning(false);
         return;
       }
       
-      console.log(`Running ${visibleTestCases.length} test cases...`);
+      // Process code for execution timing using the comment markers for all supported languages
+      let processedCode = insertRuntimeCalculationCode(code);
       
-      // Use the simplified compilerService to run test cases
-      const results = await compilerService.runTestCases(
+      // Execute test cases
+      const results = await compilerApi.runTestCases(
         language,
         null, // version (null means use default)
-        code,
+        processedCode,
         visibleTestCases
       );
-      
-      console.log('Test case results:', results);
-      
+      console.log(results);
       // Make sure results is an array before we use it
       const safeResults = Array.isArray(results) ? results : [];
-      setTestResults(safeResults);
+      
+      // Process each result to ensure it has the correct passed property
+      const processedResults = safeResults.map((result, index) => {
+        // Get the corresponding test case
+        const testCase = visibleTestCases[index];
+        if (!testCase) return result;
+        
+        // Determine if test passed by comparing expected and actual output directly
+        let actualOutput = result.actual || result.actualOutput || '';
+        let expectedOutput = testCase.output || result.expected || result.expectedOutput || '';
+        
+        // Trim whitespace for comparison
+        actualOutput = typeof actualOutput === 'string' ? actualOutput.trim() : actualOutput;
+        expectedOutput = typeof expectedOutput === 'string' ? expectedOutput.trim() : expectedOutput;
+        
+        // Get execution time directly from the executionTime property
+        const executionTime = typeof result.executionTime === 'number' ? result.executionTime : 0;
+        
+        // Explicitly set the passed property based on comparison
+        const passed = actualOutput === expectedOutput;
+        
+        // Return the processed result with all necessary properties
+        return {
+          ...result,
+          passed: passed,
+          expectedOutput: expectedOutput,
+          actualOutput: actualOutput,
+          testCaseId: testCase._id,
+          input: testCase.input,
+          hidden: testCase.hidden,
+          _isSubmission: false, // Explicitly mark as NOT submission
+          executionTime: executionTime
+        };
+      });
+      
+      // Extract the actual output from test results and set it to display
+      if (processedResults.length > 0) {
+        // Look for output in different possible properties
+        const firstResult = processedResults[0];
+        let outputText = '';
+        
+        if (firstResult.actual) {
+          outputText = firstResult.actual;
+        } else if (firstResult.actualOutput) {
+          outputText = firstResult.actualOutput;
+        } else if (firstResult.stdout) {
+          outputText = firstResult.stdout;
+        } else if (firstResult.run && firstResult.run.output) {
+          outputText = firstResult.run.output;
+        }
+        
+        setOutput(outputText);
+      }
+      
+      // Set test results for display in TestCasesPanel
+      setTestResults(processedResults);
       
       // Show success/failure toast
-      const passedTests = safeResults.filter(r => r.passed === true).length;
-      if (passedTests === safeResults.length && safeResults.length > 0) {
-        toast.success(`✅ All ${safeResults.length} test cases passed!`);
-      } else if (safeResults.length > 0) {
-        toast.warn(`${passedTests}/${safeResults.length} test cases passed`);
+      const passedTests = processedResults.filter(r => r.passed === true).length;
+      if (passedTests === processedResults.length && processedResults.length > 0) {
+        toast.success(`All testcases passed..!`);
+      } else if (processedResults.length > 0) {
+        toast.warn(`${passedTests}/${processedResults.length} test cases passed`);
       } else {
         toast.warn('No test results to display');
       }
     } catch (error) {
-      console.error('Error running test cases:', error);
       toast.error('Failed to execute code: ' + (error.message || 'Unknown error'));
     } finally {
       setRunning(false);
     }
   };
 
-  // Now also fix the testResults structure in the handleSubmitSolution function
+  // Handle submitting solution - only passes hidden test cases to TestCasesPanel
   const handleSubmitSolution = async () => {
     if (question.type === 'mcq') {
       await handleSubmitMcqAnswer();
@@ -724,40 +648,95 @@ const CohortProblem = () => {
       setSubmitting(true);
       
       try {
-        // Run the code against all test cases (including hidden ones)
-        const results = await compilerService.runTestCases(
+        // Only run hidden test cases when submitting
+        let hiddenTestCases = question.testCases ? question.testCases.filter(tc => tc.hidden) : [];
+        
+        if (!hiddenTestCases || hiddenTestCases.length === 0) {
+          toast.info('No hidden test cases found. Evaluating all test cases.');
+          hiddenTestCases = question.testCases || [];
+        }
+        
+        // Process code for execution timing using the comment markers for all supported languages
+        let processedCode = insertRuntimeCalculationCode(code);
+        
+        // Execute hidden test cases
+        const results = await compilerApi.runTestCases(
           language,
           null, // Use default version
-          code,
-          question.testCases
+          processedCode,
+          hiddenTestCases
         );
+        console.log(results);
+        // Ensure results is an array before processing
+        const hiddenResults = Array.isArray(results) ? results : [];
         
-        // Ensure results is an array before setting it
-        setTestResults(Array.isArray(results) ? results : []);
+        // Process hidden test results
+        const processedHiddenResults = hiddenResults.map((result, index) => {
+          const testCase = hiddenTestCases[index];
+          if (!testCase) return result;
+          
+          // Determine if test passed by comparing expected and actual output directly
+          let actualOutput = result.actual || result.actualOutput || '';
+          let expectedOutput = testCase.output || result.expected || result.expectedOutput || '';
+          
+          // Trim whitespace for comparison
+          actualOutput = typeof actualOutput === 'string' ? actualOutput.trim() : actualOutput;
+          expectedOutput = typeof expectedOutput === 'string' ? expectedOutput.trim() : expectedOutput;
+          
+          // Get execution time directly from the executionTime property
+          const executionTime = typeof result.executionTime === 'number' ? result.executionTime : 0;
+          console.log(executionTime);
+          // Explicitly set the passed property based on comparison
+          const passed = actualOutput === expectedOutput;
+          
+          // Add a special flag to mark this as a submission result
+          return {
+            ...result,
+            passed: passed,
+            expectedOutput: expectedOutput,
+            actualOutput: actualOutput,
+            testCaseId: testCase._id,
+            input: testCase.input,
+            hidden: true, // Explicitly mark as hidden
+            _preventMultiTestParsing: true, // Add this flag to prevent parsing
+            _isSubmission: true, // Mark as submission result
+            executionTime: executionTime
+          };
+        });
+        
+        // Set test results for display in TestCasesPanel
+        setTestResults(processedHiddenResults);
+        
+        // Extract output to display
+        if (processedHiddenResults.length > 0) {
+          const firstResult = processedHiddenResults[0];
+          const outputText = firstResult.actualOutput || firstResult.actual || '';
+          
+          setOutput(outputText);
+        }
         
         // Check if all tests passed
-        const allPassed = Array.isArray(results) && results.every(r => r.passed === true);
+        const allPassed = processedHiddenResults.length > 0 && 
+                         processedHiddenResults.every(r => r.passed === true);
         
-        // Submit to backend for recording in database
+        // Prepare submission data for backend
         const submission = {
           code,
           language,
           submissionType: 'programming',
-          testCaseResults: Array.isArray(results) ? results.map(r => ({
+          testCaseResults: processedHiddenResults.map(r => ({
             testCaseId: r.testCaseId,
             passed: !!r.passed,
             executionTime: typeof r.executionTime === 'number' ? r.executionTime : 0,
             memoryUsed: typeof r.memoryUsed === 'number' ? r.memoryUsed : 0,
             output: typeof r.actualOutput === 'string' ? r.actualOutput : '',
             error: typeof r.error === 'string' ? r.error : ''
-          })) : [],
+          })),
           status: allPassed ? 'accepted' : 'wrong_answer',
           isCorrect: allPassed,
         };
         
-        console.log('Submitting solution:', submission);
-        
-        // Submit to backend
+        // Submit to backend - this part is unchanged
         const response = await axios.post(
           `${apiUrl}/cohorts/${cohortId}/modules/${moduleId}/questions/${questionId}/submit`,
           submission,
@@ -769,20 +748,24 @@ const CohortProblem = () => {
           }
         );
         
-        console.log('Submission response:', response.data);
+        // Update submissions state directly instead of refetching everything
+        const newSubmission = response.data;
+        if (newSubmission) {
+          // Add the new submission to the existing submissions array
+          setSubmissions(prevSubmissions => [newSubmission, ...prevSubmissions]);
+        }
         
         // Show success/failure toast
         if (allPassed) {
-          toast.success('Solution accepted! All test cases passed.');
+          toast.success('Solution accepted! All hidden test cases passed.');
         } else {
-          toast.warn('Some test cases failed. Your solution was not accepted.');
+          toast.warn('Some hidden test cases failed. Your solution was not accepted.');
         }
         
-        // Refresh submissions
-        fetchQuestionDetails();
-        fetchAllSubmissions();
+        // Don't call these methods that cause page refresh
+        // fetchQuestionDetails();
+        // fetchAllSubmissions();
       } catch (error) {
-        console.error('Error submitting solution:', error);
         toast.error('Failed to submit solution: ' + (error.message || 'Unknown error'));
       } finally {
         setSubmitting(false);
@@ -790,61 +773,79 @@ const CohortProblem = () => {
     }
   };
 
-  // Render test results UI with improved metrics display - using the one from TestCasesPanel
-  const renderTestResults = () => {
-    if (!testResults) {
-      return null;
+  // Handle submitting MCQ answer
+  const handleSubmitMcqAnswer = async () => {
+    if (!selectedMcqOption) {
+      toast.warn('Please select an answer first');
+      return;
     }
 
-    // Make sure we format the test results in a way that TestCasesPanel expects
-    // Here we map our internal test results format to what TestCasesPanel component expects
-    let formattedTestResults = [];
-    
-    // Check if testResults is an array or has a results property that's an array
-    if (Array.isArray(testResults)) {
-      formattedTestResults = testResults.map(result => ({
-        passed: !!result.passed,
-        actualOutput: typeof result.actualOutput === 'string' ? result.actualOutput : '',
-        expectedOutput: typeof result.expectedOutput === 'string' ? result.expectedOutput : '',
-        executionTime: typeof result.executionTime === 'number' ? result.executionTime : 0,
-        memoryUsed: typeof result.memoryUsed === 'number' ? result.memoryUsed : 0,
-        error: typeof result.error === 'string' ? result.error : '',
-        hidden: !!result.hidden,
-        input: typeof result.input === 'string' ? result.input : '',
-        explanation: typeof result.explanation === 'string' ? result.explanation : '',
-        testCaseId: result.testCaseId || ''
-      }));
-    } else if (testResults.results && Array.isArray(testResults.results)) {
-      formattedTestResults = testResults.results.map(result => ({
-        passed: !!result.passed,
-        actualOutput: typeof result.actualOutput === 'string' ? result.actualOutput : '',
-        expectedOutput: typeof result.expectedOutput === 'string' ? result.expectedOutput : '',
-        executionTime: typeof result.executionTime === 'number' ? result.executionTime : 0,
-        memoryUsed: typeof result.memoryUsed === 'number' ? result.memoryUsed : 0,
-        error: typeof result.error === 'string' ? result.error : '',
-        hidden: !!result.hidden,
-        input: typeof result.input === 'string' ? result.input : '',
-        explanation: typeof result.explanation === 'string' ? result.explanation : '',
-        testCaseId: result.testCaseId || ''
-      }));
-    }
+    setSubmitting(true);
+    try {
+      // Find the option object with the matching text
+      const selectedOption = question.options.find(opt => opt.text === selectedMcqOption);
+      
+      if (!selectedOption) {
+        toast.error('Invalid option selected');
+        return;
+      }
 
-    if (formattedTestResults.length === 0) {
-      return null;
-    }
+      // Prepare submission data
+      const submission = {
+        submissionType: 'mcq',
+        selectedOption: selectedOption._id,
+        isCorrect: selectedOption.isCorrect
+      };
 
-    return (
-      <TestCasesPanel
-        question={question}
-        testResults={formattedTestResults}
-        darkMode={darkMode}
-        testCasesPanelHeight={testCasesPanelHeight}
-        testPanelResizerRef={testPanelResizerRef}
-        startTestPanelResize={startTestPanelResize}
-        isResizingTestPanel={isResizingTestPanel}
-      />
-    );
+      // Submit to backend
+      const response = await axios.post(
+        `${apiUrl}/cohorts/${cohortId}/modules/${moduleId}/questions/${questionId}/submit`,
+        submission,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+            'Content-Type': 'application/json'
+          }
+        }
+      );
+
+      // Save result for displaying feedback
+      setMcqSubmissionResult({
+        isCorrect: selectedOption.isCorrect,
+        feedback: selectedOption.isCorrect ? 'Correct answer! 🎉' : 'Incorrect answer',
+        selectedOption: selectedOption.text
+      });
+
+      // Update submissions state directly
+      const newSubmission = response.data;
+      if (newSubmission) {
+        setSubmissions(prevSubmissions => [newSubmission, ...prevSubmissions]);
+      }
+
+      // Show success/failure toast
+      if (selectedOption.isCorrect) {
+        toast.success('Correct answer! 🎉');
+      } else {
+        toast.warn('Incorrect answer');
+      }
+
+      // Don't call these methods that cause page refresh
+      // fetchQuestionDetails();
+      // fetchAllSubmissions();
+    } catch (error) {
+      toast.error('Failed to submit answer: ' + (error.message || 'Unknown error'));
+    } finally {
+      setSubmitting(false);
+    }
   };
+
+  // Keep track of test case runs and submissions in the useEffect
+  useEffect(() => {
+    // When testResults change, log debug information
+    if (testResults && testResults.length > 0) {
+      const isSubmission = testResults.some(r => r._isSubmission === true || r.hidden === true);
+    }
+  }, [testResults]);
 
   // Navigate back to cohort page
   const handleBack = () => {
@@ -1005,6 +1006,150 @@ const CohortProblem = () => {
   const handleFormatCode = () => {
     // TODO: Implement code formatting
     toast.info('Code formatting not implemented yet');
+  };
+
+  const renderMcqOptions = () => {
+    if (!question || question.type !== 'mcq') return null;
+    const isSubmitted = !!mcqSubmissionResult;
+    const correctOption = question.options.find(opt => opt.isCorrect);
+
+    return (
+      <Box sx={{ 
+        maxWidth: '90%', 
+        width: '800px',
+        mx: 'auto', 
+        mt: 4, 
+        mb: 4
+      }}>
+        <FormControl component="fieldset" fullWidth>
+          <FormLabel component="legend" sx={{ 
+            fontSize: '1.25rem', 
+            mb: 3, 
+            color: darkMode ? '#fff' : '#222', 
+            fontWeight: 600,
+            textAlign: 'center'
+          }}>
+            Select the correct answer:
+          </FormLabel>
+          
+          <RadioGroup
+            name="mcqOption"
+            value={selectedMcqOption || ''}
+            onChange={e => handleSelectMcqOption(e.target.value)}
+          >
+            {question.options.map((option, idx) => {
+              const isSelected = selectedMcqOption === option.text;
+              const isCorrectOption = option.isCorrect === true;
+              const showCorrect = isSubmitted && isCorrectOption;
+              const showIncorrect = isSubmitted && isSelected && !isCorrectOption;
+              
+              return (
+                <Box 
+                  key={idx} 
+                  sx={{ 
+                    mb: 2.5, 
+                    borderRadius: 2,
+                    overflow: 'hidden',
+                    transition: 'all 0.15s ease',
+                  }}
+                >
+                  <Paper
+                    elevation={isSelected ? 4 : 1}
+                    sx={{
+                      border: '1px solid',
+                      borderColor: showCorrect ? '#4caf50' : 
+                                 showIncorrect ? '#f44336' : 
+                                 isSelected ? (darkMode ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.1)') : 
+                                 'transparent',
+                      borderRadius: 2,
+                      transition: 'all 0.2s',
+                      bgcolor: showCorrect ? (darkMode ? 'rgba(76,175,80,0.15)' : 'rgba(76,175,80,0.08)') :
+                               showIncorrect ? (darkMode ? 'rgba(244,67,54,0.15)' : 'rgba(244,67,54,0.08)') :
+                               darkMode ? 'rgba(255,255,255,0.05)' : '#fff',
+                      '&:hover': {
+                        bgcolor: isSubmitted ? undefined : (darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.03)'),
+                        borderColor: isSubmitted ? undefined : theme.palette.primary.main,
+                      }
+                    }}
+                  >
+                    <FormControlLabel
+                      value={option.text}
+                      control={
+                        <Radio
+                          color={showCorrect ? 'success' : showIncorrect ? 'error' : 'primary'}
+                          disabled={isSubmitted}
+                          sx={{ ml: 2 }}
+                        />
+                      }
+                      label={
+                        <Typography 
+                          sx={{ 
+                            fontWeight: isSelected ? 600 : 400, 
+                            color: darkMode ? '#fff' : '#222',
+                            fontSize: '1rem',
+                            ml: 0.5,
+                            display: 'flex',
+                            alignItems: 'center',
+                            '& svg': {
+                              ml: 1,
+                              fontSize: '1.2rem'
+                            }
+                          }}
+                        >
+                          {option.text}
+                          {showCorrect && <CheckIcon color="success" />}
+                          {showIncorrect && <CloseIcon color="error" />}
+                        </Typography>
+                      }
+                      sx={{
+                        py: 0.8,
+                        px: 1,
+                        m: 0,
+                        width: '100%'
+                      }}
+                    />
+                  </Paper>
+                </Box>
+              );
+            })}
+          </RadioGroup>
+          
+          {isSubmitted && (
+            <Alert 
+              severity={mcqSubmissionResult?.isCorrect ? "success" : "error"}
+              sx={{ mt: 2, mb: 3 }}
+            >
+              <Typography variant="body1" fontWeight={500}>
+                {mcqSubmissionResult?.isCorrect ? 
+                  'Correct! 🎉' : 
+                  `Incorrect. The correct answer is: ${correctOption?.text}`
+                }
+              </Typography>
+            </Alert>
+          )}
+          
+          <Box sx={{ mt: 4, display: 'flex', justifyContent: 'center' }}>
+            <Button
+              variant="contained"
+              color="primary"
+              size="large"
+              disabled={isSubmitted || !selectedMcqOption || submitting}
+              onClick={handleSubmitMcqAnswer}
+              sx={{ 
+                minWidth: 180, 
+                py: 1.5,
+                fontSize: '1.1rem',
+                fontWeight: 600,
+                borderRadius: 2,
+                boxShadow: '0 4px 10px rgba(0, 136, 204, 0.3)'
+              }}
+            >
+              {submitting ? 'Submitting...' : isSubmitted ? 'Submitted' : 'Submit'}
+            </Button>
+          </Box>
+        </FormControl>
+      </Box>
+    );
   };
 
   return (
@@ -1226,8 +1371,8 @@ const CohortProblem = () => {
                         </Typography>
                         <Typography component="span" sx={{ fontWeight: 'bold', fontSize: '0.75rem' }}>
                           {question.stats && typeof question.stats.acceptanceRate === 'number' 
-                            ? question.stats.acceptanceRate 
-                            : '35.0'}%
+                            ? Math.round(question.stats.acceptanceRate) 
+                            : '35'}%
                         </Typography>
                       </Box>
                       
@@ -1403,9 +1548,9 @@ const CohortProblem = () => {
                       <Accordion 
                         sx={{
                           mb: 1,
-                          bgcolor: darkMode ? 'rgba(0, 136, 204, 0.05)' : 'rgba(0, 136, 204, 0.1)',
+                          bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                           border: '0px solid',
-                          borderColor: '#0088CC',
+                          borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
                           borderRadius: '4px',
                           '&:before': {
                             display: 'none',
@@ -1419,7 +1564,7 @@ const CohortProblem = () => {
                         }}
                       >
                         <AccordionSummary
-                          expandIcon={<ExpandMoreIcon sx={{ color: '#0088CC' }} />}
+                          expandIcon={<ExpandMoreIcon />}
                           sx={{
                             flexDirection: 'row',
                             '& .MuiAccordionSummary-content': {
@@ -1428,10 +1573,10 @@ const CohortProblem = () => {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <CategoryIcon sx={{ mr: 1, color: '#0088CC', fontSize: '1.1rem' }} />
+                            <CategoryIcon sx={{ mr: 1, fontSize: '1.1rem' }} />
                             <Typography sx={{ 
                               fontWeight: 'medium',
-                              color: darkMode ? '#0088CC' : '#0077b6',
+                              color: darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
                             }}>
                               Topics
                             </Typography>
@@ -1449,10 +1594,10 @@ const CohortProblem = () => {
                                   sx={{ 
                                     height: '24px',
                                     fontSize: '0.75rem',
-                                    bgcolor: darkMode ? 'rgba(0, 136, 204, 0.1)' : 'rgba(0, 136, 204, 0.05)',
-                                    color: darkMode ? '#0088CC' : '#0077b6',
+                                    bgcolor: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                                    color: darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)',
                                     border: '1px solid',
-                                    borderColor: darkMode ? 'rgba(0, 136, 204, 0.2)' : 'rgba(0, 136, 204, 0.2)',
+                                    borderColor: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
                                     mb: 0.5,
                                   }}
                                 />
@@ -1472,9 +1617,9 @@ const CohortProblem = () => {
                       <Accordion
                         sx={{
                           mb: 1,
-                          bgcolor: darkMode ? 'rgba(139, 92, 246, 0.05)' : 'rgba(139, 92, 246, 0.1)',
+                          bgcolor: darkMode ? 'rgba(255,255,255,0.05)' : 'rgba(0,0,0,0.03)',
                           border: '0px solid',
-                          borderColor: '#8b5cf6',
+                          borderColor: darkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)',
                           borderRadius: '4px',
                           '&:before': {
                             display: 'none',
@@ -1488,7 +1633,7 @@ const CohortProblem = () => {
                         }}
                       >
                         <AccordionSummary
-                          expandIcon={<ExpandMoreIcon sx={{ color: '#8b5cf6' }} />}
+                          expandIcon={<ExpandMoreIcon />}
                           sx={{
                             flexDirection: 'row',
                             '& .MuiAccordionSummary-content': {
@@ -1497,10 +1642,10 @@ const CohortProblem = () => {
                           }}
                         >
                           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                            <BusinessIcon sx={{ mr: 1, color: '#8b5cf6', fontSize: '1.1rem' }} />
+                            <BusinessIcon sx={{ mr: 1, fontSize: '1.1rem' }} />
                             <Typography sx={{ 
                               fontWeight: 'medium',
-                              color: darkMode ? '#8b5cf6' : '#7c3aed',
+                              color: darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.9)',
                             }}>
                               Companies
                             </Typography>
@@ -1518,10 +1663,10 @@ const CohortProblem = () => {
                                   sx={{ 
                                     height: '24px',
                                     fontSize: '0.75rem',
-                                    bgcolor: darkMode ? 'rgba(139, 92, 246, 0.1)' : 'rgba(139, 92, 246, 0.05)',
-                                    color: darkMode ? '#8b5cf6' : '#7c3aed',
+                                    bgcolor: darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.05)',
+                                    color: darkMode ? 'rgba(255,255,255,0.9)' : 'rgba(0,0,0,0.8)',
                                     border: '1px solid',
-                                    borderColor: darkMode ? 'rgba(139, 92, 246, 0.2)' : 'rgba(139, 92, 246, 0.2)',
+                                    borderColor: darkMode ? 'rgba(255,255,255,0.15)' : 'rgba(0,0,0,0.15)',
                                     mb: 0.5,
                                   }}
                                 />
@@ -1594,23 +1739,24 @@ const CohortProblem = () => {
                             code={code}
                             language={language}
                             darkMode={darkMode}
-                            onChange={setCode}
+                            onChange={(newCode) => setCode(newCode)}
                             testCasesPanelHeight={testCasesPanelHeight}
                             LANGUAGES={LANGUAGES}
                             onLanguageChange={selectLanguage}
+                            availableLanguages={question.languages || []}
                           />
                           
                           {question && question.testCases && question.testCases.length > 0 && (
-                            <TestCasesPanel
-                              question={question}
+                            <TestCasesPanel 
+                              question={question} 
                               testResults={testResults}
                               darkMode={darkMode}
-                              formatTime={formatTime}
-                              formatMemory={formatMemory}
                               testCasesPanelHeight={testCasesPanelHeight}
                               testPanelResizerRef={testPanelResizerRef}
                               startTestPanelResize={startTestPanelResize}
                               isResizingTestPanel={isResizingTestPanel}
+                              output={output}
+                              isSubmission={testResults?.some(r => r._isSubmission === true)}
                             />
                           )}
                         </>

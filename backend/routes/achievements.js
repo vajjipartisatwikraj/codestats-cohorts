@@ -21,7 +21,7 @@ router.get('/', auth, async (req, res) => {
 // Create a new achievement
 router.post('/', auth, async (req, res) => {
   try {
-    const { type, title, description, tags, link, imageUrl, startDate, endDate } = req.body;
+    const { type, title, description, tags, link, domainLink, imageUrl, startDate, endDate } = req.body;
 
     // Check if user has reached the limit for this type (only for limited types)
     if (LIMITED_TYPES.includes(type)) {
@@ -51,6 +51,7 @@ router.post('/', auth, async (req, res) => {
       description,
       tags: tags || [],
       link,
+      domainLink,
       imageUrl,
       startDate,
       endDate
@@ -67,7 +68,7 @@ router.post('/', auth, async (req, res) => {
 // Update an achievement
 router.put('/:id', auth, async (req, res) => {
   try {
-    const { type, title, description, tags, link, imageUrl, startDate, endDate } = req.body;
+    const { type, title, description, tags, link, domainLink, imageUrl, startDate, endDate } = req.body;
 
     if (!type || !title || !description) {
       return res.status(400).json({
@@ -95,6 +96,7 @@ router.put('/:id', auth, async (req, res) => {
         description,
         tags: tags || [],
         link,
+        domainLink,
         imageUrl,
         startDate,
         endDate

@@ -141,7 +141,7 @@ const CohortStats = () => {
       
       setCohort(cohortResponse.data);
       
-      // Fetch cohort statistics
+      // Fetch cohort statistics using the new endpoint
       const statsResponse = await axios.get(
         `${apiUrl}/cohorts/${cohortId}/stats`,
         {
@@ -169,6 +169,14 @@ const CohortStats = () => {
     } catch (error) {
       console.error('Error fetching cohort stats:', error);
       toast.error('Failed to fetch cohort statistics');
+      
+      // Set empty stats if API fails
+      setStats({
+        totalEnrolled: 0,
+        activeUsers: 0,
+        completionRate: 0,
+        moduleCompletionRates: []
+      });
     } finally {
       setLoading(false);
     }
@@ -181,10 +189,10 @@ const CohortStats = () => {
   
   // Prepare chart data for module completion stats
   const getModuleCompletionData = () => {
-    if (!stats || !stats.moduleStats) return null;
+    if (!stats || !stats.moduleCompletionRates || stats.moduleCompletionRates.length === 0) return null;
     
-    const labels = stats.moduleStats.map(module => module.title);
-    const completionData = stats.moduleStats.map(module => module.completionRate);
+    const labels = stats.moduleCompletionRates.map(module => module.name);
+    const completionData = stats.moduleCompletionRates.map(module => module.completion);
     
     return {
       labels,
@@ -301,13 +309,13 @@ const CohortStats = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <PeopleIcon color="primary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Total Users</Typography>
+                <Typography variant="h6">Eligible Students</Typography>
               </Box>
               <Typography variant="h3" sx={{ textAlign: 'center', my: 2 }}>
-                {stats.totalUsers}
+                {stats.totalEnrolled || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {stats.activeUsers} active in the last 7 days
+                Total eligible for the cohort
               </Typography>
             </CardContent>
           </Card>
@@ -317,14 +325,14 @@ const CohortStats = () => {
           <Card elevation={2} sx={{ borderRadius: 2 }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <CodeIcon color="secondary" sx={{ mr: 1 }} />
-                <Typography variant="h6">Questions</Typography>
+                <SchoolIcon color="info" sx={{ mr: 1 }} />
+                <Typography variant="h6">Enrolled Students</Typography>
               </Box>
               <Typography variant="h3" sx={{ textAlign: 'center', my: 2 }}>
-                {stats.totalQuestions}
+                {stats.enrolledUsers || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {stats.mcqCount} MCQs, {stats.programmingCount} Programming
+                Students actively enrolled
               </Typography>
             </CardContent>
           </Card>
@@ -335,13 +343,13 @@ const CohortStats = () => {
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
                 <AssessmentIcon color="success" sx={{ mr: 1 }} />
-                <Typography variant="h6">Submissions</Typography>
+                <Typography variant="h6">Completion Rate</Typography>
               </Box>
               <Typography variant="h3" sx={{ textAlign: 'center', my: 2 }}>
-                {stats.totalSubmissions}
+                {stats.completionRate || 0}%
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {stats.acceptedRate?.toFixed(1)}% acceptance rate
+                Overall course completion
               </Typography>
             </CardContent>
           </Card>
@@ -351,14 +359,14 @@ const CohortStats = () => {
           <Card elevation={2} sx={{ borderRadius: 2 }}>
             <CardContent>
               <Box sx={{ display: 'flex', alignItems: 'center', mb: 1 }}>
-                <TrophyIcon color="warning" sx={{ mr: 1 }} />
-                <Typography variant="h6">Completion</Typography>
+                <TimeIcon color="warning" sx={{ mr: 1 }} />
+                <Typography variant="h6">Active Students</Typography>
               </Box>
               <Typography variant="h3" sx={{ textAlign: 'center', my: 2 }}>
-                {stats.completionRate?.toFixed(1)}%
+                {stats.activeUsers || 0}
               </Typography>
               <Typography variant="body2" color="text.secondary">
-                {stats.completedUsers} users completed
+                Students with activity
               </Typography>
             </CardContent>
           </Card>
@@ -466,7 +474,7 @@ const CohortStats = () => {
   
   // Render the module stats
   const renderModuleStats = () => {
-    if (!stats || !stats.moduleStats) {
+    if (!stats || !stats.moduleCompletionRates || stats.moduleCompletionRates.length === 0) {
       return (
         <Paper sx={{ p: 3, textAlign: 'center' }}>
           <Typography>No module statistics available yet.</Typography>
@@ -520,42 +528,36 @@ const CohortStats = () => {
             <TableHead>
               <TableRow>
                 <TableCell>Module</TableCell>
-                <TableCell align="center">Questions</TableCell>
-                <TableCell align="center">Avg. Attempts</TableCell>
-                <TableCell align="center">Completion</TableCell>
-                <TableCell align="center">Avg. Score</TableCell>
+                <TableCell align="center">Completion Rate</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
-              {stats.moduleStats.map((module, index) => (
+              {stats.moduleCompletionRates.map((module, index) => (
                 <TableRow key={index}>
                   <TableCell>
                     <Typography variant="body2" fontWeight="bold">
-                      {module.title}
+                      {module.name}
                     </Typography>
                   </TableCell>
-                  <TableCell align="center">{module.questionCount}</TableCell>
-                  <TableCell align="center">{module.averageAttempts?.toFixed(1) || 0}</TableCell>
                   <TableCell align="center">
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
                       <Box sx={{ width: '100%', mr: 1 }}>
                         <LinearProgress 
                           variant="determinate" 
-                          value={module.completionRate || 0} 
+                          value={module.completion || 0} 
                           color={
-                            module.completionRate > 75 ? 'success' : 
-                            module.completionRate > 50 ? 'info' : 
-                            module.completionRate > 25 ? 'warning' : 'error'
+                            module.completion > 75 ? 'success' : 
+                            module.completion > 50 ? 'info' : 
+                            module.completion > 25 ? 'warning' : 'error'
                           }
                           sx={{ height: 8, borderRadius: 4 }}
                         />
                       </Box>
                       <Typography variant="body2" color="text.secondary">
-                        {module.completionRate?.toFixed(0) || 0}%
+                        {module.completion?.toFixed(0) || 0}%
                       </Typography>
                     </Box>
                   </TableCell>
-                  <TableCell align="center">{module.averageScore?.toFixed(1) || 0}</TableCell>
                 </TableRow>
               ))}
             </TableBody>

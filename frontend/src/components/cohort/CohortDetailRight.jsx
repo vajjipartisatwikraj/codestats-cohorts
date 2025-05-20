@@ -92,20 +92,17 @@ const CohortDetailRight = ({
     return (
       <Box sx={{ 
         p: { xs: 2, md: 2 }, 
-        height: '120%', 
-        bgcolor: darkMode ? '#000000' : '#FFFFFF',
-        color: darkMode ? '#FFFFFF' : '#333333',
-        borderRadius: { xs: 0, md: '10px' },
-        ml: { xs: 0, md: 0 },
-        boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+        height: '100%',
         display: 'flex',
         flexDirection: 'column',
-        position: { md: 'fixed' },
-        width: { md: 'calc(100% - 490px)', lg: 'calc(100% - 520px)' },
-        right: { md: '24px', lg: '40px' },
-        top: { md: 'calc(60px + 24px)' },
-        maxHeight: { md: 'calc(100vh - 60px - 48px)' },
-        overflowY: 'auto'
+        bgcolor: darkMode ? '#000000' : '#FFFFFF',
+        color: darkMode ? '#FFFFFF' : '#0F0F0F',
+        borderRadius: { xs: 0, md: '10px' },
+        boxShadow: darkMode ? '0 4px 15px rgba(0,0,0,0.15)' : '0 4px 12px rgba(15, 15, 15, 0.06)',
+        border: darkMode ? 'none' : '1px solid rgba(15, 15, 15, 0.08)',
+        flex: 1,
+        position: 'relative',
+        overflow: 'hidden'
       }}>
         <CohortFeedback cohortId={cohortId} />
       </Box>
@@ -164,19 +161,19 @@ const CohortDetailRight = ({
   return (
     <Box sx={{ 
       p: { xs: 2, md: 2 }, 
-      height: '120%', 
+      height: 'auto',
+      minHeight: '100%',
+      maxHeight: '100%', 
       bgcolor: darkMode ? '#000000' : '#FFFFFF',
-      color: darkMode ? '#FFFFFF' : '#333333',
+      color: darkMode ? '#FFFFFF' : '#0F0F0F',
       borderRadius: { xs: 0, md: '10px' },
-      ml: { xs: 0, md: 0 },
-      boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+      boxShadow: darkMode ? '0 4px 15px rgba(0,0,0,0.15)' : '0 4px 12px rgba(15, 15, 15, 0.06)',
+      border: darkMode ? 'none' : '1px solid rgba(15, 15, 15, 0.08)',
       display: 'flex',
       flexDirection: 'column',
-      position: { md: 'fixed' },
-      width: { md: 'calc(100% - 490px)', lg: 'calc(100% - 520px)' },
-      right: { md: '24px', lg: '40px' },
-      top: { md: 'calc(60px + 24px)' },
-      maxHeight: { md: 'calc(100vh - 60px - 48px)' }
+      overflow: 'auto',
+      flex: 1,
+      pb: 4 // Added padding at bottom for better spacing
     }}>
       {/* Module Title and Description */}
       <Box sx={{ mb: 3 }}>
@@ -190,7 +187,8 @@ const CohortDetailRight = ({
             fontWeight: 700, 
             fontSize: '1.8rem',
             my: 0, // Remove any top/bottom margin
-            lineHeight: 1.2
+            lineHeight: 1.2,
+            color: darkMode ? '#ffffff' : '#0F0F0F'
           }}>
             {module.title}
           </Typography>
@@ -285,7 +283,7 @@ const CohortDetailRight = ({
           </Box>
         </Box>
         
-        <Typography variant="body1" sx={{ mb: 3, opacity: 0.85, maxWidth: '90%', fontSize: '0.8rem' }}>
+        <Typography variant="body1" sx={{ mb: 3, opacity: 0.85, maxWidth: '90%', fontSize: '0.8rem', color: darkMode ? '#ffffff' : '#0F0F0F' }}>
           {module.description}
         </Typography>
         
@@ -318,8 +316,8 @@ const CohortDetailRight = ({
                   variant="determinate"
                   value={easyQuestions.length > 0 ? (easyCompleted / easyQuestions.length) * 100 : 0}
                   sx={{
-                    height: 8,
-                    borderRadius: 4,
+                    height: 6,
+                    borderRadius: 3,
                     bgcolor: alpha('#4caf50', darkMode ? 0.15 : 0.1),
                     '& .MuiLinearProgress-bar': {
                       bgcolor: '#4caf50',
@@ -347,8 +345,8 @@ const CohortDetailRight = ({
                   variant="determinate"
                   value={mediumQuestions.length > 0 ? (mediumCompleted / mediumQuestions.length) * 100 : 0}
                   sx={{
-                    height: 8,
-                    borderRadius: 4,
+                    height: 6,
+                    borderRadius: 3,
                     bgcolor: alpha('#ff9800', darkMode ? 0.15 : 0.1),
                     '& .MuiLinearProgress-bar': {
                       bgcolor: '#ff9800',
@@ -376,8 +374,8 @@ const CohortDetailRight = ({
                   variant="determinate"
                   value={hardQuestions.length > 0 ? (hardCompleted / hardQuestions.length) * 100 : 0}
                   sx={{
-                    height: 8,
-                    borderRadius: 4,
+                    height: 6,
+                    borderRadius: 3,
                     bgcolor: alpha('#f44336', darkMode ? 0.15 : 0.1),
                     '& .MuiLinearProgress-bar': {
                       bgcolor: '#f44336',
@@ -390,19 +388,26 @@ const CohortDetailRight = ({
         )}
 
         {/* Search and Filter Section */}
-        <Box sx={{ mb: 3 }}>
-          <Box sx={{ display: 'flex', gap: 2, flexWrap: { xs: 'wrap', md: 'nowrap' }, alignItems: 'center' }}>
+        <Box sx={{ mb: 0 }}>
+          <Box sx={{ 
+            display: 'flex', 
+            gap: 1, 
+            flexWrap: { xs: 'wrap', md: 'nowrap' }, 
+            alignItems: 'center',
+            justifyContent: 'space-between'
+          }}>
             {/* Search with Button */}
             <Box sx={{ 
               display: 'flex', 
               flex: { xs: '1 1 auto', md: '0 1 auto' },
-              maxWidth: { md: '400px' }
+              maxWidth: { md: '320px' }
             }}>
               <Box sx={{ 
                 position: 'relative', 
                 display: 'flex', 
                 width: '100%',
-                borderRadius: '8px',
+                height: '32px',
+                borderRadius: '6px',
                 overflow: 'hidden',
                 bgcolor: darkMode ? 'rgba(20, 20, 20, 0.6)' : 'rgba(0, 0, 0, 0.05)',
                 border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`
@@ -410,7 +415,7 @@ const CohortDetailRight = ({
                 <Box sx={{ 
                   display: 'flex', 
                   alignItems: 'center', 
-                  pl: 1.5,
+                  pl: 1,
                   color: darkMode ? 'rgba(255, 255, 255, 0.6)' : 'rgba(0, 0, 0, 0.5)'
                 }}>
                   <SearchIcon fontSize="small" />
@@ -422,22 +427,25 @@ const CohortDetailRight = ({
                   onChange={(e) => setSearchQuery(e.target.value)}
                   sx={{
                     flex: 1,
+                    height: '32px',
                     '& .MuiInputBase-root': {
-                      px: 1,
-                      py: 0.5,
+                      px: 0.5,
+                      height: '32px',
                       '&::before, &::after': {
                         display: 'none',
                       }
                     },
                     '& .MuiInputBase-input': {
-                      color: darkMode ? '#ffffff' : '#333333',
-                      fontSize: '0.9rem',
-                      py: 0.75,
-                      height: 'auto'
+                      color: darkMode ? '#ffffff' : '#0F0F0F',
+                      fontSize: '0.75rem',
+                      height: '32px',
+                      lineHeight: '32px',
+                      py: 0
                     }
                   }}
                   InputProps={{
-                    disableUnderline: true
+                    disableUnderline: true,
+                    style: { height: '32px' }
                   }}
                 />
                 <Button
@@ -451,7 +459,13 @@ const CohortDetailRight = ({
                     },
                     textTransform: 'none',
                     fontWeight: 500,
-                    px: 3
+                    px: 1.5,
+                    height: '32px',
+                    minHeight: '32px',
+                    maxHeight: '32px',
+                    fontSize: '0.75rem',
+                    display: 'flex',
+                    alignItems: 'center'
                   }}
                 >
                   Search
@@ -459,42 +473,53 @@ const CohortDetailRight = ({
               </Box>
             </Box>
 
-            {/* Title and Add Question Button - REMOVED */}
-            <Box sx={{ display: 'flex', alignItems: 'center', ml: 'auto', mr: { xs: 0, md: 2 } }}>
-              {/* Admin add question button removed - moved to dedicated row */}
-            </Box>
-
-            {/* Filters */}
-            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
-              {/* Status Label */}
-              <Typography variant="body2" sx={{ display: { xs: 'none', lg: 'block' }, color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>
+            {/* Filters - Now aligned right */}
+            <Box sx={{ 
+              display: 'flex', 
+              gap: 1, 
+              alignItems: 'center',
+              justifyContent: 'flex-end',
+              ml: 'auto'
+            }}>
+              {/* Status Label - hidden */}
+              <Typography variant="body2" sx={{ display: { xs: 'none', lg: 'none' }, color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(15, 15, 15, 0.7)', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
                 Status
               </Typography>
               
-              {/* Solved/Unsolved Filter Dropdown */}
-              <FormControl sx={{ minWidth: '110px' }} size="small">
+              {/* Status Dropdown */}
+              <FormControl sx={{ minWidth: '90px' }} size="small">
                 <Select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
                   displayEmpty
                   sx={{
-                    color: darkMode ? '#ffffff' : '#333333',
+                    color: darkMode ? '#ffffff' : '#0F0F0F',
                     bgcolor: darkMode ? 'rgba(20, 20, 20, 0.4)' : 'rgba(0, 0, 0, 0.03)',
-                    height: '40px',
-                    fontSize: '0.9rem',
+                    height: '32px',
+                    fontSize: '0.75rem',
                     '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.15)',
                       borderWidth: '1px',
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.25)',
+                    },
+                    '& .MuiSelect-select': {
+                      paddingTop: '4px',
+                      paddingBottom: '4px',
+                      paddingLeft: '8px',
+                      paddingRight: '24px',
+                      height: '24px',
+                      lineHeight: '24px',
+                      display: 'flex',
+                      alignItems: 'center'
                     }
                   }}
                   MenuProps={{
                     PaperProps: {
                       sx: {
                         bgcolor: darkMode ? '#121212' : '#ffffff',
-                        color: darkMode ? '#ffffff' : '#333333'
+                        color: darkMode ? '#ffffff' : '#0F0F0F'
                       }
                     }
                   }}
@@ -505,13 +530,13 @@ const CohortDetailRight = ({
                 </Select>
               </FormControl>
               
-              {/* Difficulty Label */}
-              <Typography variant="body2" sx={{ display: { xs: 'none', lg: 'block' }, color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.6)', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>
+              {/* Difficulty Label - hidden */}
+              <Typography variant="body2" sx={{ display: { xs: 'none', lg: 'none' }, color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(15, 15, 15, 0.7)', whiteSpace: 'nowrap', fontSize: '0.85rem' }}>
                 Difficulty
               </Typography>
 
-              {/* Difficulty Filter Dropdown */}
-              <FormControl sx={{ minWidth: '110px' }} size="small">
+              {/* Difficulty Dropdown */}
+              <FormControl sx={{ minWidth: '90px' }} size="small">
                 <Select
                   value={difficultyFilter.length === 1 ? difficultyFilter[0] : ''}
                   onChange={(e) => {
@@ -524,23 +549,33 @@ const CohortDetailRight = ({
                   }}
                   displayEmpty
                   sx={{
-                    color: darkMode ? '#ffffff' : '#333333',
+                    color: darkMode ? '#ffffff' : '#0F0F0F',
                     bgcolor: darkMode ? 'rgba(20, 20, 20, 0.4)' : 'rgba(0, 0, 0, 0.03)',
-                    height: '40px',
-                    fontSize: '0.9rem',
+                    height: '32px',
+                    fontSize: '0.75rem',
                     '& .MuiOutlinedInput-notchedOutline': {
                       borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.15)',
                       borderWidth: '1px',
                     },
                     '&:hover .MuiOutlinedInput-notchedOutline': {
                       borderColor: darkMode ? 'rgba(255, 255, 255, 0.2)' : 'rgba(0, 0, 0, 0.25)',
+                    },
+                    '& .MuiSelect-select': {
+                      paddingTop: '4px',
+                      paddingBottom: '4px',
+                      paddingLeft: '8px',
+                      paddingRight: '24px',
+                      height: '24px',
+                      lineHeight: '24px',
+                      display: 'flex',
+                      alignItems: 'center'
                     }
                   }}
                   MenuProps={{
                     PaperProps: {
                       sx: {
                         bgcolor: darkMode ? '#121212' : '#ffffff',
-                        color: darkMode ? '#ffffff' : '#333333'
+                        color: darkMode ? '#ffffff' : '#0F0F0F'
                       }
                     }
                   }}
@@ -601,7 +636,7 @@ const CohortDetailRight = ({
               variant="subtitle1" 
               sx={{ 
                 fontWeight: 700, 
-                color: darkMode ? '#ffffff' : '#333333', 
+                color: darkMode ? '#ffffff' : '#0F0F0F', 
                 fontSize: '1rem'
               }}
             >
@@ -641,14 +676,14 @@ const CohortDetailRight = ({
           backgroundColor: 'transparent',
         },
         '&::-webkit-scrollbar-thumb': {
-          backgroundColor: alpha(darkMode ? '#ffffff' : '#000000', 0.2),
+          backgroundColor: alpha(darkMode ? '#ffffff' : '#0F0F0F', 0.2),
           borderRadius: '4px',
         },
         '&::-webkit-scrollbar-thumb:hover': {
-          backgroundColor: alpha(darkMode ? '#ffffff' : '#000000', 0.3),
+          backgroundColor: alpha(darkMode ? '#ffffff' : '#0F0F0F', 0.3),
         },
         scrollbarWidth: 'thin',
-        scrollbarColor: `${alpha(darkMode ? '#ffffff' : '#000000', 0.2)} transparent`
+        scrollbarColor: `${alpha(darkMode ? '#ffffff' : '#0F0F0F', 0.2)} transparent`
       }}>
         {filteredQuestions.length > 0 ? (
           filteredQuestions.map((question, index) => {
@@ -661,7 +696,7 @@ const CohortDetailRight = ({
               question.difficultyLevel === 'medium' ? '#ff9800' : 
               '#f44336';
             
-            // Blur color based on solved status
+            // Blur color based on solved status - only for dark mode
             const blurColor = isSolved ? 'rgba(76, 175, 80, 0.7)' : 'rgba(0, 136, 204, 0.7)';
             
             return (
@@ -669,28 +704,31 @@ const CohortDetailRight = ({
                 key={question._id} 
                 sx={{ 
                   mb: 1.5,
-                  border: '0px solid',
+                  border: darkMode ? '0px solid' : '1px solid rgba(15, 15, 15, 0.08)',
                   borderRadius: '10px',
                   position: 'relative',
                   overflow: 'hidden',
-                  backgroundColor: darkMode ? '#000D16' : '#f5f8fa',
+                  backgroundColor: darkMode ? '#000D16' : '#ffffff',
+                  boxShadow: darkMode ? 'none' : '0 4px 12px rgba(15, 15, 15, 0.06)',
                   minHeight: '120px'
                 }}
               >
-                {/* Gaussian blur effect */}
-                <Box
-                  sx={{
-                    position: 'absolute',
-                    bottom: 0,
-                    right: 0,
-                    width: '70%',
-                    height: '140%',
-                    background: `radial-gradient(circle at bottom right, ${blurColor} 10%, transparent 80%)`,
-                    filter: 'blur(70px)',
-                    zIndex: 0,
-                    opacity: darkMode ? 1 : 0.5
-                  }}
-                />
+                {/* Gaussian blur effect - only show in dark mode */}
+                {darkMode && (
+                  <Box
+                    sx={{
+                      position: 'absolute',
+                      bottom: 0,
+                      right: 0,
+                      width: '70%',
+                      height: '140%',
+                      background: `radial-gradient(circle at bottom right, ${blurColor} 10%, transparent 80%)`,
+                      filter: 'blur(70px)',
+                      zIndex: 0,
+                      opacity: 1
+                    }}
+                  />
+                )}
                 
                 <CardContent sx={{ p: 2, position: 'relative', zIndex: 1 }}>
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 1 }}>
@@ -701,7 +739,7 @@ const CohortDetailRight = ({
                         display: 'flex', 
                         alignItems: 'center', 
                         fontSize: '1.1rem', 
-                        color: darkMode ? '#ffffff' : '#333333' 
+                        color: darkMode ? '#ffffff' : '#0F0F0F' 
                       }}>
                         {question.title}
                       </Typography>
@@ -721,8 +759,8 @@ const CohortDetailRight = ({
                         <Typography 
                           variant="body2" 
                           sx={{ 
-                            color: darkMode ? '#ffffff' : '#555555',
-                            opacity: darkMode ? 0.8 : 1,
+                            color: darkMode ? '#ffffff' : '#0F0F0F',
+                            opacity: darkMode ? 0.8 : 0.7,
                             fontSize: '0.8rem'
                           }}
                         >
@@ -732,8 +770,8 @@ const CohortDetailRight = ({
                         <Typography 
                           variant="body2" 
                           sx={{ 
-                            color: darkMode ? '#ffffff' : '#555555',
-                            opacity: darkMode ? 0.8 : 1,
+                            color: darkMode ? '#ffffff' : '#0F0F0F',
+                            opacity: darkMode ? 0.8 : 0.7,
                             fontSize: '0.8rem'
                           }}
                         >
@@ -822,7 +860,7 @@ const CohortDetailRight = ({
             justifyContent: 'center', 
             alignItems: 'center',
             height: '200px',
-            color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(0, 0, 0, 0.5)'
+            color: darkMode ? 'rgba(255, 255, 255, 0.5)' : 'rgba(15, 15, 15, 0.7)'
           }}>
             <Typography variant="body1">
               {module.questions?.length === 0 && isAdmin
@@ -832,7 +870,9 @@ const CohortDetailRight = ({
           </Box>
         )}
       </Box>
+
     </Box>
+    
   );
 };
 

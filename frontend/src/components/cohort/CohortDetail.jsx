@@ -499,12 +499,14 @@ const CohortDetail = () => {
   const handleProgressClick = () => {
     setShowProgress(!showProgress);
     setShowStats(false);
+    setShowFeedback(false);
   };
 
   // Handle Stats button click (admin only)
   const handleStatsClick = () => {
     setShowStats(!showStats);
     setShowProgress(false);
+    setShowFeedback(false);
   };
 
   // Handle solving a question
@@ -1043,42 +1045,50 @@ const CohortDetail = () => {
   };
 
   return (
-    <Box sx={{ bgcolor: '#121212', minHeight: '100vh', color: 'white' }}>
+    <Box sx={{ 
+      bgcolor: 'transparent', 
+      minHeight: '90vh', 
+      color: 'white',
+      display: 'flex',
+      flexDirection: 'column',
+      overflow: 'hidden',
+      p:3,
+      pb:0,
+      pt:1
+    }}>
       {loading && !cohort ? (
         <Box sx={{ display: 'flex', justifyContent: 'center', py: 10 }}>
           <CircularProgress />
         </Box>
       ) : cohort ? (
-            <Grid container sx={{ 
+            <Box sx={{ 
               height: 'calc(100vh - 60px)', 
-              px: { xs: 2, md: 4 }, 
-              py: { xs: 2, md: 3 },
-              backgroundColor: theme.palette.mode === 'dark' ? 'black !important' : '#f8f9fa !important',
+              backgroundColor: theme.palette.mode === 'dark' ? 'black !important' : 'transparent !important',
+              flex: 1,
               overflow: 'hidden',
-              position: 'fixed',
-              top: '60px',
-              left: 0,
-              right: 0,
-              bottom: 0
+              display: 'flex',
+              flexDirection: 'column'
             }}>
+              {/* Use Flexbox for simpler layout */}
               <Box sx={{ 
-                width: '100%', 
-                display: 'flex', 
+                display: 'flex',
                 flexDirection: { xs: 'column', md: 'row' },
-                height: '100%',
-                gap: { xs: 1, md: 3 },
+                gap: { xs: 1, md: 2 },
                 overflow: 'hidden',
-                backgroundColor: 'transparent',
-                mx: '10%',
-                maxWidth: '100%'
+                p: { xs: 1, md: 2 },
+                height: '100%'
               }}>
                 {/* Left panel - Cohort info and module list */}
                 <Box sx={{ 
-                  width: { xs: '100%', md: '320px', lg: '380px' },
-                  height: { xs: 'auto', md: '100%' },
+                  flexBasis: { xs: '100%', md: '380px' },
                   flexShrink: 0,
-                  position: 'relative',
-                  backgroundColor: 'transparent'
+                  overflow: 'auto',
+                  backgroundColor: 'transparent',
+                  height: { xs: 'auto', md: '100%' },
+                  minHeight: 0, // For flex children to scroll properly
+                  boxShadow: theme.palette.mode === 'light' ? '0 4px 12px rgba(15, 15, 15, 0.06)' : 'none',
+                  border: theme.palette.mode === 'light' ? '1px solid rgba(15, 15, 15, 0.08)' : 'none',
+                  borderRadius: '10px'
                 }}>
                   <CohortDetailLeft 
                     cohort={cohort} 
@@ -1101,41 +1111,54 @@ const CohortDetail = () => {
                   />
                 </Box>
                 
-            {/* Right panel - Various content based on selection */}
+                {/* Right panel - Various content based on selection */}
                 <Box sx={{ 
-                  flexGrow: 1,
-                  height: { xs: 'calc(100vh - 380px)', md: '100%' },
+                  flex: 1,
                   overflow: 'hidden',
                   backgroundColor: 'transparent',
-                  marginLeft: { md: '400px', lg: '440px' },
-                  width: { md: 'calc(100% - 420px)', lg: 'calc(100% - 460px)' }
-                }}>
-                  {showProgress ? (
-                    <CohortProgress 
-                      cohort={cohort}
-                      userProgress={cohort.userProgress}
-                    />
-              ) : showStats && isAdmin ? (
-                <Box sx={{ 
-                  p: { xs: 2, md: 2 }, 
-                  height: '120%', 
-                  bgcolor: theme.palette.mode === 'dark' ? '#000000' : '#FFFFFF',
-                  color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#333333',
-                  borderRadius: { xs: 0, md: '10px' },
-                  ml: { xs: 0, md: 0 },
-                  boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
+                  height: { xs: 'calc(100vh - 380px)', md: '100%' },
+                  minHeight: 0,
                   display: 'flex',
                   flexDirection: 'column',
-                  position: { md: 'fixed' },
-                  width: { md: 'calc(100% - 490px)', lg: 'calc(100% - 520px)' },
-                  right: { md: '24px', lg: '40px' },
-                  top: { md: 'calc(60px + 24px)' },
-                  maxHeight: { md: 'calc(100vh - 60px - 48px)' },
-                  overflowY: 'auto'
+                  boxShadow: theme.palette.mode === 'light' ? '0 4px 12px rgba(15, 15, 15, 0.06)' : 'none',
+                  border: theme.palette.mode === 'light' ? '1px solid rgba(15, 15, 15, 0.08)' : 'none',
+                  borderRadius: '10px'
                 }}>
-                  <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>Cohort Statistics</Typography>
-                  <CohortStats cohortId={id} token={token} />
-                </Box>
+                  {showProgress ? (
+                    <Box sx={{ 
+                      height: '100%',
+                      width: '100%', 
+                      bgcolor: theme.palette.mode === 'dark' ? '#000000' : '#FFFFFF',
+                      color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#0F0F0F',
+                      borderRadius: { xs: 0, md: '10px' },
+                      boxShadow: theme.palette.mode === 'dark' ? '0 4px 15px rgba(0,0,0,0.15)' : '0 4px 12px rgba(15, 15, 15, 0.06)',
+                      border: theme.palette.mode === 'light' ? '1px solid rgba(15, 15, 15, 0.08)' : 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'auto'
+                    }}>
+                      <CohortProgress 
+                        cohort={cohort}
+                        userProgress={cohort.userProgress}
+                        isAdmin={isAdmin}
+                      />
+                    </Box>
+                  ) : showStats && isAdmin ? (
+                    <Box sx={{ 
+                      height: '100%',
+                      width: '100%', 
+                      bgcolor: theme.palette.mode === 'dark' ? '#000000' : '#FFFFFF',
+                      color: theme.palette.mode === 'dark' ? '#FFFFFF' : '#0F0F0F',
+                      borderRadius: { xs: 0, md: '10px' },
+                      boxShadow: theme.palette.mode === 'dark' ? '0 4px 15px rgba(0,0,0,0.15)' : '0 4px 12px rgba(15, 15, 15, 0.06)',
+                      border: theme.palette.mode === 'light' ? '1px solid rgba(15, 15, 15, 0.08)' : 'none',
+                      display: 'flex',
+                      flexDirection: 'column',
+                      overflow: 'auto'
+                    }}>
+                      <Typography variant="h5" sx={{ mb: 3, fontWeight: 600, p: 2 }}>Cohort Statistics</Typography>
+                      <CohortStats cohortId={id} token={token} />
+                    </Box>
                   ) : currentModule ? (
                     <CohortDetailRight 
                       module={currentModule} 
@@ -1153,170 +1176,167 @@ const CohortDetail = () => {
                       display: 'flex', 
                       justifyContent: 'center', 
                       alignItems: 'center', 
-                      height: '100%', 
+                      height: '100%',
                       borderRadius: '10px',
-                      backgroundColor: theme.palette.mode === 'dark' ? '#0E1117' : '#f2f7fa',
-                      position: { md: 'fixed' },
-                      width: { md: 'calc(100% - 490px)', lg: 'calc(100% - 520px)' },
-                      right: { md: '24px', lg: '40px' },
-                      top: { md: 'calc(60px + 24px)' },
-                      maxHeight: { md: 'calc(100vh - 60px - 48px)' }
+                      backgroundColor: theme.palette.mode === 'dark' ? '#0E1117' : '#ffffff',
+                      boxShadow: theme.palette.mode === 'light' ? '0 4px 12px rgba(15, 15, 15, 0.06)' : 'none',
+                      border: theme.palette.mode === 'light' ? '1px solid rgba(15, 15, 15, 0.08)' : 'none',
                     }}>
-                      <Typography variant="h5" sx={{ color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
-                    {isAdmin 
-                      ? "Select a module or add a new one to get started" 
-                      : "Select a module to view its questions"}
+                      <Typography variant="h5" sx={{ color: theme.palette.mode === 'dark' ? 'rgba(255,255,255,0.7)' : 'rgba(15,15,15,0.7)' }}>
+                        {isAdmin 
+                          ? "Select a module or add a new one to get started" 
+                          : "Select a module to view its questions"}
                       </Typography>
                     </Box>
                   )}
                 </Box>
               </Box>
-            </Grid>
+            </Box>
       ) : (
         <Alert severity="error">
           Cohort not found or you don't have permission to view it.
         </Alert>
-          )}
-          
+      )}
+      
       {/* Module dialog */}
-          {isAdmin && (
-            <Dialog
-              open={openModuleDialog}
-              onClose={handleCloseModuleDialog}
-              maxWidth="md"
-              fullWidth
+      {isAdmin && (
+        <Dialog
+          open={openModuleDialog}
+          onClose={handleCloseModuleDialog}
+          maxWidth="md"
+          fullWidth
+        >
+          <DialogTitle>
+            {isEditingModule ? 'Edit Module' : 'Create Module'}
+            <IconButton
+              aria-label="close"
+              onClick={handleCloseModuleDialog}
+              sx={{
+                position: 'absolute',
+                right: 8,
+                top: 8,
+                color: (theme) => theme.palette.grey[500],
+              }}
             >
-              <DialogTitle>
-                {isEditingModule ? 'Edit Module' : 'Create Module'}
-                <IconButton
-                  aria-label="close"
-                  onClick={handleCloseModuleDialog}
-                  sx={{
-                    position: 'absolute',
-                    right: 8,
-                    top: 8,
-                    color: (theme) => theme.palette.grey[500],
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </DialogTitle>
-              
-              <DialogContent dividers>
-                <Grid container spacing={3}>
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Title"
-                      name="title"
-                      value={moduleFormData.title}
-                      onChange={(e) => setModuleFormData({ ...moduleFormData, title: e.target.value })}
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Description"
-                      name="description"
-                      value={moduleFormData.description}
-                      onChange={(e) => setModuleFormData({ ...moduleFormData, description: e.target.value })}
-                      multiline
-                      rows={4}
-                      fullWidth
-                      required
-                    />
-                  </Grid>
-                  
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Order"
-                      name="order"
-                      type="number"
-                      value={moduleFormData.order}
-                      onChange={(e) => setModuleFormData({ ...moduleFormData, order: parseInt(e.target.value) })}
-                      fullWidth
-                    />
-                  </Grid>
-                  
-                  <Grid item xs={12} sm={6}>
-                    <TextField
-                      label="Video Resource URL"
-                      name="videoResource"
-                      value={moduleFormData.videoResource}
-                      onChange={(e) => setModuleFormData({ ...moduleFormData, videoResource: e.target.value })}
-                      fullWidth
-                    />
-                  </Grid>
-                  
-                  <Grid item xs={12}>
-                    <TextField
-                      label="Documentation URL"
-                      name="documentationUrl"
-                      value={moduleFormData.documentationUrl}
-                      onChange={(e) => setModuleFormData({ ...moduleFormData, documentationUrl: e.target.value })}
-                      fullWidth
-                    />
-                  </Grid>
-                </Grid>
-              </DialogContent>
-              
-              <DialogActions>
-                <Button onClick={handleCloseModuleDialog} color="inherit">
-                  Cancel
-                </Button>
-                <Button 
-                  onClick={() => handleSaveModule(moduleFormData)}
-                  color="primary"
-                  variant="contained"
-                  startIcon={<SaveIcon />}
-                  disabled={loading}
-                >
-                  {loading ? 'Saving...' : (isEditingModule ? 'Update Module' : 'Create Module')}
-                </Button>
-              </DialogActions>
-            </Dialog>
-          )}
+              <CloseIcon />
+            </IconButton>
+          </DialogTitle>
           
-      {/* Question Form Dialog */}
-            <Dialog
-              open={openQuestionDialog}
-              onClose={handleCloseQuestionDialog}
-              maxWidth="lg"
-              fullWidth
+          <DialogContent dividers>
+            <Grid container spacing={3}>
+              <Grid item xs={12}>
+                <TextField
+                  label="Title"
+                  name="title"
+                  value={moduleFormData.title}
+                  onChange={(e) => setModuleFormData({ ...moduleFormData, title: e.target.value })}
+                  fullWidth
+                  required
+                />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <TextField
+                  label="Description"
+                  name="description"
+                  value={moduleFormData.description}
+                  onChange={(e) => setModuleFormData({ ...moduleFormData, description: e.target.value })}
+                  multiline
+                  rows={4}
+                  fullWidth
+                  required
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Order"
+                  name="order"
+                  type="number"
+                  value={moduleFormData.order}
+                  onChange={(e) => setModuleFormData({ ...moduleFormData, order: parseInt(e.target.value) })}
+                  fullWidth
+                />
+              </Grid>
+              
+              <Grid item xs={12} sm={6}>
+                <TextField
+                  label="Video Resource URL"
+                  name="videoResource"
+                  value={moduleFormData.videoResource}
+                  onChange={(e) => setModuleFormData({ ...moduleFormData, videoResource: e.target.value })}
+                  fullWidth
+                />
+              </Grid>
+              
+              <Grid item xs={12}>
+                <TextField
+                  label="Documentation URL"
+                  name="documentationUrl"
+                  value={moduleFormData.documentationUrl}
+                  onChange={(e) => setModuleFormData({ ...moduleFormData, documentationUrl: e.target.value })}
+                  fullWidth
+                />
+              </Grid>
+            </Grid>
+          </DialogContent>
+          
+          <DialogActions>
+            <Button onClick={handleCloseModuleDialog} color="inherit">
+              Cancel
+            </Button>
+            <Button 
+              onClick={() => handleSaveModule(moduleFormData)}
+              color="primary"
+              variant="contained"
+              startIcon={<SaveIcon />}
+              disabled={loading}
             >
-              <DialogTitle>
+              {loading ? 'Saving...' : (isEditingModule ? 'Update Module' : 'Create Module')}
+            </Button>
+          </DialogActions>
+        </Dialog>
+      )}
+      
+      {/* Question Form Dialog */}
+      <Dialog
+        open={openQuestionDialog}
+        onClose={handleCloseQuestionDialog}
+        maxWidth="lg"
+        fullWidth
+      >
+        <DialogTitle>
           {isEditingQuestion ? 'Edit Question' : 'Add Question'}
-                <IconButton
-                  aria-label="close"
-                  onClick={handleCloseQuestionDialog}
-                  sx={{
-                    position: 'absolute',
-                    right: 8,
-                    top: 8,
+          <IconButton
+            aria-label="close"
+            onClick={handleCloseQuestionDialog}
+            sx={{
+              position: 'absolute',
+              right: 8,
+              top: 8,
               color: (theme) => theme.palette.grey[500]
-                  }}
-                >
-                  <CloseIcon />
-                </IconButton>
-              </DialogTitle>
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+        </DialogTitle>
         <DialogContent>
           {loading ? (
             <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
               <CircularProgress />
             </Box>
           ) : (
-                <QuestionForm
+            <QuestionForm
               key={`question-form-${selectedQuestion?._id || 'new'}`}
-                  initialData={questionFormData}
-                  onSave={handleSaveQuestion}
-                  onCancel={handleCloseQuestionDialog}
-                  moduleId={selectedModule?._id}
-                  isEdit={isEditingQuestion}
-                />
+              initialData={questionFormData}
+              onSave={handleSaveQuestion}
+              onCancel={handleCloseQuestionDialog}
+              moduleId={selectedModule?._id}
+              isEdit={isEditingQuestion}
+            />
           )}
-              </DialogContent>
-            </Dialog>
+        </DialogContent>
+      </Dialog>
     </Box>
   );
 };

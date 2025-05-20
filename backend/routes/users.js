@@ -62,7 +62,8 @@ router.get('/me', auth, async (req, res) => {
         link: achievement.link || '',
         imageUrl: achievement.imageUrl || '',
         startDate: achievement.startDate,
-        endDate: achievement.endDate
+        endDate: achievement.endDate,
+        domainLink: achievement.domainLink || ''
       })),
       codingProfiles,
       totalScore: user.totalScore || 0,
@@ -132,7 +133,8 @@ router.get('/:username', async (req, res) => {
         link: achievement.link || '',
         imageUrl: achievement.imageUrl || '',
         startDate: achievement.startDate,
-        endDate: achievement.endDate
+        endDate: achievement.endDate,
+        domainLink: achievement.domainLink || ''
       })),
       codingProfiles,
       totalScore: user.totalScore || 0,

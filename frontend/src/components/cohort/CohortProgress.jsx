@@ -26,7 +26,8 @@ import {
   Stars as StarsIcon,
   Timeline as TimelineIcon,
   AccessTime as TimeIcon,
-  Equalizer as EqualizerIcon
+  Equalizer as EqualizerIcon,
+  People as PeopleIcon
 } from '@mui/icons-material';
 import axios from 'axios';
 import { apiUrl } from '../../config/apiConfig';
@@ -58,7 +59,7 @@ function TabPanel(props) {
   );
 }
 
-const CohortProgress = ({ cohort, userProgress }) => {
+const CohortProgress = ({ cohort, userProgress, isAdmin }) => {
   const theme = useTheme();
   const isDarkMode = theme.palette.mode === 'dark';
   const { token } = useAuth();
@@ -66,14 +67,21 @@ const CohortProgress = ({ cohort, userProgress }) => {
   const [loading, setLoading] = useState(true);
   const [leaderboard, setLeaderboard] = useState([]);
   const [stats, setStats] = useState(null);
-  const [activeTab, setActiveTab] = useState(0);
+  const [activeTab, setActiveTab] = useState(isAdmin ? 0 : 0);
   
   useEffect(() => {
     if (cohort && cohort._id) {
       fetchLeaderboard();
+      if (isAdmin) {
       fetchStats();
     }
-  }, [cohort]);
+    }
+  }, [cohort, isAdmin]);
+  
+  // When isAdmin changes, reset to the first tab
+  useEffect(() => {
+    setActiveTab(0);
+  }, [isAdmin]);
   
   const fetchLeaderboard = async () => {
     try {
@@ -88,6 +96,7 @@ const CohortProgress = ({ cohort, userProgress }) => {
       );
       
       setLeaderboard(response.data || []);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching leaderboard:', error);
       // Create sample data for display
@@ -99,7 +108,6 @@ const CohortProgress = ({ cohort, userProgress }) => {
         { user: { name: 'Michael Brown', avatar: '' }, score: 280, rank: 5, questionsCompleted: 9, bestStreak: 3 },
       ];
       setLeaderboard(sampleLeaderboard);
-    } finally {
       setLoading(false);
     }
   };
@@ -116,29 +124,19 @@ const CohortProgress = ({ cohort, userProgress }) => {
         }
       );
       
-      setStats(response.data || null);
+      // Set the stats directly from the backend response
+      setStats(response.data);
+      setLoading(false);
     } catch (error) {
       console.error('Error fetching stats:', error);
-      // Create sample data for display
-      const sampleStats = {
-        totalEnrolled: 25,
-        activeUsers: 18,
-        avgCompletion: 68,
-        difficultyCompletion: {
-          easy: 85,
-          medium: 60,
-          hard: 35
-        },
-        moduleCompletionRates: [
-          { name: 'Introduction', completion: 95 },
-          { name: 'Data Structures', completion: 75 },
-          { name: 'Algorithms', completion: 60 },
-          { name: 'Advanced Topics', completion: 40 }
-        ],
-        lastWeekActivity: 65,
-        topPerformers: 5
-      };
-      setStats(sampleStats);
+      // Create sample data for display if API fails
+      setStats({
+        totalEnrolled: 0,
+        activeUsers: 0,
+        completionRate: 0,
+        moduleCompletionRates: []
+      });
+      setLoading(false);
     }
   };
   
@@ -146,33 +144,74 @@ const CohortProgress = ({ cohort, userProgress }) => {
     setActiveTab(newValue);
   };
   
-  // Get user's position in leaderboard
-  const getUserRank = () => {
-    if (!userProgress || !leaderboard.length) return null;
-    
-    const userInLeaderboard = leaderboard.find(entry => 
-      entry.user && entry.user._id === userProgress.user
-    );
-    
-    return userInLeaderboard ? userInLeaderboard.rank : leaderboard.length + 1;
+  // Compute the questions completed count from the questionProgress array
+  const getQuestionsCompletedCount = () => {
+    if (!userProgress || !userProgress.questionProgress) return 0;
+    return userProgress.questionProgress.filter(q => q.solved).length;
   };
+
+  // Generate difficulty progress data using the questionProgress array
+  const calculateDifficultyProgress = () => {
+    if (!userProgress || !userProgress.questionProgress || !cohort.modules) return { easy: { completed: 0, total: 0, percentage: 0 }, medium: { completed: 0, total: 0, percentage: 0 }, hard: { completed: 0, total: 0, percentage: 0 } };
+    
+    // Initialize counters
+    const progress = {
+      easy: { completed: 0, total: 0 },
+      medium: { completed: 0, total: 0 },
+      hard: { completed: 0, total: 0 }
+    };
+    
+    // Get all questions from all modules
+    const allQuestions = [];
+    cohort.modules.forEach(module => {
+      if (module.questions && module.questions.length > 0) {
+        allQuestions.push(...module.questions);
+      }
+    });
+    
+    // Count questions by difficulty
+    allQuestions.forEach(question => {
+      const difficulty = question.difficultyLevel?.toLowerCase() || 'medium';
+      if (progress[difficulty]) {
+        progress[difficulty].total++;
+      }
+    });
+    
+    // Count completed questions by difficulty
+    userProgress.questionProgress.forEach(qp => {
+      if (qp.solved) {
+        // Find the question to determine its difficulty
+        const question = allQuestions.find(q => q._id === qp.question);
+        if (question) {
+          const difficulty = question.difficultyLevel?.toLowerCase() || 'medium';
+          if (progress[difficulty]) {
+            progress[difficulty].completed++;
+          }
+        }
+      }
+    });
+    
+    // Calculate percentages
+    Object.keys(progress).forEach(key => {
+      progress[key].percentage = progress[key].total > 0 ? 
+        (progress[key].completed / progress[key].total) * 100 : 0;
+    });
+    
+    return progress;
+  };
+
+  const difficultyProgress = calculateDifficultyProgress();
 
   return (
     <Box sx={{ 
       p: { xs: 2, md: 3 }, 
       height: '100%', 
-      bgcolor: isDarkMode ? '#000000' : '#FFFFFF',
+      bgcolor: 'transparent',
       color: isDarkMode ? '#FFFFFF' : '#333333',
       borderRadius: { xs: 0, md: '10px' },
-      ml: { xs: 0, md: 0 },
-      boxShadow: '0 4px 15px rgba(0,0,0,0.15)',
       display: 'flex',
       flexDirection: 'column',
-      position: { md: 'fixed' },
-      width: { md: 'calc(100% - 490px)', lg: 'calc(100% - 520px)' },
-      right: { md: '24px', lg: '40px' },
-      top: { md: 'calc(60px + 24px)' },
-      maxHeight: { md: 'calc(100vh - 60px - 48px)' }
+      overflow: 'auto'
     }}>
       {/* Progress Dashboard Header */}
       <Box sx={{ mb: 2 }}>
@@ -202,9 +241,9 @@ const CohortProgress = ({ cohort, userProgress }) => {
             }
           }}
         >
-          <Tab label="Overview" />
+          {!isAdmin && <Tab label="Overview" />}
           <Tab label="Leaderboard" />
-          <Tab label="Statistics" />
+          {isAdmin && <Tab label="Statistics" />}
         </Tabs>
       </Box>
 
@@ -224,7 +263,8 @@ const CohortProgress = ({ cohort, userProgress }) => {
           borderRadius: '4px',
         },
       }}>
-        {/* Overview Panel */}
+        {/* Overview Panel - Only for regular users */}
+        {!isAdmin && (
         <TabPanel value={activeTab} index={0}>
           {/* Your Progress Summary */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
@@ -268,7 +308,7 @@ const CohortProgress = ({ cohort, userProgress }) => {
                     <Grid item xs={12} md={4}>
                       <Box sx={{ textAlign: 'center', p: 2 }}>
                         <Typography variant="h3" sx={{ fontWeight: 700, color: '#0088CC', mb: 1 }}>
-                          {userProgress?.questionsCompleted || '0'}
+                            {getQuestionsCompletedCount()}
                         </Typography>
                         <Typography variant="body2" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
                           Questions Completed
@@ -278,7 +318,7 @@ const CohortProgress = ({ cohort, userProgress }) => {
                     <Grid item xs={12} md={4}>
                       <Box sx={{ textAlign: 'center', p: 2 }}>
                         <Typography variant="h3" sx={{ fontWeight: 700, color: '#0088CC', mb: 1 }}>
-                          #{getUserRank() || '-'}
+                            #{userProgress?.rank || '-'}
                         </Typography>
                         <Typography variant="body2" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
                           Your Rank
@@ -303,14 +343,14 @@ const CohortProgress = ({ cohort, userProgress }) => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#4caf50' }}>Easy</Typography>
                     <Chip 
-                      label={`${userProgress?.difficultyProgress?.easy?.completed || 0}/${userProgress?.difficultyProgress?.easy?.total || 0}`} 
+                        label={`${difficultyProgress.easy.completed}/${difficultyProgress.easy.total}`} 
                       size="small" 
                       sx={{ bgcolor: alpha('#4caf50', 0.1), color: '#4caf50' }}
                     />
                   </Box>
                   <LinearProgress 
                     variant="determinate" 
-                    value={userProgress?.difficultyProgress?.easy?.percentage || 0}
+                      value={difficultyProgress.easy.percentage}
                     sx={{
                       height: 8,
                       borderRadius: 4,
@@ -329,14 +369,14 @@ const CohortProgress = ({ cohort, userProgress }) => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#ff9800' }}>Medium</Typography>
                     <Chip 
-                      label={`${userProgress?.difficultyProgress?.medium?.completed || 0}/${userProgress?.difficultyProgress?.medium?.total || 0}`} 
+                        label={`${difficultyProgress.medium.completed}/${difficultyProgress.medium.total}`} 
                       size="small" 
                       sx={{ bgcolor: alpha('#ff9800', 0.1), color: '#ff9800' }}
                     />
                   </Box>
                   <LinearProgress 
                     variant="determinate" 
-                    value={userProgress?.difficultyProgress?.medium?.percentage || 0}
+                      value={difficultyProgress.medium.percentage}
                     sx={{
                       height: 8,
                       borderRadius: 4,
@@ -355,14 +395,14 @@ const CohortProgress = ({ cohort, userProgress }) => {
                   <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
                     <Typography variant="subtitle1" sx={{ fontWeight: 600, color: '#f44336' }}>Hard</Typography>
                     <Chip 
-                      label={`${userProgress?.difficultyProgress?.hard?.completed || 0}/${userProgress?.difficultyProgress?.hard?.total || 0}`} 
+                        label={`${difficultyProgress.hard.completed}/${difficultyProgress.hard.total}`} 
                       size="small" 
                       sx={{ bgcolor: alpha('#f44336', 0.1), color: '#f44336' }}
                     />
                   </Box>
                   <LinearProgress 
                     variant="determinate" 
-                    value={userProgress?.difficultyProgress?.hard?.percentage || 0}
+                      value={difficultyProgress.hard.percentage}
                     sx={{
                       height: 8,
                       borderRadius: 4,
@@ -377,24 +417,100 @@ const CohortProgress = ({ cohort, userProgress }) => {
             </Grid>
           </Grid>
 
-          {/* Recent Activity and Top Performers */}
+            {/* Module Progress */}
+            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+              Module Progress
+            </Typography>
+            
+            <Grid container spacing={3} sx={{ mb: 4 }}>
+              {userProgress?.moduleProgress && userProgress.moduleProgress.length > 0 ? (
+                userProgress.moduleProgress.map((module, index) => {
+                  // Find the module name from cohort.modules
+                  const moduleData = cohort.modules?.find(m => m._id === module.module);
+                  const moduleName = moduleData?.title || `Module ${index + 1}`;
+                  
+                  return (
+                    <Grid item xs={12} key={index}>
+                      <Card sx={{ bgcolor: isDarkMode ? '#000D16' : '#f5f8fa', borderRadius: 2 }}>
+                        <CardContent>
+                          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 2 }}>
+                            <Typography variant="subtitle1" sx={{ fontWeight: 600 }}>{moduleName}</Typography>
+                            <Chip 
+                              label={`${module.questionsCompleted}/${module.totalQuestions}`} 
+                              size="small" 
+                              sx={{ 
+                                bgcolor: alpha('#0088CC', 0.1), 
+                                color: '#0088CC' 
+                              }}
+                            />
+                          </Box>
+                          <LinearProgress 
+                            variant="determinate" 
+                            value={module.totalQuestions > 0 ? (module.questionsCompleted / module.totalQuestions) * 100 : 0}
+                            sx={{
+                              height: 8,
+                              borderRadius: 4,
+                              bgcolor: alpha('#0088CC', 0.15),
+                              '& .MuiLinearProgress-bar': {
+                                bgcolor: '#0088CC',
+                              }
+                            }}
+                          />
+                        </CardContent>
+                      </Card>
+                    </Grid>
+                  );
+                })
+              ) : (
+                <Grid item xs={12}>
+                  <Box sx={{ p: 3, textAlign: 'center' }}>
+                    <Typography variant="body1" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                      No module progress available.
+                    </Typography>
+                  </Box>
+                </Grid>
+              )}
+            </Grid>
+
+            {/* Recent Activity */}
           <Grid container spacing={3}>
-            <Grid item xs={12} md={7}>
+              <Grid item xs={12}>
               <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
                 Your Recent Activity
               </Typography>
               
               <Card sx={{ bgcolor: isDarkMode ? '#000D16' : '#f5f8fa', borderRadius: 2, mb: 2 }}>
                 <CardContent sx={{ p: 0 }}>
-                  {userProgress?.recentActivity?.length > 0 ? (
+                    {userProgress?.questionProgress && userProgress.questionProgress.length > 0 ? (
                     <Box component="ul" sx={{ listStyle: 'none', p: 0, m: 0 }}>
-                      {(userProgress?.recentActivity || []).map((activity, index) => (
+                        {userProgress.questionProgress
+                          .filter(qp => qp.solved) // Only show solved questions
+                          .sort((a, b) => new Date(b.solvedAt || 0) - new Date(a.solvedAt || 0)) // Sort by most recent
+                          .slice(0, 5) // Show only 5 most recent
+                          .map((activity, index) => {
+                            // Try to find question details
+                            let questionTitle = "Question solved";
+                            let questionData = null;
+                            
+                            // Search for the question in all modules
+                            cohort.modules?.forEach(module => {
+                              module.questions?.forEach(question => {
+                                if (question._id === activity.question) {
+                                  questionData = question;
+                                  questionTitle = question.title;
+                                }
+                              });
+                            });
+                            
+                            const formattedDate = activity.solvedAt ? new Date(activity.solvedAt).toLocaleDateString() : 'Unknown date';
+                            
+                            return (
                         <Box 
                           component="li" 
                           key={index}
                           sx={{ 
                             p: 2, 
-                            borderBottom: index < userProgress.recentActivity.length - 1 ? `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` : 'none',
+                                  borderBottom: index < Math.min(4, userProgress.questionProgress.filter(qp => qp.solved).length - 1) ? `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` : 'none',
                             display: 'flex',
                             alignItems: 'center'
                           }}
@@ -406,101 +522,45 @@ const CohortProgress = ({ cohort, userProgress }) => {
                             display: 'flex',
                             alignItems: 'center',
                             justifyContent: 'center',
-                            bgcolor: activity.type === 'solved' ? alpha('#4caf50', 0.2) : alpha('#0088CC', 0.2),
-                            color: activity.type === 'solved' ? '#4caf50' : '#0088CC',
+                                  bgcolor: alpha('#4caf50', 0.2),
+                                  color: '#4caf50',
                             mr: 2
                           }}>
-                            {activity.type === 'solved' ? <TrophyIcon /> : <TimeIcon />}
+                                  <TrophyIcon />
                           </Box>
                           <Box sx={{ flex: 1 }}>
                             <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                              {activity.title}
+                                    {questionTitle}
                             </Typography>
                             <Typography variant="body2" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
-                              {activity.timestamp}
+                                    {formattedDate}
                             </Typography>
                           </Box>
-                          {activity.type === 'solved' && (
                             <Chip 
-                              label={`+${activity.points} points`} 
+                                  label={`+${activity.bestScore} points`} 
                               size="small" 
                               sx={{ bgcolor: alpha('#4caf50', 0.1), color: '#4caf50' }}
                             />
-                          )}
                         </Box>
-                      ))}
+                            );
+                          })}
                     </Box>
                   ) : (
                     <Box sx={{ p: 3, textAlign: 'center' }}>
                       <Typography variant="body1" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
-                        No recent activity found.
+                          No recent activity found. Solve some questions to see your activity here!
                       </Typography>
                     </Box>
                   )}
                 </CardContent>
               </Card>
             </Grid>
-            
-            <Grid item xs={12} md={5}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-                Top Performers
-              </Typography>
-              
-              <Card sx={{ bgcolor: isDarkMode ? '#000D16' : '#f5f8fa', borderRadius: 2 }}>
-                <CardContent sx={{ p: 0 }}>
-                  {leaderboard.slice(0, 5).map((entry, index) => (
-                    <Box 
-                      key={index}
-                      sx={{ 
-                        p: 2, 
-                        borderBottom: index < 4 ? `1px solid ${isDarkMode ? 'rgba(255,255,255,0.1)' : 'rgba(0,0,0,0.1)'}` : 'none',
-                        display: 'flex',
-                        alignItems: 'center'
-                      }}
-                    >
-                      <Box sx={{
-                        width: 28,
-                        height: 28,
-                        borderRadius: '50%',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        bgcolor: index === 0 ? '#FFD700' : index === 1 ? '#C0C0C0' : index === 2 ? '#CD7F32' : 'transparent',
-                        color: index <= 2 ? '#000000' : isDarkMode ? '#ffffff' : '#000000',
-                        fontWeight: 'bold',
-                        mr: 2
-                      }}>
-                        {index + 1}
-                      </Box>
-                      
-                      <Avatar 
-                        alt={entry.user?.name || 'User'} 
-                        src={entry.user?.avatar} 
-                        sx={{ width: 36, height: 36, mr: 2 }}
-                      />
-                      
-                      <Box sx={{ flex: 1 }}>
-                        <Typography variant="body1" sx={{ fontWeight: 600 }}>
-                          {entry.user?.name || 'Anonymous'}
-                        </Typography>
-                        <Typography variant="body2" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.6)' : 'rgba(0,0,0,0.6)' }}>
-                          {entry.questionsCompleted} questions solved
-                        </Typography>
-                      </Box>
-                      
-                      <Typography variant="body1" sx={{ fontWeight: 'bold', color: '#0088CC' }}>
-                        {entry.score} pts
-                      </Typography>
-                    </Box>
-                  ))}
-                </CardContent>
-              </Card>
-            </Grid>
           </Grid>
         </TabPanel>
+        )}
 
         {/* Leaderboard Panel */}
-        <TabPanel value={activeTab} index={1}>
+        <TabPanel value={activeTab} index={isAdmin ? 0 : 1}>
           <TableContainer component={Paper} sx={{ 
             boxShadow: 'none', 
             bgcolor: isDarkMode ? '#000D16' : '#f5f8fa',
@@ -513,8 +573,7 @@ const CohortProgress = ({ cohort, userProgress }) => {
                 <TableRow>
                   <TableCell sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#333333' }}>Rank</TableCell>
                   <TableCell sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#333333' }}>User</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#333333' }}>Questions Solved</TableCell>
-                  <TableCell align="center" sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#333333' }}>Best Streak</TableCell>
+                  <TableCell align="center" sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#333333' }}>Modules Completed</TableCell>
                   <TableCell align="right" sx={{ fontWeight: 'bold', color: isDarkMode ? '#ffffff' : '#333333' }}>Score</TableCell>
                 </TableRow>
               </TableHead>
@@ -574,17 +633,14 @@ const CohortProgress = ({ cohort, userProgress }) => {
                       </Box>
                     </TableCell>
                     <TableCell align="center" sx={{ color: isDarkMode ? '#ffffff' : '#333333' }}>
-                      {entry.questionsCompleted || 0}
-                    </TableCell>
-                    <TableCell align="center" sx={{ color: isDarkMode ? '#ffffff' : '#333333' }}>
-                      {entry.bestStreak || 0} days
+                      {entry.completedModules || 0}
                     </TableCell>
                     <TableCell align="right" sx={{ 
                       color: '#0088CC',
                       fontWeight: 'bold',
                       fontSize: '1.1rem'
                     }}>
-                      {entry.score || 0}
+                      {entry.totalScore || 0}
                     </TableCell>
                   </TableRow>
                 ))}
@@ -594,10 +650,11 @@ const CohortProgress = ({ cohort, userProgress }) => {
         </TabPanel>
 
         {/* Statistics Panel */}
-        <TabPanel value={activeTab} index={2}>
+        {isAdmin && (
+          <TabPanel value={activeTab} index={1}>
           {/* Cohort Stats Summary */}
           <Grid container spacing={3} sx={{ mb: 4 }}>
-            <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
               <Card sx={{ 
                 bgcolor: isDarkMode ? '#000D16' : '#f5f8fa', 
                 borderRadius: 2,
@@ -612,12 +669,32 @@ const CohortProgress = ({ cohort, userProgress }) => {
                     {stats?.totalEnrolled || 0}
                   </Typography>
                   <Typography variant="body1" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
-                    Students Enrolled
+                      Eligible Students
+                    </Typography>
+                  </CardContent>
+                </Card>
+              </Grid>
+              <Grid item xs={12} md={3}>
+                <Card sx={{ 
+                  bgcolor: isDarkMode ? '#000D16' : '#f5f8fa', 
+                  borderRadius: 2,
+                  height: '100%',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  justifyContent: 'center'
+                }}>
+                  <CardContent sx={{ textAlign: 'center', py: 3 }}>
+                    <PeopleIcon sx={{ fontSize: 40, color: '#0088CC', mb: 1 }} />
+                    <Typography variant="h4" sx={{ fontWeight: 700, color: isDarkMode ? '#ffffff' : '#333333' }}>
+                      {stats?.enrolledUsers || 0}
+                    </Typography>
+                    <Typography variant="body1" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
+                      Enrolled Students
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
               <Card sx={{ 
                 bgcolor: isDarkMode ? '#000D16' : '#f5f8fa', 
                 borderRadius: 2,
@@ -629,15 +706,15 @@ const CohortProgress = ({ cohort, userProgress }) => {
                 <CardContent sx={{ textAlign: 'center', py: 3 }}>
                   <TimelineIcon sx={{ fontSize: 40, color: '#0088CC', mb: 1 }} />
                   <Typography variant="h4" sx={{ fontWeight: 700, color: isDarkMode ? '#ffffff' : '#333333' }}>
-                    {stats?.avgCompletion || 0}%
+                      {stats?.completionRate || 0}%
                   </Typography>
                   <Typography variant="body1" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }}>
-                    Average Completion
+                      Completion Rate
                   </Typography>
                 </CardContent>
               </Card>
             </Grid>
-            <Grid item xs={12} md={4}>
+              <Grid item xs={12} md={3}>
               <Card sx={{ 
                 bgcolor: isDarkMode ? '#000D16' : '#f5f8fa', 
                 borderRadius: 2,
@@ -658,91 +735,6 @@ const CohortProgress = ({ cohort, userProgress }) => {
               </Card>
             </Grid>
           </Grid>
-
-          {/* Completion by Difficulty */}
-          <Box sx={{ mb: 4 }}>
-            <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
-              Completion by Difficulty
-            </Typography>
-            <Card sx={{ bgcolor: isDarkMode ? '#000D16' : '#f5f8fa', borderRadius: 2 }}>
-              <CardContent>
-                <Grid container spacing={2}>
-                  <Grid item xs={12}>
-                    <Box sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body1" sx={{ fontWeight: 500, color: '#4caf50' }}>
-                          Easy
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {stats?.difficultyCompletion?.easy || 0}%
-                        </Typography>
-                      </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={stats?.difficultyCompletion?.easy || 0}
-                        sx={{
-                          height: 8,
-                          borderRadius: 4,
-                          bgcolor: alpha('#4caf50', 0.15),
-                          '& .MuiLinearProgress-bar': {
-                            bgcolor: '#4caf50',
-                          }
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box sx={{ mb: 2 }}>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body1" sx={{ fontWeight: 500, color: '#ff9800' }}>
-                          Medium
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {stats?.difficultyCompletion?.medium || 0}%
-                        </Typography>
-                      </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={stats?.difficultyCompletion?.medium || 0}
-                        sx={{
-                          height: 8,
-                          borderRadius: 4,
-                          bgcolor: alpha('#ff9800', 0.15),
-                          '& .MuiLinearProgress-bar': {
-                            bgcolor: '#ff9800',
-                          }
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                  <Grid item xs={12}>
-                    <Box>
-                      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 1 }}>
-                        <Typography variant="body1" sx={{ fontWeight: 500, color: '#f44336' }}>
-                          Hard
-                        </Typography>
-                        <Typography variant="body1" sx={{ fontWeight: 500 }}>
-                          {stats?.difficultyCompletion?.hard || 0}%
-                        </Typography>
-                      </Box>
-                      <LinearProgress 
-                        variant="determinate" 
-                        value={stats?.difficultyCompletion?.hard || 0}
-                        sx={{
-                          height: 8,
-                          borderRadius: 4,
-                          bgcolor: alpha('#f44336', 0.15),
-                          '& .MuiLinearProgress-bar': {
-                            bgcolor: '#f44336',
-                          }
-                        }}
-                      />
-                    </Box>
-                  </Grid>
-                </Grid>
-              </CardContent>
-            </Card>
-          </Box>
 
           {/* Module Completion Rates */}
           <Box sx={{ mb: 4 }}>
@@ -778,11 +770,21 @@ const CohortProgress = ({ cohort, userProgress }) => {
                       </Box>
                     </Grid>
                   ))}
+                    {!stats?.moduleCompletionRates || stats.moduleCompletionRates.length === 0 ? (
+                      <Grid item xs={12}>
+                        <Box sx={{ p: 3, textAlign: 'center' }}>
+                          <Typography variant="body1" sx={{ color: isDarkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)' }}>
+                            No module data available.
+                          </Typography>
+                        </Box>
+                      </Grid>
+                    ) : null}
                 </Grid>
               </CardContent>
             </Card>
           </Box>
         </TabPanel>
+        )}
       </Box>
     </Box>
   );

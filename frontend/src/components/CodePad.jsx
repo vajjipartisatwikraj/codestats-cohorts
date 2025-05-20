@@ -41,7 +41,7 @@ import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
 
 import Editor from '@monaco-editor/react';
 import { useTheme } from '../contexts/ThemeContext';
-import compilerService from '../utils/compilerService';
+import axios from 'axios';
 
 // Programming language icons/logos using SimpleIcons CDN
 const LanguageIcons = (darkMode) => ({
@@ -217,13 +217,19 @@ const CodePad = () => {
     setOutputStatus('idle');
     
     try {
-      // Use the compiler service to execute the code
-      const result = await compilerService.executeCode(
-        language, 
-        LANGUAGES[language].version, 
-        code,
-        input
+      // Use the backend API to execute the code
+      const apiUrl = import.meta.env.VITE_API_URL || '';
+      const response = await axios.post(
+        `${apiUrl}/compiler/execute`,
+        {
+          language,
+          version: LANGUAGES[language].version,
+          code,
+          stdin: input
+        }
       );
+      
+      const result = response.data.result;
       
       // Set the output and status based on the response
       const outputText = result.run.output || 'No output';
@@ -378,21 +384,17 @@ const CodePad = () => {
     <Box 
       ref={containerRef}
       sx={{ 
-      width: '100vw', 
-      height: 'calc(100vh - 65px)',
+      width: '100%', 
+      height: '100%',
       display: 'flex', 
       flexDirection: 'column',
-        bgcolor: darkMode ? '#0e1117' : '#f5f7fa',
-      position: 'absolute',
-      top: '65px',
-      left: 0,
-      right: 0,
-      bottom: 0,
+      bgcolor: darkMode ? '#0e1117' : '#f5f7fa',
+      position: 'relative',
       m: 0,
       p: 0,
       boxSizing: 'border-box',
       overflow: 'hidden',
-      zIndex: 10,
+      zIndex: 0, // Reduced z-index
       borderRadius: 0,
       border: 'none',
       boxShadow: darkMode ? 'none' : '0 4px 20px rgba(0,0,0,0.05)',
@@ -414,7 +416,8 @@ const CodePad = () => {
         width: '100%',
         p: 1.5,
         gap: 1.5,
-        bgcolor: darkMode ? '#060709' : '#f0f2f5'
+        bgcolor: darkMode ? '#060709' : '#f0f2f5',
+        boxSizing: 'border-box'
       }}>
         {/* Left side - Code Editor */}
         <Box sx={{ 

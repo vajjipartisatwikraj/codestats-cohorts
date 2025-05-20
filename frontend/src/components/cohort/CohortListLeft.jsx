@@ -19,29 +19,31 @@ const CohortCard = styled(ListItemButton)(({ theme, isActive, darkMode }) => ({
   marginBottom: '16px',
   padding: '12px',
   transition: 'all 0.3s ease',
-  background: 'transparent',
-  border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)'}`,
+  background: darkMode ? 'transparent' : '#FFFFFF',
+  border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(15, 15, 15, 0.08)'}`,
+  boxShadow: darkMode ? 'none' : '0 4px 12px rgba(15, 15, 15, 0.06)',
   position: 'relative',
   overflow: 'hidden',
-  '&::after': {
+  '&::after': darkMode ? {
     content: '""',
     position: 'absolute',
     bottom: -180,
     right: -100,
     width: '300px',
     height: '300px',
-    background: darkMode 
-      ? 'rgba(30, 111, 169, 0.65)'
-      : 'rgba(30, 111, 169, 0.35)',
+    background: 'rgba(30, 111, 169, 0.65)',
     filter: 'blur(100px)',
     borderRadius: '50%',
     pointerEvents: 'none',
     zIndex: 1
-  },
+  } : {},
   '&:hover': {
     backgroundColor: darkMode 
       ? 'rgba(255, 255, 255, 0.03)'
-      : 'rgba(0, 0, 0, 0.03)',
+      : 'rgba(15, 15, 15, 0.02)',
+    boxShadow: darkMode ? 'none' : '0 6px 16px rgba(15, 15, 15, 0.08)',
+    transform: 'translateY(-2px)',
+    border: `1px solid ${darkMode ? 'rgba(255, 255, 255, 0.15)' : 'rgba(15, 15, 15, 0.12)'}`
   }
 }));
 
@@ -64,6 +66,10 @@ const CohortListLeft = ({
         isActive={isActive}
         darkMode={darkMode}
         onClick={() => handleCohortClick(cohort)}
+        sx={{
+          boxShadow: isActive && !darkMode ? '0 6px 20px rgba(15, 15, 15, 0.1)' : undefined,
+          border: isActive && !darkMode ? '1px solid rgba(15, 15, 15, 0.15)' : undefined
+        }}
       >
         <Box sx={{ width: '100%', position: 'relative' }}>
           {/* Removing the blue top bar as requested */}
@@ -76,7 +82,7 @@ const CohortListLeft = ({
                 fontWeight: 700,
                 fontSize: '1.4rem',
                 lineHeight: 1.3,
-                color: darkMode ? 'white' : '#333333',
+                color: darkMode ? 'white' : '#0F0F0F',
                 mb: 1
               }}
             >
@@ -86,7 +92,7 @@ const CohortListLeft = ({
             <Typography 
               variant="body2" 
               sx={{ 
-                color: darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(0, 0, 0, 0.7)',
+                color: darkMode ? 'rgba(255, 255, 255, 0.8)' : 'rgba(15, 15, 15, 0.7)',
                 mb: 2,
                 fontSize: '1rem',
                 opacity: 0.8
@@ -99,7 +105,7 @@ const CohortListLeft = ({
               <Typography 
                 variant="body2" 
                 sx={{ 
-                  color: darkMode ? 'white' : '#333333',
+                  color: darkMode ? 'white' : '#0F0F0F',
                   display: 'flex',
                   alignItems: 'center'
                 }}
@@ -191,9 +197,8 @@ const CohortListLeft = ({
         display: 'flex',
         flexDirection: 'column',
         overflow: 'hidden',
-        width: 'calc(100% - 20px)',
-        maxWidth: '400px',
-        maxHeight: '650px'
+        width: '100%',
+        maxHeight: '100%'
       }}
     >
       {/* Scrollable Cohort List */}
@@ -202,7 +207,6 @@ const CohortListLeft = ({
           flex: 1, 
           overflowY: 'auto',
           height: '100%',
-          maxHeight: '800px',
           pr: 1,
           '&::-webkit-scrollbar': {
             width: '5px',

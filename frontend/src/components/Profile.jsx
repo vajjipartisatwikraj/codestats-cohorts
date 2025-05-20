@@ -6,13 +6,13 @@ import {
   IconButton, Dialog, DialogTitle, DialogContent, DialogActions,
   TextField, Chip, Stack, MenuItem, useMediaQuery, DialogContentText,
   CircularProgress, Divider, Avatar, Tooltip, CardMedia, CardHeader,
-  CardActions, Zoom, Fade, Alert, Collapse
+  CardActions, Zoom, Fade, Alert, Collapse, Autocomplete, InputAdornment
 } from '@mui/material';
 import { useTheme } from '@mui/material/styles';
 import {
   Add as AddIcon, Edit as EditIcon, GitHub, LinkedIn, Email, Phone, School,
   Badge, OpenInNew, Delete as DeleteIcon, Close as CloseIcon,
-  CalendarToday as CalendarIcon, Link as LinkIcon,
+  CalendarToday as CalendarIcon, Link as LinkIcon, Search as SearchIcon,
   VerifiedUser as CertificateIcon, Work as InternshipIcon,
   EmojiEvents as AchievementIcon, Code as ProjectIcon
 } from '@mui/icons-material';
@@ -35,6 +35,154 @@ const achievementTypes = [
 const MAX_ITEMS_PER_TYPE = 5;
 // Types that have limits
 const LIMITED_TYPES = ['project', 'internship'];
+
+// Add the DomainSearch component
+const DomainSearch = ({ onDomainSelect, initialValue }) => {
+  const [searchQuery, setSearchQuery] = useState(initialValue || '');
+  const [domains, setDomains] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const theme = useTheme();
+
+  // Logo.dev public token
+  const LOGO_TOKEN = 'pk_RBjC8X-kSE2wrzZ-kFI4-g';
+  
+  // Search for domains based on query
+  useEffect(() => {
+    if (!searchQuery || searchQuery.length < 2) {
+      setDomains([]);
+      return;
+    }
+
+    setLoading(true);
+    
+    // For demonstration, create domain suggestions based on the input
+    // In a real app, this would call your API
+    setTimeout(() => {
+      // Create dynamic domain options that include common TLDs and the exact input
+      const domainOptions = [
+        { name: searchQuery, domain: searchQuery },
+        { name: `${searchQuery}.com`, domain: `${searchQuery}.com` },
+        { name: `${searchQuery}.org`, domain: `${searchQuery}.org` },
+        { name: `${searchQuery}.net`, domain: `${searchQuery}.net` },
+        { name: `${searchQuery}.ac.in`, domain: `${searchQuery}.ac.in` }
+      ];
+      
+      setDomains(domainOptions);
+      setLoading(false);
+    }, 300);
+  }, [searchQuery]);
+
+  const handleInputChange = (e, newValue) => {
+    setSearchQuery(newValue || '');
+  };
+  
+  const handleChange = (e, option) => {
+    if (option) {
+      onDomainSelect(option.domain);
+    }
+  };
+  
+  const handleKeyDown = (e) => {
+    // If Enter is pressed with no selection, use the raw input
+    if (e.key === 'Enter' && searchQuery && !e.defaultPrevented) {
+      e.preventDefault();
+      onDomainSelect(searchQuery);
+    }
+  };
+
+  return (
+    <Autocomplete
+      freeSolo
+      options={domains}
+      getOptionLabel={(option) => {
+        if (typeof option === 'string') {
+          return option;
+        }
+        return option.domain || '';
+      }}
+      loading={loading}
+      inputValue={searchQuery}
+      onInputChange={handleInputChange}
+      onChange={handleChange}
+      onKeyDown={handleKeyDown}
+      renderInput={(params) => (
+        <TextField
+          {...params}
+          label="Search organization domain"
+          placeholder="e.g. nptel.ac.in, google.com"
+          fullWidth
+          InputProps={{
+            ...params.InputProps,
+            startAdornment: (
+              <>
+                <InputAdornment position="start">
+                  <SearchIcon color="action" />
+                </InputAdornment>
+                {params.InputProps.startAdornment}
+              </>
+            ),
+            endAdornment: (
+              <>
+                {loading ? <CircularProgress color="inherit" size={20} /> : null}
+                {params.InputProps.endAdornment}
+              </>
+            ),
+          }}
+        />
+      )}
+      renderOption={(props, option) => (
+        <li {...props}>
+          <Box sx={{ display: 'flex', alignItems: 'center', width: '100%', gap: 2 }}>
+            <Box
+              component="img"
+              sx={{
+                width: 28,
+                height: 28,
+                objectFit: 'contain',
+                borderRadius: 0.5,
+                bgcolor: 'transparent'
+              }}
+              src={`https://img.logo.dev/${option.domain}?token=${LOGO_TOKEN}`}
+              alt={option.name}
+              onError={(e) => {
+                e.target.src = '/placeholder-logo.png';
+              }}
+            />
+            <Box sx={{ flexGrow: 1, minWidth: 0 }}>
+              <Typography variant="body2" noWrap fontWeight={500}>
+                {option.domain}
+              </Typography>
+            </Box>
+          </Box>
+        </li>
+      )}
+    />
+  );
+};
+
+// Add the DomainLogo component after the DomainSearch component
+const DomainLogo = ({ domain, size = 24 }) => {
+  const LOGO_TOKEN = 'pk_RBjC8X-kSE2wrzZ-kFI4-g';
+  
+  if (!domain) return null;
+  
+  return (
+    <Box
+      component="img"
+      sx={{
+        width: size,
+        height: size,
+        objectFit: 'contain',
+        borderRadius: 0.5
+      }}
+      src={`https://img.logo.dev/${domain}?token=${LOGO_TOKEN}`}
+      alt={domain}
+      onError={(e) => {
+        e.target.src = '/placeholder-logo.png';
+      }}
+    />
+  );
+};
 
 const Profile = () => {
   const auth = useAuth();
@@ -79,6 +227,7 @@ const Profile = () => {
     description: '',
     tags: [],
     link: '',
+    domainLink: '',
     startDate: '',
     endDate: ''
   });
@@ -213,6 +362,7 @@ const Profile = () => {
       description: '',
       tags: [],
       link: '',
+      domainLink: '',
       startDate: '',
       endDate: ''
     });
@@ -230,7 +380,8 @@ const Profile = () => {
     
     setAchievementForm({
       ...achievement,
-      tags: tags
+      tags: tags,
+      domainLink: achievement.domainLink || ''
     });
     
     setOpenDialog(true);
@@ -390,6 +541,16 @@ const Profile = () => {
       ...achievementForm,
       tags: achievementForm.tags.filter(tag => tag !== tagToDelete)
     });
+  };
+
+  // Handle domain select
+  const handleDomainSelect = (domain) => {
+    if (domain) {
+      setAchievementForm({
+        ...achievementForm,
+        domainLink: domain
+      });
+    }
   };
 
   // If loading, show spinner
@@ -988,6 +1149,16 @@ const Profile = () => {
                     borderTop: `1px solid ${theme.palette.divider}`,
                     bgcolor: theme.palette.mode === 'dark' ? 'rgba(0, 0, 0, 0.2)' : 'rgba(0, 0, 0, 0.02)'
                   }}>
+                    {achievement.domainLink && (
+                      <Tooltip title={achievement.domainLink}>
+                        <Box sx={{ display: 'flex', alignItems: 'center', mr: 'auto' }}>
+                          <DomainLogo domain={achievement.domainLink} size={20} />
+                          <Typography variant="caption" sx={{ ml: 1, color: theme.palette.text.secondary }}>
+                            {achievement.domainLink}
+                          </Typography>
+                        </Box>
+                      </Tooltip>
+                    )}
                     <IconButton
                       href={achievement.link}
                       target="_blank"
@@ -1164,6 +1335,35 @@ const Profile = () => {
                     />
                   ))}
                 </Box>
+              </Grid>
+              <Grid item xs={12}>
+                <Typography variant="subtitle2" sx={{ mb: 1, fontWeight: 500 }}>
+                  Organization/Issuer Domain
+                </Typography>
+                <DomainSearch 
+                  onDomainSelect={handleDomainSelect}
+                  initialValue={achievementForm.domainLink} 
+                />
+                {achievementForm.domainLink && (
+                  <Box sx={{ mt: 1, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                      <DomainLogo domain={achievementForm.domainLink} size={20} />
+                      <Typography variant="caption" sx={{ ml: 1 }}>
+                        {achievementForm.domainLink}
+                      </Typography>
+                    </Box>
+                    <IconButton 
+                      size="small" 
+                      onClick={() => setAchievementForm({...achievementForm, domainLink: ''})}
+                      aria-label="Clear domain"
+                    >
+                      <CloseIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                )}
+                <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                  Search and select the organization or issuer domain
+                </Typography>
               </Grid>
               <Grid item xs={12}>
                 <TextField

@@ -154,9 +154,10 @@ export const ThemeProvider = ({ children }) => {
       MuiAppBar: {
         styleOverrides: {
           root: {
-            backgroundColor: '#1a1a1a',
-            backgroundImage: 'none',
+            backgroundColor: '#000000 !important', // Force pure black background with !important
+            backgroundImage: 'none !important',
             borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            boxShadow: 'none',
           }
         }
       },
@@ -217,7 +218,7 @@ export const ThemeProvider = ({ children }) => {
         contrastText: '#000000',
       },
       background: {
-        default: '#f3f2ef', // LinkedIn light gray background
+        default: '#ffffff', // Pure white background
         paper: '#ffffff',   // White background for components
         card: '#ffffff',    // White for cards
       },
@@ -342,8 +343,43 @@ export const ThemeProvider = ({ children }) => {
   useEffect(() => {
     localStorage.setItem('darkMode', JSON.stringify(darkMode));
     // Update body background color
-    document.body.style.backgroundColor = darkMode ? '#000000' : '#f3f2ef';
+    document.body.style.backgroundColor = darkMode ? '#000000' : '#ffffff';
     document.body.style.color = darkMode ? '#ffffff' : '#191919';
+    
+    // Add global scrollbar styles
+    const styleSheet = document.createElement('style');
+    styleSheet.textContent = `
+      ::-webkit-scrollbar {
+        width: 8px;
+        background-color: ${darkMode ? '#000000' : '#ffffff'};
+      }
+      ::-webkit-scrollbar-thumb {
+        background-color:  ${darkMode ? '#000000' : 'rgb(5, 133, 224)'},
+        border-radius: 4px;
+      }
+      ::-webkit-scrollbar-track {
+        background-color: ${darkMode ? '#000000' : '#ffffff'};
+      }
+      * {
+        scrollbar-width: medium;
+        scrollbar-color: ${darkMode ? '#000000' : 'rgba(5, 133, 224, 0.5)'};
+      }
+    `;
+    
+    // Remove any previous scrollbar styles
+    const previousStyle = document.querySelector('style[data-scrollbar-styles]');
+    if (previousStyle) {
+      previousStyle.remove();
+    }
+    
+    // Add the new styles
+    styleSheet.setAttribute('data-scrollbar-styles', '');
+    document.head.appendChild(styleSheet);
+    
+    // Cleanup function
+    return () => {
+      styleSheet.remove();
+    };
   }, [darkMode]);
 
   return (
