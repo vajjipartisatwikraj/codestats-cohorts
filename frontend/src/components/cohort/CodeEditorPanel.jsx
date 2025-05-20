@@ -1,4 +1,4 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import {
   Box,
   Button,
@@ -26,25 +26,115 @@ const CodeEditorPanel = ({
 }) => {
   const editorRef = useRef(null);
   const [languageAnchorEl, setLanguageAnchorEl] = useState(null);
+  const [displayCode, setDisplayCode] = useState('');
+  const [fullCode, setFullCode] = useState(code);
+
+  // Extract solution class/function from the complete code
+  useEffect(() => {
+    setFullCode(code);
+    
+    // Extract the solution class/function based on language
+    const extractSolutionCode = () => {
+      if (!code) return '';
+      
+      // Language-specific extraction
+      if (language === 'java') {
+        // For Java, extract the Solution class
+        const solutionClassRegex = /(class\s+Solution\s*{[\s\S]*?})\s*(\r?\n)*\s*(public\s+class|class)/;
+        const match = code.match(solutionClassRegex);
+        return match ? match[1] : code;
+      } else if (language === 'python') {
+        // For Python, extract the Solution class or specific functions
+        const solutionClassRegex = /(class\s+Solution[\s\S]*?)(?=\nclass\s+\w+|\n\s*if\s+__name__|$)/;
+        const match = code.match(solutionClassRegex);
+        return match ? match[1] : code;
+      } else if (language === 'javascript') {
+        // For JavaScript, extract the Solution class or function
+        const solutionRegex = /(class\s+Solution[\s\S]*?})|(function\s+\w+\s*\([\s\S]*?})/;
+        const match = code.match(solutionRegex);
+        return match ? match[0] : code;
+      } else if (language === 'cpp' || language === 'c') {
+        // For C/C++, extract the Solution class or specific functions
+        const solutionRegex = /(class\s+Solution[\s\S]*?};)|([\w\*]+\s+\w+\s*\([\s\S]*?\)\s*{[\s\S]*?})/;
+        const match = code.match(solutionRegex);
+        return match ? match[0] : code;
+      }
+      
+      // Default: return the full code if no specific extraction is defined
+      return code;
+    };
+    
+    const extracted = extractSolutionCode();
+    setDisplayCode(extracted);
+  }, [code, language]);
 
   // Handle editor mounting
   const handleEditorDidMount = (editor) => {
     editorRef.current = editor;
   };
 
-  // Copy code to clipboard
+  // When the user edits the solution code, update both displayCode and merge changes back into fullCode
+  const handleCodeChange = (newDisplayCode) => {
+    setDisplayCode(newDisplayCode);
+    
+    // Merge the changes back into the full code
+    const updatedFullCode = mergeCodeChanges(fullCode, displayCode, newDisplayCode);
+    setFullCode(updatedFullCode);
+    
+    // Call the parent's onChange with the full code
+    if (onChange) {
+      onChange(updatedFullCode);
+    }
+  };
+  
+  // Function to merge changes from solution code back into the full code
+  const mergeCodeChanges = (fullOriginalCode, originalSolution, newSolution) => {
+    if (!fullOriginalCode) return newSolution;
+    
+    // Update the solution part in the full code
+    if (language === 'java') {
+      // For Java, replace the Solution class
+      return fullOriginalCode.replace(
+        /(class\s+Solution\s*{[\s\S]*?})\s*(\r?\n)*\s*(public\s+class|class)/,
+        `${newSolution}\n\n$3`
+      );
+    } else if (language === 'python') {
+      // For Python
+      return fullOriginalCode.replace(
+        /(class\s+Solution[\s\S]*?)(?=\nclass\s+\w+|\n\s*if\s+__name__|$)/,
+        newSolution
+      );
+    } else if (language === 'javascript') {
+      // For JavaScript
+      return fullOriginalCode.replace(
+        /(class\s+Solution[\s\S]*?})|(function\s+\w+\s*\([\s\S]*?})/,
+        newSolution
+      );
+    } else if (language === 'cpp' || language === 'c') {
+      // For C/C++
+      return fullOriginalCode.replace(
+        /(class\s+Solution[\s\S]*?};)|([\w\*]+\s+\w+\s*\([\s\S]*?\)\s*{[\s\S]*?})/,
+        newSolution
+      );
+    }
+    
+    // Default: return the new solution if no specific replacement is defined
+    return newSolution;
+  };
+
+  // Copy code to clipboard (using the full code)
   const handleCopyCode = () => {
-    navigator.clipboard.writeText(code);
+    navigator.clipboard.writeText(fullCode);
     toast.info('Code copied to clipboard');
   };
   
-  // Download code file
+  // Download code file (using the full code)
   const handleDownloadCode = () => {
     const fileExtension = LANGUAGES[language]?.extension || 'txt';
     const fileName = `solution.${fileExtension}`;
     
     const element = document.createElement('a');
-    const file = new Blob([code], {type: 'text/plain'});
+    const file = new Blob([fullCode], {type: 'text/plain'});
     element.href = URL.createObjectURL(file);
     element.download = fileName;
     document.body.appendChild(element);
@@ -274,8 +364,8 @@ const CodeEditorPanel = ({
           height="100%"
           width="100%"
           language={getMonacoLanguage(language)}
-          value={code}
-          onChange={onChange}
+          value={displayCode}
+          onChange={handleCodeChange}
           theme={darkMode ? 'vs-dark' : 'light'}
           onMount={handleEditorDidMount}
           options={{
