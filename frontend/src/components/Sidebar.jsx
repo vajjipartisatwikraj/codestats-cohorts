@@ -24,6 +24,9 @@ import ViewCarouselOutlinedIcon from '@mui/icons-material/ViewCarouselOutlined';
 import WorkIcon from '@mui/icons-material/Work';
 import StadiumOutlinedIcon from '@mui/icons-material/StadiumOutlined';
 import StadiumRoundedIcon from '@mui/icons-material/StadiumRounded';
+import NotificationsIcon from '@mui/icons-material/Notifications';
+import NotificationsOutlinedIcon from '@mui/icons-material/NotificationsOutlined';
+import LogoutIcon from '@mui/icons-material/Logout';
 import { useAuth } from '../contexts/AuthContext';
 import { useTheme } from '../contexts/ThemeContext';
 
@@ -243,7 +246,7 @@ const SidebarToggleIcon = () => (
 );
 
 const Sidebar = ({ onToggle, mobileOpen, onMobileClose }) => {
-  const { user } = useAuth();
+  const { user, logout } = useAuth();
   const { theme, darkMode } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
@@ -343,11 +346,26 @@ const Sidebar = ({ onToggle, mobileOpen, onMobileClose }) => {
       path: user?.userType === 'admin' ? '/admin/opportunities' : '/opportunities', 
       icon: <CustomOpportunitiesIcon isActive={location.pathname.includes('/opportunities')} />, 
       divider: false 
+    },
+    {
+      text: 'Notifications',
+      path: '/admin/notifications',
+      icon: location.pathname.includes('/notifications') ? <NotificationsIcon /> : <NotificationsOutlinedIcon />,
+      divider: false,
+      adminOnly: true
     }
   ];
 
   // Filter items based on user type
-  const filteredItems = menuItems.filter(item => !item.hideFor);
+  const filteredItems = menuItems.filter(item => {
+    // Hide items that are marked for hiding for current user type
+    if (item.hideFor) return false;
+    
+    // Show admin-only items only for admin users
+    if (item.adminOnly) return user?.userType === 'admin';
+    
+    return true;
+  });
 
   const drawerWidth = isMobile ? 240 : (open ? 280 : 75); // Reduced width on mobile
 
@@ -356,157 +374,216 @@ const Sidebar = ({ onToggle, mobileOpen, onMobileClose }) => {
       <Box
         sx={{
           display: 'flex',
-          flexDirection: 'row',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: { xs: '12px 16px', sm: 2 },
-          paddingLeft: { xs: '8px', sm: 1 },
-          paddingRight: { xs: '12px', sm: 1.5 },
-          ...theme.mixins.toolbar,
-          width: '100%',
-          minHeight: { xs: 64, sm: 64 }
+          flexDirection: 'column',
+          height: '100%',
+          justifyContent: 'space-between'
         }}
       >
-        <Logo open={open} darkMode={darkMode} onClick={handleDrawerToggle} />
-        {open && !isMobile && (
-          <IconButton 
-            onClick={handleDrawerToggle} 
-            sx={{ 
-              width: { xs: 40, sm: 44 },
-              height: { xs: 40, sm: 44 },
+        <Box>
+          <Box
+            sx={{
               display: 'flex',
+              flexDirection: 'row',
               alignItems: 'center',
-              justifyContent: 'center',
-              '& svg': {
-                width: 28,
-                height: 28,
-                transform: open ? 'rotate(0deg)' : 'rotate(180deg)',
-                transition: 'transform 0.3s ease'
-              },
-              '&:hover': {
-                backgroundColor: 'rgba(5, 133, 224, 0.08)'
-              }
+              justifyContent: 'space-between',
+              padding: { xs: '12px 16px', sm: 2 },
+              paddingLeft: { xs: '8px', sm: 1 },
+              paddingRight: { xs: '12px', sm: 1.5 },
+              ...theme.mixins.toolbar,
+              width: '100%',
+              minHeight: { xs: 64, sm: 64 }
             }}
           >
-            <SidebarToggleIcon />
-          </IconButton>
-        )}
-      </Box>
-      <Box 
-        sx={{ 
-          width: '100%',
-          display: 'flex',
-          justifyContent: 'center',
-          mb: { xs: 1, sm: 2 }
-        }}
-      >
-        <Box 
-          sx={{ 
-            width: '90%',
-            height: '1px',
-            backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.08)'
-          }} 
-        />
-      </Box>
-      <List sx={{ pt: { xs: 0.5, sm: 1 } }}>
-        {filteredItems.map((item) => (
-          <ListItem 
-            key={item.text} 
-            disablePadding 
-            sx={{ 
-              display: 'block', 
-              mb: { xs: 0.5, sm: 1.5 } // Reduced margin bottom on mobile
-            }}
-          >
-            <ListItemButton
-              disableRipple={true}
-              sx={{
-                minHeight: { xs: 40, sm: 50 }, // Reduced height on mobile
-                height: { xs: 40, sm: 50 },
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: open ? 'flex-start' : 'center',
-                padding: open ? 
-                  { xs: '0 10px', sm: '0 16px' } : // Reduced padding on mobile
-                  { xs: '0 4px', sm: '0 8px' },
-                backgroundColor: location.pathname === item.path || 
-                               (item.path !== '/dashboard' && location.pathname.startsWith(item.path)) ? 
-                               themeColors.activeBackground : 'transparent',
-                borderRadius: '12px',
-                mx: open ? { xs: 1, sm: 2 } : { xs: 0.5, sm: 1 }, // Reduced margins on mobile
-                position: 'relative',
-                transition: 'all 0.2s ease',
-                '&:hover': {
-                  backgroundColor: location.pathname === item.path || 
-                                 (item.path !== '/dashboard' && location.pathname.startsWith(item.path)) ?
-                                 themeColors.activeBackground : 'rgba(5, 133, 224, 0.1)',
-                },
-                '&:active': {
-                  transform: 'scale(0.98)',
-                }
-              }}
-              onClick={() => {
-                navigate(item.path);
-                if (isMobile && onMobileClose) {
-                  onMobileClose();
-                }
-              }}
-            >
-              <ListItemIcon
-                sx={{
-                  minWidth: 0,
-                  mr: open ? { xs: 1, sm: 2 } : 'auto', // Reduced margin right on mobile
-                  ml: open ? 0 : 'auto',
+            <Logo open={open} darkMode={darkMode} onClick={handleDrawerToggle} />
+            {open && !isMobile && (
+              <IconButton 
+                onClick={handleDrawerToggle} 
+                sx={{ 
+                  width: { xs: 40, sm: 44 },
+                  height: { xs: 40, sm: 44 },
                   display: 'flex',
-                  justifyContent: 'center',
                   alignItems: 'center',
-                  width: !open ? '100%' : 'auto',
-                  transition: 'all 0.2s ease',
+                  justifyContent: 'center',
                   '& svg': {
-                    width: { xs: 18, sm: 24 }, // Reduced icon size on mobile
-                    height: { xs: 18, sm: 24 }
+                    width: 28,
+                    height: 28,
+                    transform: open ? 'rotate(0deg)' : 'rotate(180deg)',
+                    transition: 'transform 0.3s ease'
                   },
-                  color: location.pathname === item.path || 
-                         (item.path !== '/dashboard' && location.pathname.startsWith(item.path)) ?
-                         "#ffffff" : themeColors.iconColor,
+                  '&:hover': {
+                    backgroundColor: 'rgba(5, 133, 224, 0.08)'
+                  }
                 }}
               >
-                {item.icon}
-              </ListItemIcon>
-              {open && (
-                <ListItemText 
-                  primary={item.text} 
-                  primaryTypographyProps={{
-                    style: { 
-                      fontWeight: 500,
-                      fontSize: isMobile ? '0.85rem' : '1rem', // Reduced font size on mobile
-                      color: location.pathname === item.path || 
-                             (item.path !== '/dashboard' && location.pathname.startsWith(item.path)) ?
-                             "#ffffff": themeColors.text 
+                <SidebarToggleIcon />
+              </IconButton>
+            )}
+          </Box>
+          <Box 
+            sx={{ 
+              width: '100%',
+              display: 'flex',
+              justifyContent: 'center',
+              mb: { xs: 1, sm: 2 }
+            }}
+          >
+            <Box 
+              sx={{ 
+                width: '90%',
+                height: '1px',
+                backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.2)'
+              }} 
+            />
+          </Box>
+          <List sx={{ pt: { xs: 0.5, sm: 1 } }}>
+            {filteredItems.map((item) => (
+              <ListItem 
+                key={item.text} 
+                disablePadding 
+                sx={{ 
+                  display: 'block', 
+                  mb: { xs: 0.5, sm: 1.5 } // Reduced margin bottom on mobile
+                }}
+              >
+                <ListItemButton
+                  disableRipple={true}
+                  sx={{
+                    minHeight: { xs: 40, sm: 50 }, // Reduced height on mobile
+                    height: { xs: 40, sm: 50 },
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: open ? 'flex-start' : 'center',
+                    padding: open ? 
+                      { xs: '0 10px', sm: '0 16px' } : // Reduced padding on mobile
+                      { xs: '0 4px', sm: '0 8px' },
+                    backgroundColor: location.pathname === item.path || 
+                                   (item.path !== '/dashboard' && location.pathname.startsWith(item.path)) ? 
+                                   themeColors.activeBackground : 'transparent',
+                    borderRadius: '12px',
+                    mx: open ? { xs: 1, sm: 2 } : { xs: 0.5, sm: 1 }, // Reduced margins on mobile
+                    position: 'relative',
+                    transition: 'all 0.2s ease',
+                    '&:hover': {
+                      backgroundColor: location.pathname === item.path || 
+                                     (item.path !== '/dashboard' && location.pathname.startsWith(item.path)) ?
+                                     themeColors.activeBackground : 'rgba(5, 133, 224, 0.1)',
+                    },
+                    '&:active': {
+                      transform: 'scale(0.98)',
                     }
                   }}
-                />
-              )}
-              {item.isNew && open && (
-                <Chip 
-                  label="New" 
-                  size="small" 
-                  sx={{ 
-                    height: { xs: '14px', sm: '16px' },
-                    fontSize: { xs: '0.45rem', sm: '0.6rem' }, // Reduced font size on mobile
-                    fontWeight: 'bold',
-                    backgroundColor: '#0088cc',
-                    color: 'white',
-                    borderRadius: '4px',
-                    ml: 0,
-                    px: { xs: 0.5, sm: 0.75 } // Reduced padding on mobile
-                  }} 
-                />
-              )}
-            </ListItemButton>
-          </ListItem>
-        ))}
-      </List>
+                  onClick={() => {
+                    navigate(item.path);
+                    if (isMobile && onMobileClose) {
+                      onMobileClose();
+                    }
+                  }}
+                >
+                  <ListItemIcon
+                    sx={{
+                      minWidth: 0,
+                      mr: open ? { xs: 1, sm: 2 } : 'auto', // Reduced margin right on mobile
+                      ml: open ? 0 : 'auto',
+                      display: 'flex',
+                      justifyContent: 'center',
+                      alignItems: 'center',
+                      width: !open ? '100%' : 'auto',
+                      transition: 'all 0.2s ease',
+                      '& svg': {
+                        width: { xs: 18, sm: 24 }, // Reduced icon size on mobile
+                        height: { xs: 18, sm: 24 }
+                      },
+                      color: location.pathname === item.path || 
+                             (item.path !== '/dashboard' && location.pathname.startsWith(item.path)) ?
+                             "#ffffff" : themeColors.iconColor,
+                    }}
+                  >
+                    {item.icon}
+                  </ListItemIcon>
+                  {open && (
+                    <ListItemText 
+                      primary={item.text} 
+                      primaryTypographyProps={{
+                        style: { 
+                          fontWeight: 500,
+                          fontSize: isMobile ? '0.85rem' : '1rem', // Reduced font size on mobile
+                          color: location.pathname === item.path || 
+                                 (item.path !== '/dashboard' && location.pathname.startsWith(item.path)) ?
+                                 "#ffffff": themeColors.text 
+                        }
+                      }}
+                    />
+                  )}
+                  {item.isNew && open && (
+                    <Chip 
+                      label="New" 
+                      size="small" 
+                      sx={{ 
+                        height: { xs: '14px', sm: '16px' },
+                        fontSize: { xs: '0.45rem', sm: '0.6rem' }, // Reduced font size on mobile
+                        fontWeight: 'bold',
+                        backgroundColor: '#0088cc',
+                        color: 'white',
+                        borderRadius: '4px',
+                        ml: 0,
+                        px: { xs: 0.5, sm: 0.75 } // Reduced padding on mobile
+                      }} 
+                    />
+                  )}
+                </ListItemButton>
+              </ListItem>
+            ))}
+          </List>
+        </Box>
+
+        {/* Logout Button */}
+        <Box sx={{ p: 2, mt: 'auto' }}>
+          <ListItemButton
+            onClick={() => {
+              const logoutSuccessful = logout();
+              if (logoutSuccessful) {
+                navigate('/login');
+              }
+              if (isMobile && onMobileClose) {
+                onMobileClose();
+              }
+            }}
+            sx={{
+              minHeight: { xs: 40, sm: 50 },
+              borderRadius: '12px',
+              backgroundColor: darkMode ? 'rgba(255, 77, 77, 0.1)' : 'rgba(255, 77, 77, 0.08)',
+              '&:hover': {
+                backgroundColor: darkMode ? 'rgba(255, 77, 77, 0.2)' : 'rgba(255, 77, 77, 0.15)',
+              },
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: open ? 'flex-start' : 'center',
+              px: open ? 2 : 1
+            }}
+          >
+            <LogoutIcon 
+              sx={{ 
+                color: '#ff4d4d',
+                minWidth: 0,
+                mr: open ? 2 : 'auto',
+                fontSize: { xs: 18, sm: 24 }
+              }} 
+            />
+            {open && (
+              <ListItemText 
+                primary="Logout" 
+                primaryTypographyProps={{
+                  style: {
+                    color: '#ff4d4d',
+                    fontWeight: 500,
+                    fontSize: isMobile ? '0.85rem' : '1rem'
+                  }
+                }}
+              />
+            )}
+          </ListItemButton>
+        </Box>
+      </Box>
     </>
   );
   

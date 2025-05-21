@@ -1,0 +1,61 @@
+{
+  "title": "Valid Anagram",
+  "description": "Given two strings s and t, return true if t is an anagram of s, and false otherwise.\n\nAn Anagram is a word or phrase formed by rearranging the letters of a different word or phrase, typically using all the original letters exactly once.\n\nInput Format:\n- The first line contains a single integer T, the number of test cases.\n- For each test case:\n  - The first line contains the string s.\n  - The second line contains the string t.\n\nOutput Format:\n- For each test case, print \"true\" if t is an anagram of s, or \"false\" otherwise.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "examples": [
+    {
+      "input": "2\nanagram\nnagaram\nrat\ncar",
+      "output": "true\nfalse",
+      "explanation": "For test case 1: 'anagram' and 'nagaram' contain the same characters with the same frequencies.\nFor test case 2: 'rat' and 'car' have different characters."
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "easy",
+  "marks": 5,
+  "tags": ["Hash Table", "String", "Sorting"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Amazon", "Microsoft", "Facebook", "Apple", "Bloomberg", "Oracle", "Uber"],
+  "hints": [
+    "Could you sort both strings and compare them?",
+    "Or you can count the occurrences of each character in both strings and compare the counts",
+    "If both strings are anagrams, they must have the exact same character frequencies"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Determines if string t is an anagram of string s.\n     * @param s First string.\n     * @param t Second string.\n     * @return True if t is an anagram of s, false otherwise.\n     */\n    public boolean isAnagram(String s, String t) {\n        // Implement your solution here\n        return false; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int testCases = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < testCases; i++) {\n                String s = br.readLine().trim();\n                String t = br.readLine().trim();\n                \n                /*RUNTIME CALC START*/\n                Solution solution = new Solution();\n                boolean result = solution.isAnagram(s, t);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                if (i < testCases - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Determines if string t is an anagram of string s.\n     * @param s First string.\n     * @param t Second string.\n     * @return True if t is an anagram of s, false otherwise.\n     */\n    public boolean isAnagram(String s, String t) {\n        if (s.length() != t.length()) {\n            return false;\n        }\n        \n        int[] counter = new int[26];\n        \n        // Count occurrences of each character in s\n        for (int i = 0; i < s.length(); i++) {\n            counter[s.charAt(i) - 'a']++;\n        }\n        \n        // Decrement counter for each character in t\n        for (int i = 0; i < t.length(); i++) {\n            counter[t.charAt(i) - 'a']--;\n            // If any counter becomes negative, it means t has more occurrences of a char than s\n            if (counter[t.charAt(i) - 'a'] < 0) {\n                return false;\n            }\n        }\n        \n        return true;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int testCases = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < testCases; i++) {\n                String s = br.readLine().trim();\n                String t = br.readLine().trim();\n                \n                /*RUNTIME CALC START*/\n                Solution solution = new Solution();\n                boolean result = solution.isAnagram(s, t);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                if (i < testCases - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <string>\n#include <vector>\n#include <algorithm>\n\nclass Solution {\npublic:\n    bool isAnagram(std::string s, std::string t) {\n        // Implement your solution here\n        return false; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int testCases;\n    std::cin >> testCases;\n    std::cin.ignore(); // Clear the newline\n    \n    for (int i = 0; i < testCases; i++) {\n        std::string s, t;\n        std::getline(std::cin, s);\n        std::getline(std::cin, t);\n        \n        /*RUNTIME CALC START*/\n        Solution solution;\n        bool result = solution.isAnagram(s, t);\n        /*RUNTIME CALC END*/\n        \n        std::cout << (result ? \"true\" : \"false\");\n        if (i < testCases - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <string>\n#include <vector>\n#include <algorithm>\n#include <unordered_map>\n\nclass Solution {\npublic:\n    bool isAnagram(std::string s, std::string t) {\n        // Quick check - if lengths differ, they can't be anagrams\n        if (s.length() != t.length()) {\n            return false;\n        }\n        \n        // Using an array for lowercase English letters (faster than unordered_map)\n        std::vector<int> counter(26, 0);\n        \n        // Count characters in s\n        for (char c : s) {\n            counter[c - 'a']++;\n        }\n        \n        // Decrement counts for characters in t\n        for (char c : t) {\n            counter[c - 'a']--;\n            if (counter[c - 'a'] < 0) {\n                // More occurrences in t than in s\n                return false;\n            }\n        }\n        \n        return true;\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int testCases;\n    std::cin >> testCases;\n    std::cin.ignore(); // Clear the newline\n    \n    for (int i = 0; i < testCases; i++) {\n        std::string s, t;\n        std::getline(std::cin, s);\n        std::getline(std::cin, t);\n        \n        /*RUNTIME CALC START*/\n        Solution solution;\n        bool result = solution.isAnagram(s, t);\n        /*RUNTIME CALC END*/\n        \n        std::cout << (result ? \"true\" : \"false\");\n        if (i < testCases - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\nfrom collections import Counter\n\nclass Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        # Implement your solution here\n        return False  # Replace with your implementation\n\nclass Main:\n    @staticmethod\n    def main():\n        try:\n            # Read number of test cases\n            test_cases = int(input().strip())\n            \n            results = []\n            for _ in range(test_cases):\n                s = input().strip()\n                t = input().strip()\n                \n                # RUNTIME CALC START\n                solution = Solution()\n                result = solution.isAnagram(s, t)\n                # RUNTIME CALC END\n                \n                results.append(str(result).lower())\n            \n            # Output all results\n            print('\\n'.join(results))\n            \n        except Exception as e:\n            print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    Main.main()",
+      "solutionCode": "import sys\nfrom collections import Counter\n\nclass Solution:\n    def isAnagram(self, s: str, t: str) -> bool:\n        # Quick check - if lengths are different, they can't be anagrams\n        if len(s) != len(t):\n            return False\n        \n        # Using Counter is an elegant way to count character frequencies\n        # This is equivalent to a hash map/dictionary counting each character\n        return Counter(s) == Counter(t)\n        \n        # Alternative implementation with a dictionary:\n        # char_count = {}\n        # \n        # # Count characters in s\n        # for char in s:\n        #     if char in char_count:\n        #         char_count[char] += 1\n        #     else:\n        #         char_count[char] = 1\n        # \n        # # Decrement counts for characters in t\n        # for char in t:\n        #     if char not in char_count or char_count[char] == 0:\n        #         return False\n        #     char_count[char] -= 1\n        # \n        # return True\n\nclass Main:\n    @staticmethod\n    def main():\n        try:\n            # Read number of test cases\n            test_cases = int(input().strip())\n            \n            results = []\n            for _ in range(test_cases):\n                s = input().strip()\n                t = input().strip()\n                \n                # RUNTIME CALC START\n                solution = Solution()\n                result = solution.isAnagram(s, t)\n                # RUNTIME CALC END\n                \n                results.append(str(result).lower())\n            \n            # Output all results\n            print('\\n'.join(results))\n            \n        except Exception as e:\n            print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    Main.main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "2\nanagram\nnagaram\nrat\ncar",
+      "output": "true\nfalse",
+      "hidden": false,
+      "explanation": "Basic test cases for anagrams"
+    },
+    {
+      "input": "3\nhello\nolleh\naabb\nabab\n\\\"\"\"\n\"\\\"\"",
+      "output": "true\ntrue\ntrue",
+      "hidden": true,
+      "explanation": "Edge cases including same letters with different arrangements and special characters"
+    }
+  ]
+} 

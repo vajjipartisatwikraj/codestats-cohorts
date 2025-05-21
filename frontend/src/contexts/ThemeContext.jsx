@@ -113,7 +113,7 @@ export const ThemeProvider = ({ children }) => {
         secondary: 'rgba(255, 255, 255, 0.7)',
         disabled: 'rgba(255, 255, 255, 0.5)',
       },
-      divider: 'rgba(255, 255, 255, 0.1)',
+      divider: 'rgba(23, 23, 23, 0.45)',
     },
     components: {
       // Ensure consistent card styling
@@ -134,7 +134,7 @@ export const ThemeProvider = ({ children }) => {
           root: {
             backgroundColor: '#121212',
             backgroundImage: 'none',
-            border: '1px solid rgba(255, 255, 255, 0.1)',
+            border: '1px solid rgba(23, 23, 23, 0.45)',
             boxShadow: '0 4px 12px rgba(0, 0, 0, 0.2)',
           }
         }
@@ -156,7 +156,7 @@ export const ThemeProvider = ({ children }) => {
           root: {
             backgroundColor: '#000000 !important', // Force pure black background with !important
             backgroundImage: 'none !important',
-            borderBottom: '1px solid rgba(255, 255, 255, 0.1)',
+            borderBottom: '1px solid rgba(23, 23, 23, 0.45)',
             boxShadow: 'none',
           }
         }

@@ -1,0 +1,67 @@
+{
+  "title": "Evaluate Reverse Polish Notation",
+  "description": "Evaluate the value of an arithmetic expression in Reverse Polish Notation (RPN).\n\nValid operators are +, -, *, and /. Each operand may be an integer or another expression.\n\nNote that division between two integers should truncate toward zero.\n\nIt is guaranteed that the given RPN expression is always valid. That means the expression would always evaluate to a result, and there will not be any division by zero operations.\n\nInput Format:\n- The first line contains a single integer T, the number of test cases.\n- For each test case, one line contains a space-separated list of tokens representing an arithmetic expression in RPN form.\n\nOutput Format:\n- For each test case, print the result of evaluating the expression.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "1 <= tokens.length <= 10^4",
+    "tokens[i] is either an operator: \"+\", \"-\", \"*\", \"/\", or an integer in the range [-200, 200]",
+    "1 <= T <= 100"
+  ],
+  "examples": [
+    {
+      "input": "3\n2 1 + 3 *\n4 13 5 / +\n10 6 9 3 + -11 * / * 17 + 5 +",
+      "output": "9\n6\n22",
+      "explanation": "Test case 1: ((2 + 1) * 3) = 9\nTest case 2: (4 + (13 / 5)) = 4 + 2 = 6\nTest case 3: ((10 * (6 / ((9 + 3) * -11))) + 17) + 5 = ((10 * (6 / -132)) + 17) + 5 = ((10 * 0) + 17) + 5 = 17 + 5 = 22"
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "medium",
+  "marks": 10,
+  "tags": ["Stack", "Array", "Math"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Amazon", "Microsoft", "Google", "Facebook", "Apple", "Uber", "LinkedIn"],
+  "hints": [
+    "Use a stack to keep track of the operands",
+    "When you encounter an operator, pop the top two operands from the stack, apply the operator, and push the result back to the stack",
+    "The final result should be the only element left in the stack",
+    "Be careful with the order of operands when applying non-commutative operations like division and subtraction"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Evaluates an expression in Reverse Polish Notation (RPN)\n     * @param tokens An array of strings representing the RPN expression\n     * @return The result of evaluating the expression\n     */\n    public int evalRPN(String[] tokens) {\n        // Implement your solution here\n        return 0; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String[] tokens = br.readLine().trim().split(\" \");\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                int result = sol.evalRPN(tokens);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Evaluates an expression in Reverse Polish Notation (RPN)\n     * @param tokens An array of strings representing the RPN expression\n     * @return The result of evaluating the expression\n     */\n    public int evalRPN(String[] tokens) {\n        Stack<Integer> stack = new Stack<>();\n        \n        for (String token : tokens) {\n            if (isOperator(token)) {\n                int b = stack.pop(); // Second operand\n                int a = stack.pop(); // First operand\n                \n                int result = applyOperator(a, b, token);\n                stack.push(result);\n            } else {\n                // If it's not an operator, it must be an operand (number)\n                stack.push(Integer.parseInt(token));\n            }\n        }\n        \n        // The final result should be the only element in the stack\n        return stack.pop();\n    }\n    \n    private boolean isOperator(String token) {\n        return token.equals(\"+\") || token.equals(\"-\") || \n               token.equals(\"*\") || token.equals(\"/\");\n    }\n    \n    private int applyOperator(int a, int b, String operator) {\n        switch (operator) {\n            case \"+\":\n                return a + b;\n            case \"-\":\n                return a - b;\n            case \"*\":\n                return a * b;\n            case \"/\":\n                return a / b; // Integer division truncates toward zero\n            default:\n                throw new IllegalArgumentException(\"Invalid operator: \" + operator);\n        }\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String[] tokens = br.readLine().trim().split(\" \");\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                int result = sol.evalRPN(tokens);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <vector>\n#include <string>\n#include <stack>\n#include <sstream>\n\nclass Solution {\npublic:\n    /**\n     * Evaluates an expression in Reverse Polish Notation (RPN)\n     * @param tokens A vector of strings representing the RPN expression\n     * @return The result of evaluating the expression\n     */\n    int evalRPN(std::vector<std::string>& tokens) {\n        // Implement your solution here\n        return 0; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline\n    \n    for (int i = 0; i < t; i++) {\n        std::string line;\n        std::getline(std::cin, line);\n        \n        std::istringstream iss(line);\n        std::vector<std::string> tokens;\n        std::string token;\n        \n        while (iss >> token) {\n            tokens.push_back(token);\n        }\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        int result = sol.evalRPN(tokens);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        \n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <vector>\n#include <string>\n#include <stack>\n#include <sstream>\n\nclass Solution {\npublic:\n    /**\n     * Evaluates an expression in Reverse Polish Notation (RPN)\n     * @param tokens A vector of strings representing the RPN expression\n     * @return The result of evaluating the expression\n     */\n    int evalRPN(std::vector<std::string>& tokens) {\n        std::stack<int> stack;\n        \n        for (const std::string& token : tokens) {\n            if (isOperator(token)) {\n                int b = stack.top(); stack.pop(); // Second operand\n                int a = stack.top(); stack.pop(); // First operand\n                \n                int result = applyOperator(a, b, token);\n                stack.push(result);\n            } else {\n                // If it's not an operator, it must be an operand (number)\n                stack.push(std::stoi(token));\n            }\n        }\n        \n        // The final result should be the only element in the stack\n        return stack.top();\n    }\n    \nprivate:\n    bool isOperator(const std::string& token) {\n        return token == \"+\" || token == \"-\" || \n               token == \"*\" || token == \"/\";\n    }\n    \n    int applyOperator(int a, int b, const std::string& op) {\n        if (op == \"+\") {\n            return a + b;\n        } else if (op == \"-\") {\n            return a - b;\n        } else if (op == \"*\") {\n            return a * b;\n        } else if (op == \"/\") {\n            return a / b; // Integer division truncates toward zero\n        } else {\n            throw std::invalid_argument(\"Invalid operator: \" + op);\n        }\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline\n    \n    for (int i = 0; i < t; i++) {\n        std::string line;\n        std::getline(std::cin, line);\n        \n        std::istringstream iss(line);\n        std::vector<std::string> tokens;\n        std::string token;\n        \n        while (iss >> token) {\n            tokens.push_back(token);\n        }\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        int result = sol.evalRPN(tokens);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        \n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\nfrom typing import List\n\nclass Solution:\n    def evalRPN(self, tokens: List[str]) -> int:\n        \"\"\"\n        Evaluates an expression in Reverse Polish Notation (RPN)\n        :param tokens: A list of strings representing the RPN expression\n        :return: The result of evaluating the expression\n        \"\"\"\n        # Implement your solution here\n        return 0 # Replace with your implementation\n\ndef main():\n    try:\n        # Read number of test cases\n        t = int(input().strip())\n        \n        results = []\n        for _ in range(t):\n            tokens = input().strip().split()\n            \n            # RUNTIME CALC START\n            sol = Solution()\n            result = sol.evalRPN(tokens)\n            # RUNTIME CALC END\n            \n            results.append(str(result))\n        \n        # Output all results\n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()",
+      "solutionCode": "import sys\nfrom typing import List\n\nclass Solution:\n    def evalRPN(self, tokens: List[str]) -> int:\n        \"\"\"\n        Evaluates an expression in Reverse Polish Notation (RPN)\n        :param tokens: A list of strings representing the RPN expression\n        :return: The result of evaluating the expression\n        \"\"\"\n        stack = []\n        operators = {\n            '+': lambda a, b: a + b,\n            '-': lambda a, b: a - b,\n            '*': lambda a, b: a * b,\n            '/': lambda a, b: int(a / b)  # Integer division truncates toward zero\n        }\n        \n        for token in tokens:\n            if token in operators:\n                # Pop operands in reverse order (second operand first)\n                b = stack.pop()\n                a = stack.pop()\n                \n                # Apply the operator and push result back to stack\n                result = operators[token](a, b)\n                stack.append(result)\n            else:\n                # If it's not an operator, it must be an operand (number)\n                stack.append(int(token))\n        \n        # The final result should be the only element in the stack\n        return stack[0]\n\ndef main():\n    try:\n        # Read number of test cases\n        t = int(input().strip())\n        \n        results = []\n        for _ in range(t):\n            tokens = input().strip().split()\n            \n            # RUNTIME CALC START\n            sol = Solution()\n            result = sol.evalRPN(tokens)\n            # RUNTIME CALC END\n            \n            results.append(str(result))\n        \n        # Output all results\n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "3\n2 1 + 3 *\n4 13 5 / +\n10 6 9 3 + -11 * / * 17 + 5 +",
+      "output": "9\n6\n22",
+      "hidden": false,
+      "explanation": "Basic test cases with various RPN expressions"
+    },
+    {
+      "input": "3\n3 4 + 2 * 7 /\n5 3 - 2 *\n100 200 + 2 / 5 * 7 -",
+      "output": "2\n4\n143",
+      "hidden": true,
+      "explanation": "Additional test cases with division and negative results"
+    }
+  ]
+} 

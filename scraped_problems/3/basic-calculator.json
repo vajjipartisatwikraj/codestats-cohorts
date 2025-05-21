@@ -1,0 +1,84 @@
+{
+  "title": "Basic Calculator",
+  "description": "Given a string s representing a valid expression, implement a basic calculator to evaluate it, and return the result of the evaluation.\n\nThe expression string may contain open ( and closing parentheses ), the plus + or minus sign -, non-negative integers, and empty spaces .\n\nInput Format:\n- The first line contains a single integer T, the number of test cases.\n- For each test case, one line contains a string s representing a valid expression.\n\nOutput Format:\n- For each test case, print an integer representing the result of the evaluation.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "1 <= s.length <= 3 * 10^4",
+    "s consists of digits (0-9), '+', '-', '(', ')', and ' '.",
+    "s represents a valid expression.",
+    "+' is not used as a unary operation (i.e., \"+1\" and \"+(2 + 3)\" is invalid).",
+    "'-' could be used as a unary operation (i.e., \"-1\" and \"-(2 + 3)\" is valid).",
+    "There will be no two consecutive operators in the input.",
+    "Every number and running calculation will fit in a signed 32-bit integer.",
+    "1 <= T <= 100"
+  ],
+  "examples": [
+    {
+      "input": "2\n1 + 1\n2-1 + 2",
+      "output": "2\n3",
+      "explanation": "Test case 1: 1 + 1 = 2\nTest case 2: 2 - 1 + 2 = 3"
+    },
+    {
+      "input": "2\n(1+(4+5+2)-3)+(6+8)\n(3+4)*(5-6)",
+      "output": "23\n-7",
+      "explanation": "Test case 1: (1+(4+5+2)-3)+(6+8) = (1+11-3)+(14) = 9 + 14 = 23\nTest case 2: (3+4)*(5-6) = 7*(-1) = -7\nNote: This example tests parentheses and operator precedence."
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "hard",
+  "marks": 15,
+  "tags": ["Stack", "Math", "String", "Recursion"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Amazon", "Microsoft", "Google", "Facebook", "Apple", "Bloomberg", "Uber"],
+  "hints": [
+    "Use a stack to keep track of intermediate results and operations",
+    "When encountering an opening parenthesis, process the expression inside it recursively",
+    "When encountering a closing parenthesis, calculate the result of the current parenthesis expression",
+    "Handle unary minus signs carefully",
+    "Remember to consider operator precedence"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Evaluates a mathematical expression string\n     * @param s The expression string to evaluate\n     * @return The result of the evaluation\n     */\n    public int calculate(String s) {\n        // Implement your solution here\n        return 0; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String expression = br.readLine().trim();\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                int result = sol.calculate(expression);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Evaluates a mathematical expression string\n     * @param s The expression string to evaluate\n     * @return The result of the evaluation\n     */\n    public int calculate(String s) {\n        Stack<Integer> stack = new Stack<>();\n        int result = 0; // Running result\n        int number = 0; // Current number\n        int sign = 1;  // 1 means positive, -1 means negative\n        \n        for (int i = 0; i < s.length(); i++) {\n            char c = s.charAt(i);\n            \n            if (Character.isDigit(c)) {\n                // Build the number\n                number = number * 10 + (c - '0');\n            } else if (c == '+') {\n                // Evaluate the expression to the left\n                result += sign * number;\n                \n                // Reset variables for next evaluation\n                number = 0;\n                sign = 1;\n            } else if (c == '-') {\n                // Evaluate the expression to the left\n                result += sign * number;\n                \n                // Reset variables for next evaluation\n                number = 0;\n                sign = -1;\n            } else if (c == '(') {\n                // Push the result and sign onto the stack\n                stack.push(result);\n                stack.push(sign);\n                \n                // Reset variables for next evaluation\n                result = 0;\n                sign = 1;\n            } else if (c == ')') {\n                // Evaluate the expression to the left\n                result += sign * number;\n                \n                // Apply the sign to the result\n                result *= stack.pop();  // Pop the sign\n                \n                // Add the previous result from the stack\n                result += stack.pop();  // Pop the number\n                \n                // Reset number for the next evaluation\n                number = 0;\n            }\n            // Ignore spaces\n        }\n        \n        // Add the last number to the result\n        if (number != 0) {\n            result += sign * number;\n        }\n        \n        return result;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String expression = br.readLine().trim();\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                int result = sol.calculate(expression);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <string>\n#include <stack>\n\nclass Solution {\npublic:\n    /**\n     * Evaluates a mathematical expression string\n     * @param s The expression string to evaluate\n     * @return The result of the evaluation\n     */\n    int calculate(std::string s) {\n        // Implement your solution here\n        return 0; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline\n    \n    for (int i = 0; i < t; i++) {\n        std::string expression;\n        std::getline(std::cin, expression);\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        int result = sol.calculate(expression);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        \n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <string>\n#include <stack>\n\nclass Solution {\npublic:\n    /**\n     * Evaluates a mathematical expression string\n     * @param s The expression string to evaluate\n     * @return The result of the evaluation\n     */\n    int calculate(std::string s) {\n        std::stack<int> stack;\n        int result = 0; // Running result\n        int number = 0; // Current number\n        int sign = 1;  // 1 means positive, -1 means negative\n        \n        for (int i = 0; i < s.length(); i++) {\n            char c = s[i];\n            \n            if (isdigit(c)) {\n                // Build the number\n                number = number * 10 + (c - '0');\n            } else if (c == '+') {\n                // Evaluate the expression to the left\n                result += sign * number;\n                \n                // Reset variables for next evaluation\n                number = 0;\n                sign = 1;\n            } else if (c == '-') {\n                // Evaluate the expression to the left\n                result += sign * number;\n                \n                // Reset variables for next evaluation\n                number = 0;\n                sign = -1;\n            } else if (c == '(') {\n                // Push the result and sign onto the stack\n                stack.push(result);\n                stack.push(sign);\n                \n                // Reset variables for next evaluation\n                result = 0;\n                sign = 1;\n            } else if (c == ')') {\n                // Evaluate the expression to the left\n                result += sign * number;\n                \n                // Apply the sign to the result\n                result *= stack.top();  // Get the sign\n                stack.pop();\n                \n                // Add the previous result from the stack\n                result += stack.top();  // Get the number\n                stack.pop();\n                \n                // Reset number for the next evaluation\n                number = 0;\n            }\n            // Ignore spaces\n        }\n        \n        // Add the last number to the result\n        if (number != 0) {\n            result += sign * number;\n        }\n        \n        return result;\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline\n    \n    for (int i = 0; i < t; i++) {\n        std::string expression;\n        std::getline(std::cin, expression);\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        int result = sol.calculate(expression);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        \n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\n\nclass Solution:\n    def calculate(self, s: str) -> int:\n        \"\"\"\n        Evaluates a mathematical expression string\n        :param s: The expression string to evaluate\n        :return: The result of the evaluation\n        \"\"\"\n        # Implement your solution here\n        return 0 # Replace with your implementation\n\ndef main():\n    try:\n        t = int(input().strip())\n        \n        results = []\n        for _ in range(t):\n            expression = input().strip()\n            \n            # RUNTIME CALC START\n            sol = Solution()\n            result = sol.calculate(expression)\n            # RUNTIME CALC END\n            \n            results.append(str(result))\n        \n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()",
+      "solutionCode": "import sys\n\nclass Solution:\n    def calculate(self, s: str) -> int:\n        \"\"\"\n        Evaluates a mathematical expression string\n        :param s: The expression string to evaluate\n        :return: The result of the evaluation\n        \"\"\"\n        stack = []\n        result = 0  # Running result\n        number = 0  # Current number\n        sign = 1   # 1 means positive, -1 means negative\n        \n        for i in range(len(s)):\n            c = s[i]\n            \n            if c.isdigit():\n                # Build the number\n                number = number * 10 + int(c)\n            elif c == '+':\n                # Evaluate the expression to the left\n                result += sign * number\n                \n                # Reset variables for next evaluation\n                number = 0\n                sign = 1\n            elif c == '-':\n                # Evaluate the expression to the left\n                result += sign * number\n                \n                # Reset variables for next evaluation\n                number = 0\n                sign = -1\n            elif c == '(':\n                # Push the result and sign onto the stack\n                stack.append(result)\n                stack.append(sign)\n                \n                # Reset variables for next evaluation\n                result = 0\n                sign = 1\n            elif c == ')':\n                # Evaluate the expression to the left\n                result += sign * number\n                \n                # Apply the sign to the result\n                result *= stack.pop()  # Pop the sign\n                \n                # Add the previous result from the stack\n                result += stack.pop()  # Pop the number\n                \n                # Reset number for the next evaluation\n                number = 0\n            # Ignore spaces\n        \n        # Add the last number to the result\n        if number != 0:\n            result += sign * number\n        \n        return result\n\ndef main():\n    try:\n        t = int(input().strip())\n        \n        results = []\n        for _ in range(t):\n            expression = input().strip()\n            \n            # RUNTIME CALC START\n            sol = Solution()\n            result = sol.calculate(expression)\n            # RUNTIME CALC END\n            \n            results.append(str(result))\n        \n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "2\n1 + 1\n2-1 + 2",
+      "output": "2\n3",
+      "hidden": false,
+      "explanation": "Basic test cases without parentheses"
+    },
+    {
+      "input": "2\n(1+(4+5+2)-3)+(6+8)\n(3+4)*(5-6)",
+      "output": "23\n-7",
+      "hidden": false,
+      "explanation": "Test cases with nested parentheses"
+    },
+    {
+      "input": "3\n1-(     -2)\n-(2 + 3)\n1-(-2-3-4)",
+      "output": "3\n-5\n10",
+      "hidden": true,
+      "explanation": "Test cases with unary minus and spaces"
+    }
+  ]
+} 

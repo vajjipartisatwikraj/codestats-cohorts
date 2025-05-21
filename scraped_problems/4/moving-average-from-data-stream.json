@@ -1,0 +1,69 @@
+{
+  "title": "Moving Average from Data Stream",
+  "description": "Given a stream of integers and a window size, calculate the moving average of all integers in the sliding window.\n\nImplement the MovingAverage class:\n- MovingAverage(int size) Initializes the object with the size of the window size.\n- double next(int val) Returns the moving average of the last size values of the stream.\n\nInput Format:\n- The first line contains two integers n and size, where n is the number of operations to perform and size is the window size.\n- Each of the next n lines contains a single integer val representing the value to add to the moving average.\n\nOutput Format:\n- For each next operation, print the moving average with exactly 5 decimal places.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "1 <= size <= 1000",
+    "-10^5 <= val <= 10^5",
+    "At most 10^4 calls will be made to next",
+    "1 <= n <= 10^4"
+  ],
+  "examples": [
+    {
+      "input": "4 3\n1\n10\n3\n5",
+      "output": "1.00000\n5.50000\n4.66667\n6.00000",
+      "explanation": "MovingAverage movingAverage = new MovingAverage(3);\nmovingAverage.next(1); // return 1.0 = 1 / 1\nmovingAverage.next(10); // return 5.5 = (1 + 10) / 2\nmovingAverage.next(3); // return 4.66667 = (1 + 10 + 3) / 3\nmovingAverage.next(5); // return 6.0 = (10 + 3 + 5) / 3"
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "easy",
+  "marks": 5,
+  "tags": ["Queue", "Design", "Array", "Data Stream"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Google", "Facebook", "Amazon", "Microsoft", "Bloomberg", "Uber", "LinkedIn"],
+  "hints": [
+    "You need to keep track of the last 'size' elements in the stream",
+    "A queue is an ideal data structure to maintain the window of values",
+    "When the queue reaches its capacity, remove the oldest element before adding a new one",
+    "Keep a running sum to avoid recalculating the sum every time",
+    "The moving average is the sum divided by the current window size (which may be less than 'size' at the beginning)"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass MovingAverage {\n    /**\n     * Initialize your data structure here.\n     * @param size - the size of the window\n     */\n    public MovingAverage(int size) {\n        // Implement initialization\n    }\n    \n    /**\n     * Returns the moving average of the last size values of the stream.\n     * @param val - the new value to add\n     */\n    public double next(int val) {\n        // Implement next operation\n        return 0.0; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            String[] firstLine = br.readLine().trim().split(\" \");\n            int n = Integer.parseInt(firstLine[0]);\n            int size = Integer.parseInt(firstLine[1]);\n            \n            MovingAverage movingAverage = new MovingAverage(size);\n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < n; i++) {\n                int val = Integer.parseInt(br.readLine().trim());\n                \n                /*RUNTIME CALC START*/\n                double result = movingAverage.next(val);\n                /*RUNTIME CALC END*/\n                \n                output.append(String.format(\"%.5f\", result));\n                \n                if (i < n - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass MovingAverage {\n    private int size;           // Maximum size of the window\n    private Queue<Integer> queue; // Queue to store the values in the window\n    private double sum;        // Running sum of the elements in the window\n    \n    /**\n     * Initialize your data structure here.\n     * @param size - the size of the window\n     */\n    public MovingAverage(int size) {\n        this.size = size;\n        queue = new LinkedList<>();\n        sum = 0.0;\n    }\n    \n    /**\n     * Returns the moving average of the last size values of the stream.\n     * @param val - the new value to add\n     */\n    public double next(int val) {\n        // Add new value\n        queue.add(val);\n        sum += val;\n        \n        // If queue size exceeds the window size, remove the oldest element\n        if (queue.size() > size) {\n            sum -= queue.remove();\n        }\n        \n        // Calculate and return the average\n        return sum / queue.size();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            String[] firstLine = br.readLine().trim().split(\" \");\n            int n = Integer.parseInt(firstLine[0]);\n            int size = Integer.parseInt(firstLine[1]);\n            \n            MovingAverage movingAverage = new MovingAverage(size);\n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < n; i++) {\n                int val = Integer.parseInt(br.readLine().trim());\n                \n                /*RUNTIME CALC START*/\n                double result = movingAverage.next(val);\n                /*RUNTIME CALC END*/\n                \n                output.append(String.format(\"%.5f\", result));\n                \n                if (i < n - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <queue>\n#include <iomanip>\n\nclass MovingAverage {\nprivate:\n    // Implement your data structure here\n    \npublic:\n    /**\n     * Initialize your data structure here.\n     * @param size - the size of the window\n     */\n    MovingAverage(int size) {\n        // Implement initialization\n    }\n    \n    /**\n     * Returns the moving average of the last size values of the stream.\n     * @param val - the new value to add\n     */\n    double next(int val) {\n        // Implement next operation\n        return 0.0; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int n, size;\n    std::cin >> n >> size;\n    \n    MovingAverage movingAverage(size);\n    \n    for (int i = 0; i < n; i++) {\n        int val;\n        std::cin >> val;\n        \n        /*RUNTIME CALC START*/\n        double result = movingAverage.next(val);\n        /*RUNTIME CALC END*/\n        \n        std::cout << std::fixed << std::setprecision(5) << result;\n        \n        if (i < n - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <queue>\n#include <iomanip>\n\nclass MovingAverage {\nprivate:\n    int size;           // Maximum size of the window\n    std::queue<int> q;  // Queue to store the values in the window\n    double sum;         // Running sum of the elements in the window\n    \npublic:\n    /**\n     * Initialize your data structure here.\n     * @param size - the size of the window\n     */\n    MovingAverage(int size) {\n        this->size = size;\n        sum = 0.0;\n    }\n    \n    /**\n     * Returns the moving average of the last size values of the stream.\n     * @param val - the new value to add\n     */\n    double next(int val) {\n        // Add new value\n        q.push(val);\n        sum += val;\n        \n        // If queue size exceeds the window size, remove the oldest element\n        if (q.size() > size) {\n            sum -= q.front();\n            q.pop();\n        }\n        \n        // Calculate and return the average\n        return sum / q.size();\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int n, size;\n    std::cin >> n >> size;\n    \n    MovingAverage movingAverage(size);\n    \n    for (int i = 0; i < n; i++) {\n        int val;\n        std::cin >> val;\n        \n        /*RUNTIME CALC START*/\n        double result = movingAverage.next(val);\n        /*RUNTIME CALC END*/\n        \n        std::cout << std::fixed << std::setprecision(5) << result;\n        \n        if (i < n - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\nfrom collections import deque\n\nclass MovingAverage:\n    def __init__(self, size: int):\n        \"\"\"\n        Initialize your data structure here.\n        :param size: the size of the window\n        \"\"\"\n        # Implement initialization\n        \n    def next(self, val: int) -> float:\n        \"\"\"\n        Returns the moving average of the last size values of the stream.\n        :param val: the new value to add\n        :return: the moving average\n        \"\"\"\n        # Implement next operation\n        return 0.0  # Replace with your implementation\n\ndef main():\n    try:\n        line = input().strip().split()\n        n, size = int(line[0]), int(line[1])\n        \n        moving_average = MovingAverage(size)\n        results = []\n        \n        for _ in range(n):\n            val = int(input().strip())\n            \n            # RUNTIME CALC START\n            result = moving_average.next(val)\n            # RUNTIME CALC END\n            \n            results.append(f\"{result:.5f}\")\n        \n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()",
+      "solutionCode": "import sys\nfrom collections import deque\n\nclass MovingAverage:\n    def __init__(self, size: int):\n        \"\"\"\n        Initialize your data structure here.\n        :param size: the size of the window\n        \"\"\"\n        self.size = size          # Maximum size of the window\n        self.queue = deque()      # Queue to store the values in the window\n        self.sum = 0.0            # Running sum of the elements in the window\n        \n    def next(self, val: int) -> float:\n        \"\"\"\n        Returns the moving average of the last size values of the stream.\n        :param val: the new value to add\n        :return: the moving average\n        \"\"\"\n        # Add new value\n        self.queue.append(val)\n        self.sum += val\n        \n        # If queue size exceeds the window size, remove the oldest element\n        if len(self.queue) > self.size:\n            self.sum -= self.queue.popleft()\n        \n        # Calculate and return the average\n        return self.sum / len(self.queue)\n\ndef main():\n    try:\n        line = input().strip().split()\n        n, size = int(line[0]), int(line[1])\n        \n        moving_average = MovingAverage(size)\n        results = []\n        \n        for _ in range(n):\n            val = int(input().strip())\n            \n            # RUNTIME CALC START\n            result = moving_average.next(val)\n            # RUNTIME CALC END\n            \n            results.append(f\"{result:.5f}\")\n        \n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "4 3\n1\n10\n3\n5",
+      "output": "1.00000\n5.50000\n4.66667\n6.00000",
+      "hidden": false,
+      "explanation": "Basic test case with small window size"
+    },
+    {
+      "input": "7 5\n-1\n5\n2\n8\n-3\n1\n4",
+      "output": "-1.00000\n2.00000\n2.00000\n3.50000\n2.20000\n2.60000\n2.40000",
+      "hidden": true,
+      "explanation": "Test case with negative numbers and larger window size"
+    }
+  ]
+} 

@@ -23,6 +23,38 @@ router.get('/questions', auth, adminAuth, async (req, res) => {
   }
 });
 
+// Search for questions (admin only) - IMPORTANT: This route must come before the /questions/:id route
+router.get('/questions/search', auth, adminAuth, async (req, res) => {
+  try {
+    const searchQuery = req.query.q;
+    
+    if (!searchQuery) {
+      return res.status(400).json({ message: 'Search query is required' });
+    }
+    
+    // Create a regex search query that's case-insensitive
+    const searchRegex = new RegExp(searchQuery, 'i');
+    
+    // Search in title, description, tags, and maintag
+    const questions = await PAQuestion.find({
+      $or: [
+        { title: searchRegex },
+        { description: searchRegex },
+        { tags: searchRegex },
+        { maintag: searchRegex }
+      ]
+    })
+    .sort({ updatedAt: -1 })
+    .limit(20) // Limit results to prevent performance issues
+    .populate('createdBy', 'name email');
+    
+    res.status(200).json(questions);
+  } catch (error) {
+    console.error('Error searching practice arena questions:', error);
+    res.status(500).json({ message: 'Error searching questions', error: error.message });
+  }
+});
+
 // Get a specific practice arena question by ID
 router.get('/questions/:id', auth, async (req, res) => {
   try {

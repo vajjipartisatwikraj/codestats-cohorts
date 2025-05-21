@@ -1,0 +1,67 @@
+{
+  "title": "Number of Recent Calls",
+  "description": "You have a RecentCounter class which counts the number of recent requests within a certain time frame.\n\nImplement the RecentCounter class:\n- RecentCounter() Initializes the counter with zero recent requests.\n- int ping(int t) Adds a new request at time t, where t represents some time in milliseconds, and returns the number of requests that has happened in the past 3000 milliseconds (including the new request). Specifically, return the number of requests that have happened in the inclusive range [t - 3000, t].\n\nIt is guaranteed that every call to ping uses a strictly larger value of t than the previous call.\n\nInput Format:\n- The first line contains a single integer n, the number of ping operations to perform.\n- Each of the next n lines contains a single integer t representing the time of the ping in milliseconds.\n\nOutput Format:\n- For each ping operation, print a single integer representing the number of requests that have happened in the past 3000 milliseconds (including the current request).",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "1 <= n <= 10^4",
+    "1 <= t <= 10^9",
+    "Each call to ping uses a strictly larger value of t than the previous call"
+  ],
+  "examples": [
+    {
+      "input": "4\n1\n100\n3001\n3002",
+      "output": "1\n2\n3\n3",
+      "explanation": "RecentCounter recentCounter = new RecentCounter();\nrecentCounter.ping(1);     // requests = [1], range is [-2999,1], return 1\nrecentCounter.ping(100);   // requests = [1, 100], range is [-2900,100], return 2\nrecentCounter.ping(3001);  // requests = [1, 100, 3001], range is [1,3001], return 3\nrecentCounter.ping(3002);  // requests = [1, 100, 3001, 3002], range is [2,3002], return 3"
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "easy",
+  "marks": 5,
+  "tags": ["Queue", "Design", "Data Structure"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Google", "Amazon", "Microsoft", "Facebook", "Apple", "Twitter"],
+  "hints": [
+    "Keep track of the requests in the order they arrive",
+    "Remove requests that are older than 3000 milliseconds before counting",
+    "A queue is an ideal data structure for this problem as you need to maintain order and remove from one end",
+    "For each new ping, you can remove old elements from the front of the queue until all remaining elements are within the time frame"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass RecentCounter {\n    /**\n     * Initialize your data structure here.\n     */\n    public RecentCounter() {\n        // Implement initialization\n    }\n    \n    /**\n     * Adds a new request at time t and returns the number of requests\n     * that have happened in the past 3000 milliseconds (including the new request).\n     */\n    public int ping(int t) {\n        // Implement ping operation\n        return 0; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int n = Integer.parseInt(br.readLine().trim());\n            \n            RecentCounter counter = new RecentCounter();\n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < n; i++) {\n                int t = Integer.parseInt(br.readLine().trim());\n                \n                /*RUNTIME CALC START*/\n                int result = counter.ping(t);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < n - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass RecentCounter {\n    private Queue<Integer> requestTimes;\n    \n    /**\n     * Initialize your data structure here.\n     */\n    public RecentCounter() {\n        requestTimes = new LinkedList<>();\n    }\n    \n    /**\n     * Adds a new request at time t and returns the number of requests\n     * that have happened in the past 3000 milliseconds (including the new request).\n     */\n    public int ping(int t) {\n        // Add the current request time\n        requestTimes.add(t);\n        \n        // Remove requests older than t - 3000\n        while (!requestTimes.isEmpty() && requestTimes.peek() < t - 3000) {\n            requestTimes.poll();\n        }\n        \n        // Return the number of requests within the time frame\n        return requestTimes.size();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int n = Integer.parseInt(br.readLine().trim());\n            \n            RecentCounter counter = new RecentCounter();\n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < n; i++) {\n                int t = Integer.parseInt(br.readLine().trim());\n                \n                /*RUNTIME CALC START*/\n                int result = counter.ping(t);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < n - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <queue>\n\nclass RecentCounter {\nprivate:\n    // Implement your data structure here\n\npublic:\n    /** Initialize your data structure here. */\n    RecentCounter() {\n        // Implement initialization\n    }\n    \n    /** \n     * Adds a new request at time t and returns the number of requests\n     * that have happened in the past 3000 milliseconds (including the new request).\n     */\n    int ping(int t) {\n        // Implement ping operation\n        return 0; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int n;\n    std::cin >> n;\n    \n    RecentCounter counter;\n    \n    for (int i = 0; i < n; i++) {\n        int t;\n        std::cin >> t;\n        \n        /*RUNTIME CALC START*/\n        int result = counter.ping(t);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        \n        if (i < n - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <queue>\n\nclass RecentCounter {\nprivate:\n    std::queue<int> requestTimes;\n\npublic:\n    /** Initialize your data structure here. */\n    RecentCounter() {\n        // No initialization needed for STL queue\n    }\n    \n    /** \n     * Adds a new request at time t and returns the number of requests\n     * that have happened in the past 3000 milliseconds (including the new request).\n     */\n    int ping(int t) {\n        // Add the current request time\n        requestTimes.push(t);\n        \n        // Remove requests older than t - 3000\n        while (!requestTimes.empty() && requestTimes.front() < t - 3000) {\n            requestTimes.pop();\n        }\n        \n        // Return the number of requests within the time frame\n        return requestTimes.size();\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int n;\n    std::cin >> n;\n    \n    RecentCounter counter;\n    \n    for (int i = 0; i < n; i++) {\n        int t;\n        std::cin >> t;\n        \n        /*RUNTIME CALC START*/\n        int result = counter.ping(t);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        \n        if (i < n - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\nfrom collections import deque\n\nclass RecentCounter:\n    def __init__(self):\n        \"\"\"\n        Initialize your data structure here.\n        \"\"\"\n        # Implement initialization\n        \n    def ping(self, t: int) -> int:\n        \"\"\"\n        Adds a new request at time t and returns the number of requests\n        that have happened in the past 3000 milliseconds (including the new request).\n        \"\"\"\n        # Implement ping operation\n        return 0  # Replace with your implementation\n\ndef main():\n    try:\n        n = int(input().strip())\n        \n        counter = RecentCounter()\n        results = []\n        \n        for _ in range(n):\n            t = int(input().strip())\n            \n            # RUNTIME CALC START\n            result = counter.ping(t)\n            # RUNTIME CALC END\n            \n            results.append(str(result))\n        \n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()",
+      "solutionCode": "import sys\nfrom collections import deque\n\nclass RecentCounter:\n    def __init__(self):\n        \"\"\"\n        Initialize your data structure here.\n        \"\"\"\n        self.request_times = deque()\n        \n    def ping(self, t: int) -> int:\n        \"\"\"\n        Adds a new request at time t and returns the number of requests\n        that have happened in the past 3000 milliseconds (including the new request).\n        \"\"\"\n        # Add the current request time\n        self.request_times.append(t)\n        \n        # Remove requests older than t - 3000\n        while self.request_times and self.request_times[0] < t - 3000:\n            self.request_times.popleft()\n        \n        # Return the number of requests within the time frame\n        return len(self.request_times)\n\ndef main():\n    try:\n        n = int(input().strip())\n        \n        counter = RecentCounter()\n        results = []\n        \n        for _ in range(n):\n            t = int(input().strip())\n            \n            # RUNTIME CALC START\n            result = counter.ping(t)\n            # RUNTIME CALC END\n            \n            results.append(str(result))\n        \n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "4\n1\n100\n3001\n3002",
+      "output": "1\n2\n3\n3",
+      "hidden": false,
+      "explanation": "Basic test case for the recent counter"
+    },
+    {
+      "input": "6\n1\n1000\n2000\n3000\n4000\n5000",
+      "output": "1\n2\n3\n4\n4\n3",
+      "hidden": true,
+      "explanation": "Test case where elements start dropping out of the time frame"
+    }
+  ]
+} 

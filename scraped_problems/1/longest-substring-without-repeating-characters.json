@@ -1,0 +1,65 @@
+{
+  "title": "Longest Substring Without Repeating Characters",
+  "description": "Given a string s, find the length of the longest substring without repeating characters.\n\nInput Format:\n- The first line contains a single integer T, the number of test cases.\n- For each test case:\n  - A single line containing the input string s.\n\nOutput Format:\n- For each test case, print a single integer representing the length of the longest substring without repeating characters.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "0 <= s.length <= 5 * 10^4",
+    "s consists of English letters, digits, symbols and spaces"
+  ],
+  "examples": [
+    {
+      "input": "5\nabcabcbb\nbbbbb\npwwkew\n\naab",
+      "output": "3\n1\n3\n0\n2",
+      "explanation": "Test case 1: The answer is \"abc\", with the length of 3.\nTest case 2: The answer is \"b\", with the length of 1.\nTest case 3: The answer is \"wke\", with the length of 3.\nTest case 4: Empty string has length 0.\nTest case 5: The answer is \"ab\", with the length of 2."
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "medium",
+  "marks": 10,
+  "tags": ["Hash Table", "String", "Sliding Window"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Amazon", "Google", "Microsoft", "Facebook", "Adobe", "Apple", "Bloomberg"],
+  "hints": [
+    "Consider using a sliding window approach",
+    "Use a hash set to keep track of characters in the current window",
+    "When you encounter a duplicate character, remove characters from the beginning of your window until the duplicate is removed"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Finds the length of the longest substring without repeating characters.\n     * @param s The input string.\n     * @return The length of the longest substring without repeating characters.\n     */\n    public int lengthOfLongestSubstring(String s) {\n        // Implement your solution here\n        return 0; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim()); // Read number of test cases\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String s = br.readLine();\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                int result = sol.lengthOfLongestSubstring(s);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Finds the length of the longest substring without repeating characters.\n     * @param s The input string.\n     * @return The length of the longest substring without repeating characters.\n     */\n    public int lengthOfLongestSubstring(String s) {\n        if (s == null || s.length() == 0) {\n            return 0;\n        }\n        \n        int n = s.length();\n        int maxLength = 0;\n        Map<Character, Integer> charIndexMap = new HashMap<>();\n        \n        // Sliding window approach\n        for (int start = 0, end = 0; end < n; end++) {\n            char currentChar = s.charAt(end);\n            \n            // If the character is already in the current window, move the start pointer\n            if (charIndexMap.containsKey(currentChar)) {\n                start = Math.max(start, charIndexMap.get(currentChar) + 1);\n            }\n            \n            // Update the maximum length\n            maxLength = Math.max(maxLength, end - start + 1);\n            \n            // Update the character's last position\n            charIndexMap.put(currentChar, end);\n        }\n        \n        return maxLength;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim()); // Read number of test cases\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String s = br.readLine();\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                int result = sol.lengthOfLongestSubstring(s);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <string>\n#include <unordered_map>\n#include <algorithm>\n\nclass Solution {\npublic:\n    int lengthOfLongestSubstring(std::string s) {\n        // Your code here\n        return 0; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n\n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline after t\n\n    for (int i = 0; i < t; ++i) {\n        std::string s;\n        std::getline(std::cin, s);\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        int result = sol.lengthOfLongestSubstring(s);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n\n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <string>\n#include <unordered_map>\n#include <algorithm>\n\nclass Solution {\npublic:\n    int lengthOfLongestSubstring(std::string s) {\n        if (s.empty()) {\n            return 0;\n        }\n        \n        int n = s.length();\n        int maxLength = 0;\n        std::unordered_map<char, int> charIndexMap;\n        \n        // Sliding window approach\n        for (int start = 0, end = 0; end < n; end++) {\n            char currentChar = s[end];\n            \n            // If the character is already in the current window, move the start pointer\n            if (charIndexMap.count(currentChar)) {\n                start = std::max(start, charIndexMap[currentChar] + 1);\n            }\n            \n            // Update the maximum length\n            maxLength = std::max(maxLength, end - start + 1);\n            \n            // Update the character's last position\n            charIndexMap[currentChar] = end;\n        }\n        \n        return maxLength;\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n\n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline after t\n\n    for (int i = 0; i < t; ++i) {\n        std::string s;\n        std::getline(std::cin, s);\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        int result = sol.lengthOfLongestSubstring(s);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n\n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\n\nclass Solution:\n    def lengthOfLongestSubstring(self, s: str) -> int:\n        # Your code here\n        return 0 # Replace with your implementation\n\nclass Main:\n    @staticmethod\n    def main():\n        try:\n            # Read number of test cases\n            t = int(input().strip())\n            \n            results = []\n            for _ in range(t):\n                s = input()\n                \n                # RUNTIME CALC START\n                sol = Solution()\n                result = sol.lengthOfLongestSubstring(s)\n                # RUNTIME CALC END\n                \n                results.append(str(result))\n            \n            # Output all results\n            print('\\n'.join(results))\n        except Exception as e:\n            print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    Main.main()",
+      "solutionCode": "import sys\n\nclass Solution:\n    def lengthOfLongestSubstring(self, s: str) -> int:\n        if not s:\n            return 0\n        \n        n = len(s)\n        max_length = 0\n        char_index_map = {}\n        \n        # Sliding window approach\n        start = 0\n        for end in range(n):\n            current_char = s[end]\n            \n            # If the character is already in the current window, move the start pointer\n            if current_char in char_index_map:\n                start = max(start, char_index_map[current_char] + 1)\n            \n            # Update the maximum length\n            max_length = max(max_length, end - start + 1)\n            \n            # Update the character's last position\n            char_index_map[current_char] = end\n        \n        return max_length\n\nclass Main:\n    @staticmethod\n    def main():\n        try:\n            # Read number of test cases\n            t = int(input().strip())\n            \n            results = []\n            for _ in range(t):\n                s = input()\n                \n                # RUNTIME CALC START\n                sol = Solution()\n                result = sol.lengthOfLongestSubstring(s)\n                # RUNTIME CALC END\n                \n                results.append(str(result))\n            \n            # Output all results\n            print('\\n'.join(results))\n        except Exception as e:\n            print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    Main.main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "5\nabcabcbb\nbbbbb\npwwkew\n\naab",
+      "output": "3\n1\n3\n0\n2",
+      "hidden": false,
+      "explanation": "Combined test cases with various scenarios including multiple longest substrings, repeating characters, empty string, and strings with duplicates"
+    },
+    {
+      "input": "3\nau\ndvdf\n1234567890",
+      "output": "2\n3\n10",
+      "hidden": true,
+      "explanation": "Additional test cases including numeric characters and edge cases"
+    }
+  ]
+} 

@@ -1,0 +1,74 @@
+{
+  "id": "construct-binary-tree-from-preorder-inorder",
+  "title": "Construct Binary Tree from Preorder and Inorder Traversal",
+  "description": "Given two integer arrays preorder and inorder where preorder is the preorder traversal of a binary tree and inorder is the inorder traversal of the same tree, construct and return the binary tree.",
+  "difficulty": "Medium",
+  "constraints": [
+    "1 <= preorder.length <= 3000",
+    "inorder.length == preorder.length",
+    "-3000 <= preorder[i], inorder[i] <= 3000",
+    "preorder and inorder consist of unique values.",
+    "Each value of inorder also appears in preorder.",
+    "preorder is guaranteed to be the preorder traversal of the tree.",
+    "inorder is guaranteed to be the inorder traversal of the tree."
+  ],
+  "examples": [
+    {
+      "input": "preorder = [3,9,20,15,7], inorder = [9,3,15,20,7]",
+      "output": "[3,9,20,null,null,15,7]",
+      "explanation": "The constructed binary tree structure is:\n   3\n  / \\\n 9  20\n   /  \\\n  15   7"
+    },
+    {
+      "input": "preorder = [-1], inorder = [-1]",
+      "output": "[-1]",
+      "explanation": "A single node with value -1."
+    }
+  ],
+  "approach": "This problem requires understanding how preorder and inorder traversals uniquely define a binary tree. In a preorder traversal, the first element is always the root. In an inorder traversal, all elements to the left of the root are in the left subtree, and all elements to the right are in the right subtree. The algorithm works as follows: 1) Take the first element of preorder as the root. 2) Find this element's position in the inorder array. 3) All elements to the left of this position in inorder are in the left subtree, and all elements to the right are in the right subtree. 4) Recursively build the left and right subtrees using the corresponding portions of the preorder and inorder arrays.",
+  "boilerplateCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    public TreeNode buildTree(int[] preorder, int[] inorder) {\n        // Your code here\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:\n        # Your code here\n        pass",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\npublic:\n    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {\n        // Your code here\n    }\n};"
+  },
+  "solutionCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    private Map<Integer, Integer> inorderIndexMap;\n    private int preorderIndex;\n    \n    public TreeNode buildTree(int[] preorder, int[] inorder) {\n        preorderIndex = 0;\n        // Build a hashmap to store value -> its index mappings\n        inorderIndexMap = new HashMap<>();\n        for (int i = 0; i < inorder.length; i++) {\n            inorderIndexMap.put(inorder[i], i);\n        }\n        \n        return arrayToTree(preorder, 0, preorder.length - 1);\n    }\n    \n    private TreeNode arrayToTree(int[] preorder, int left, int right) {\n        // If there are no elements to construct the tree\n        if (left > right) return null;\n        \n        // Select the preorder_index element as the root and increment it\n        int rootValue = preorder[preorderIndex++];\n        TreeNode root = new TreeNode(rootValue);\n        \n        // Build left and right subtree\n        // Excluding inorderIndexMap.get(rootValue) element because it's the root\n        root.left = arrayToTree(preorder, left, inorderIndexMap.get(rootValue) - 1);\n        root.right = arrayToTree(preorder, inorderIndexMap.get(rootValue) + 1, right);\n        \n        return root;\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def buildTree(self, preorder: List[int], inorder: List[int]) -> Optional[TreeNode]:\n        # Build a hashmap to store value -> its index mappings for inorder\n        inorder_idx_map = {val: idx for idx, val in enumerate(inorder)}\n        \n        def array_to_tree(left, right):\n            # If there are no elements to construct the tree\n            if left > right:\n                return None\n            \n            # Select the preorder_index element as the root and increment it\n            nonlocal preorder_idx\n            root_value = preorder[preorder_idx]\n            preorder_idx += 1\n            \n            root = TreeNode(root_value)\n            \n            # Build left and right subtree\n            # Excluding inorder_idx_map[root_value] element because it's the root\n            root.left = array_to_tree(left, inorder_idx_map[root_value] - 1)\n            root.right = array_to_tree(inorder_idx_map[root_value] + 1, right)\n            \n            return root\n        \n        preorder_idx = 0\n        return array_to_tree(0, len(inorder) - 1)",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\nprivate:\n    unordered_map<int, int> inorderIndexMap;\n    int preorderIndex;\n    \n    TreeNode* arrayToTree(vector<int>& preorder, int left, int right) {\n        // If there are no elements to construct the tree\n        if (left > right) return nullptr;\n        \n        // Select the preorderIndex element as the root and increment it\n        int rootValue = preorder[preorderIndex++];\n        TreeNode* root = new TreeNode(rootValue);\n        \n        // Build left and right subtree\n        // Excluding inorderIndexMap[rootValue] element because it's the root\n        root->left = arrayToTree(preorder, left, inorderIndexMap[rootValue] - 1);\n        root->right = arrayToTree(preorder, inorderIndexMap[rootValue] + 1, right);\n        \n        return root;\n    }\n    \npublic:\n    TreeNode* buildTree(vector<int>& preorder, vector<int>& inorder) {\n        preorderIndex = 0;\n        // Build a hashmap to store value -> its index mappings\n        for (int i = 0; i < inorder.size(); i++) {\n            inorderIndexMap[inorder[i]] = i;\n        }\n        \n        return arrayToTree(preorder, 0, preorder.size() - 1);\n    }\n};"
+  },
+  "testCases": {
+    "visible": [
+      {
+        "input": {"preorder": [3,9,20,15,7], "inorder": [9,3,15,20,7]},
+        "output": [3,9,20,null,null,15,7]
+      },
+      {
+        "input": {"preorder": [-1], "inorder": [-1]},
+        "output": [-1]
+      }
+    ],
+    "hidden": [
+      {
+        "input": {"preorder": [1,2,3], "inorder": [3,2,1]},
+        "output": [1,2,null,3]
+      },
+      {
+        "input": {"preorder": [1,2,4,5,3,6,7], "inorder": [4,2,5,1,6,3,7]},
+        "output": [1,2,3,4,5,6,7]
+      },
+      {
+        "input": {"preorder": [1], "inorder": [1]},
+        "output": [1]
+      }
+    ]
+  },
+  "hints": [
+    "The first element in preorder is always the root of the tree.",
+    "In inorder traversal, elements to the left of the root are in the left subtree, and elements to the right are in the right subtree.",
+    "Use a hashmap to quickly locate the position of elements in the inorder array.",
+    "Think about using recursion to build the left and right subtrees separately."
+  ],
+  "companies": ["Amazon", "Microsoft", "Google", "Facebook", "Apple"],
+  "tags": ["Tree", "Array", "Divide and Conquer", "Binary Tree"],
+  "timeComplexity": "O(n) - We visit each node exactly once, where n is the number of nodes in the tree.",
+  "spaceComplexity": "O(n) - We use a hashmap of size n to store the inorder indices and the recursion stack may go up to a depth of n in the worst case."
+} 

@@ -239,15 +239,48 @@ const PATestView = () => {
       } 
       // Set up for programming question
       else if (currentQuestion.type === 'programming') {
-        // Set language
-        if (currentQuestion.defaultLanguage) {
-          setLanguage(currentQuestion.defaultLanguage);
-        }
+        // Check if we just navigated to this question for the first time
+        const isFirstVisit = !questions[currentQuestionIndex]._hasBeenVisited;
         
+        // Mark as visited so we don't reset the language on subsequent renders
+        if (!questions[currentQuestionIndex]._hasBeenVisited) {
+          questions[currentQuestionIndex]._hasBeenVisited = true;
+          
+          // Only set language from default on first visit
+          if (currentQuestion.defaultLanguage) {
+            setLanguage(currentQuestion.defaultLanguage);
+          }
+        }
+
         // Check if we have a previous submission
         const submission = submissions.find(s => s.question._id === currentQuestion._id || s.question === currentQuestion._id);
         if (submission && submission.code) {
-          setCode(submission.code);
+          // If this is the first visit or we have a submission in the current language, use that code
+          if (isFirstVisit || submission.language === language) {
+            setCode(submission.code);
+            // If this is the first visit, also set the language to match the submission
+            if (isFirstVisit && submission.language) {
+              setLanguage(submission.language);
+            }
+          } else {
+            // If we've changed languages, check if we have a submission in the new language
+            const submissionInCurrentLanguage = submissions.find(s => 
+              (s.question._id === currentQuestion._id || s.question === currentQuestion._id) && 
+              s.language === language
+            );
+            
+            if (submissionInCurrentLanguage && submissionInCurrentLanguage.code) {
+              setCode(submissionInCurrentLanguage.code);
+            } else {
+              // No submission in current language, get language boilerplate
+              const langInfo = currentQuestion.languages?.find(l => l.name === language);
+              if (langInfo && langInfo.boilerplateCode) {
+                setCode(langInfo.boilerplateCode);
+              } else {
+                setCode(LANGUAGES[language]?.defaultCode || '// Your code here');
+              }
+            }
+          }
           
           // If we have test results from previous submissions, restore them
           if (submission.testCaseResults && Array.isArray(submission.testCaseResults) && !isInSubmissionMode) {
@@ -282,7 +315,7 @@ const PATestView = () => {
             }
           }
         } else {
-          // Get default code from the question
+          // No previous submission, get default code from the question for the current language
           const langInfo = currentQuestion.languages?.find(l => l.name === language);
           if (langInfo && langInfo.boilerplateCode) {
             setCode(langInfo.boilerplateCode);
@@ -335,50 +368,96 @@ const PATestView = () => {
   const insertRuntimeCalculationCode = (sourceCode) => {
     // Different implementations based on language
     if (language === 'java') {
+      // Capture the indentation of the markers
+      const startMarkerMatch = sourceCode.match(/([ \t]*)\/\*RUNTIME CALC START\*\//);
+      const endMarkerMatch = sourceCode.match(/([ \t]*)\/\*RUNTIME CALC END\*\//);
+      
+      // Get indentation or default to empty string if not found
+      const startIndent = startMarkerMatch ? startMarkerMatch[1] : '';
+      const endIndent = endMarkerMatch ? endMarkerMatch[1] : '';
+      
       // Replace start marker with the timing start code
       let modifiedCode = sourceCode.replace(
-        /\/\*RUNTIME CALC START\*\//g, 
-        "long startTime = System.nanoTime();"
+        /([ \t]*)\/\*RUNTIME CALC START\*\//g, 
+        `${startIndent}long startTime = System.nanoTime();`
       );
       
       // Replace end marker with the timing end code
       modifiedCode = modifiedCode.replace(
-        /\/\*RUNTIME CALC END\*\//g, 
-        "long endTime = System.nanoTime();\n" +
-        "        double elapsedMs = (endTime - startTime) / 1e6;\n" +
-        "        System.out.println(elapsedMs);"
+        /([ \t]*)\/\*RUNTIME CALC END\*\//g, 
+        `${endIndent}long endTime = System.nanoTime();\n` +
+        `${endIndent}double elapsedMs = (endTime - startTime) / 1e6;\n` +
+        `${endIndent}System.out.println(elapsedMs);`
       );
       
       return modifiedCode;
     } 
     else if (language === 'python') {
-      // Replace start marker with the timing start code for Python
-      let modifiedCode = sourceCode.replace(
-        /\"\"\"RUNTIME CALC START\"\"\"/g, 
-        "import time\nstart_time = time.time()"
-      );
+      // Handle both comment styles: triple quotes and hash comments
       
-      // Replace end marker with the timing end code
+      // First try to match triple quotes format
+      let startMarkerMatch = sourceCode.match(/([ \t]*)"""RUNTIME CALC START"""/);
+      let endMarkerMatch = sourceCode.match(/([ \t]*)"""RUNTIME CALC END"""/);
+      
+      // If not found, try the hash comment format
+      if (!startMarkerMatch) {
+        startMarkerMatch = sourceCode.match(/([ \t]*)#\s*RUNTIME CALC START/);
+      }
+      if (!endMarkerMatch) {
+        endMarkerMatch = sourceCode.match(/([ \t]*)#\s*RUNTIME CALC END/);
+      }
+      
+      // Get indentation or default to empty string if not found
+      const startIndent = startMarkerMatch ? startMarkerMatch[1] : '';
+      const endIndent = endMarkerMatch ? endMarkerMatch[1] : '';
+      
+      // Replace start marker (triple quotes format)
+      let modifiedCode = sourceCode.replace(
+        /([ \t]*)"""RUNTIME CALC START"""/g, 
+        `${startIndent}import time\n${startIndent}start_time = time.perf_counter()`
+      );
+
+      // Also handle hash comment format for start marker
       modifiedCode = modifiedCode.replace(
-        /\"\"\"RUNTIME CALC END\"\"\"/g, 
-        "end_time = time.time()\nelapsed_ms = (end_time - start_time) * 1000\nprint(elapsed_ms)"
+        /([ \t]*)#\s*RUNTIME CALC START/g, 
+        `${startIndent}import time\n${startIndent}start_time = time.perf_counter()`
+      );
+
+      // Replace end marker (triple quotes format)
+      modifiedCode = modifiedCode.replace(
+        /([ \t]*)"""RUNTIME CALC END"""/g, 
+        `${endIndent}end_time = time.perf_counter()\n${endIndent}elapsed_microseconds = int((end_time - start_time) * 1_000_000)\n${endIndent}print(elapsed_microseconds)`
+      );
+
+      // Also handle hash comment format for end marker
+      modifiedCode = modifiedCode.replace(
+        /([ \t]*)#\s*RUNTIME CALC END/g, 
+        `${endIndent}end_time = time.perf_counter()\n${endIndent}elapsed_microseconds = int((end_time - start_time) * 1_000_000)\n${endIndent}print(elapsed_microseconds)`
       );
       
       return modifiedCode;
     }
     else if (language === 'cpp') {
-      // Replace start marker with the timing start code for C++ (using exact format)
+      // Capture the indentation of the markers
+      const startMarkerMatch = sourceCode.match(/([ \t]*)\/\*RUNTIME CALC START\*\//);
+      const endMarkerMatch = sourceCode.match(/([ \t]*)\/\*RUNTIME CALC END\*\//);
+      
+      // Get indentation or default to empty string if not found
+      const startIndent = startMarkerMatch ? startMarkerMatch[1] : '';
+      const endIndent = endMarkerMatch ? endMarkerMatch[1] : '';
+      
+      // Replace start marker with the timing start code for C++ (preserving indentation)
       let modifiedCode = sourceCode.replace(
-        /\/\*RUNTIME CALC START\*\//g, 
-        "auto start = std::chrono::high_resolution_clock::now();"
+        /([ \t]*)\/\*RUNTIME CALC START\*\//g, 
+        `${startIndent}auto start = std::chrono::high_resolution_clock::now();`
       );
       
-      // Replace end marker with the timing end code (using exact format)
+      // Replace end marker with the timing end code (preserving indentation)
       modifiedCode = modifiedCode.replace(
-        /\/\*RUNTIME CALC END\*\//g, 
-        "auto end = std::chrono::high_resolution_clock::now();\n" +
-        "auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);\n" +
-        "std::cout << duration.count();"
+        /([ \t]*)\/\*RUNTIME CALC END\*\//g, 
+        `${endIndent}auto end = std::chrono::high_resolution_clock::now();\n` +
+        `${endIndent}auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);\n` +
+        `${endIndent}std::cout << duration.count() / 1000.0;`
       );
       
       return modifiedCode;
@@ -925,6 +1004,46 @@ const PATestView = () => {
     }
   }, [testResults]);
   
+  // Add a new function to handle language changes
+  const handleLanguageChange = (newLanguage) => {
+    // Only proceed if it's actually a different language
+    if (newLanguage !== language) {
+      // Update the language state
+      setLanguage(newLanguage);
+      
+      // If we have a current question, check for language-specific boilerplate code
+      if (questions.length > 0 && currentQuestionIndex < questions.length) {
+        const currentQuestion = questions[currentQuestionIndex];
+        
+        // Check if user already has a submission in this language
+        const submissionInLanguage = submissions.find(s => 
+          (s.question._id === currentQuestion._id || s.question === currentQuestion._id) && 
+          s.language === newLanguage
+        );
+        
+        if (submissionInLanguage && submissionInLanguage.code) {
+          // Use the previous submission code for this language
+          setCode(submissionInLanguage.code);
+        } else {
+          // Get language boilerplate code if available
+          const langInfo = currentQuestion.languages?.find(l => l.name === newLanguage);
+          if (langInfo && langInfo.boilerplateCode) {
+            setCode(langInfo.boilerplateCode);
+          } else {
+            // Fall back to default language boilerplate
+            setCode(LANGUAGES[newLanguage]?.defaultCode || '// Your code here');
+          }
+        }
+        
+        // Reset test results when changing language
+        if (!isInSubmissionMode) {
+          setTestResults([]);
+          setOutput('');
+        }
+      }
+    }
+  };
+  
   // Render the current question
   const renderCurrentQuestion = () => {
     if (loading || !questions.length || currentQuestionIndex >= questions.length) {
@@ -1130,7 +1249,7 @@ const PATestView = () => {
                     onChange={setCode}
                     testCasesPanelHeight={testCasesPanelHeight}
                     LANGUAGES={LANGUAGES}
-                    onLanguageChange={setLanguage}
+                    onLanguageChange={handleLanguageChange}
                     availableLanguages={currentQuestion?.languages || []}
                   />
                   

@@ -28,7 +28,18 @@ import {
   FormHelperText,
   Alert,
   CircularProgress,
-  FormGroup
+  FormGroup,
+  InputAdornment,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  DialogActions,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -43,11 +54,14 @@ import {
   Cancel as CancelIcon,
   PlayArrow as PlayArrowIcon,
   Upload as UploadIcon,
-  CloudUpload as CloudUploadIcon
+  CloudUpload as CloudUploadIcon,
+  Search as SearchIcon,
+  ContentCopy as ContentCopyIcon
 } from '@mui/icons-material';
 import compilerApi from '../../utils/compilerApi';
 import { toast } from 'react-toastify';
 import Editor from '@monaco-editor/react';
+import axios from '../../utils/axiosConfig'; // Properly configured axios instance
 
 // Tab panel component
 function TabPanel(props) {
@@ -111,7 +125,8 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
     },
     hints: [],
     tags: [],
-    companies: []
+    companies: [],
+    maintag: ''
   });
   const [errors, setErrors] = useState({});
   const [newTag, setNewTag] = useState('');
@@ -137,6 +152,12 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
   const [testCaseResults, setTestCaseResults] = useState([]);
   const fileInputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
+
+  // Add new state for question search functionality
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearchDialogOpen, setIsSearchDialogOpen] = useState(false);
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
 
   // Language options
   const LANGUAGES = [
@@ -211,7 +232,8 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
         },
         hints: initialData.hints || [],
         tags: initialData.tags || [],
-        companies: initialData.companies || []
+        companies: initialData.companies || [],
+        maintag: initialData.maintag || ''
       };
       
       console.log('Initialized form data:', completeFormData);
@@ -1226,7 +1248,8 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
           // Additional fields
           hints: questionData.hints || [],
           tags: questionData.tags || [],
-          companies: questionData.companies || []
+          companies: questionData.companies || [],
+          maintag: questionData.maintag || ''
         };
         
         console.log('Setting form data from JSON:', updatedFormData);
@@ -1264,48 +1287,299 @@ const QuestionForm = ({ initialData, onSave, onCancel, moduleId, isEdit = false 
     fileInputRef.current.click();
   };
 
+  // Search for questions
+  const handleSearchQuestions = async () => {
+    if (!searchQuery.trim()) {
+      toast.error('Please enter a search term');
+      return;
+    }
+    
+    setIsSearching(true);
+    setSearchResults([]);
+    
+    try {
+      console.log('Searching for questions with query:', searchQuery);
+      
+      // Fix the API endpoint URL to match our backend route
+      const response = await axios.get(`/practice-arena/questions/search?q=${encodeURIComponent(searchQuery)}`);
+      console.log('Search response:', response.data);
+      
+      setSearchResults(response.data);
+      
+      if (response.data.length === 0) {
+        toast.info('No questions found matching your search');
+      } else {
+        toast.success(`Found ${response.data.length} questions matching your search`);
+      }
+    } catch (error) {
+      console.error('Error searching for questions:', error);
+      
+      // More detailed error logging
+      if (error.response) {
+        // The server responded with a status code outside the 2xx range
+        console.error('Error response data:', error.response.data);
+        console.error('Error response status:', error.response.status);
+        console.error('Error response headers:', error.response.headers);
+        
+        // Check if the error is a 404 (endpoint not found)
+        if (error.response.status === 404) {
+          toast.error('Search endpoint not found. Please check your API configuration.');
+          console.error('API URL being used:', axios.defaults.baseURL);
+        } else {
+          toast.error(`Search failed: ${error.response.status} ${error.response.data.message || 'Unknown error'}`);
+        }
+      } else if (error.request) {
+        // The request was made but no response was received
+        console.error('Error request:', error.request);
+        toast.error('Search failed: No response from server');
+      } else {
+        // Something happened in setting up the request that triggered an Error
+        toast.error(`Search failed: ${error.message}`);
+      }
+    } finally {
+      setIsSearching(false);
+    }
+  };
+  
+  // Load question data into form
+  const handleLoadQuestion = (question) => {
+    setFormData({
+      title: question.title || '',
+      description: question.description || '',
+      type: question.type || 'programming',
+      difficultyLevel: question.difficultyLevel || 'medium',
+      marks: question.marks ? Number(question.marks) : 10,
+      module: moduleId,
+      options: question.options && question.options.length > 0 
+        ? question.options 
+        : [
+            { text: '', isCorrect: false },
+            { text: '', isCorrect: false },
+            { text: '', isCorrect: false },
+            { text: '', isCorrect: false }
+          ],
+      languages: question.languages && question.languages.length > 0
+        ? question.languages
+        : [
+            {
+              name: 'java',
+              version: '15.0.2',
+              boilerplateCode: 'public class Main {\n    public static void main(String[] args) {\n        // Your code here\n    }\n}',
+              solutionCode: ''
+            }
+          ],
+      defaultLanguage: question.defaultLanguage || 'java',
+      testCases: question.testCases || [],
+      examples: question.examples || [],
+      constraints: {
+        timeLimit: question.constraints?.timeLimit ? Number(question.constraints.timeLimit) : 1000,
+        memoryLimit: question.constraints?.memoryLimit ? Number(question.constraints.memoryLimit) : 256
+      },
+      hints: question.hints || [],
+      tags: question.tags || [],
+      companies: question.companies || [],
+      maintag: question.maintag || ''
+    });
+    
+    // Set other properties as needed
+    if (question.type === 'programming') {
+      setTestRunLanguage(question.defaultLanguage || 'java');
+    }
+    
+    setIsSearchDialogOpen(false);
+    setSearchResults([]);
+    setSearchQuery('');
+    toast.success(`Question "${question.title}" loaded successfully`);
+  };
+  
+  // Toggle search dialog
+  const toggleSearchDialog = () => {
+    setIsSearchDialogOpen(!isSearchDialogOpen);
+    if (!isSearchDialogOpen) {
+      setSearchResults([]);
+      setSearchQuery('');
+    }
+  };
+
   return (
     <Box component="form" onSubmit={handleSubmit} sx={{ width: '100%' }}>
-      {/* Add JSON upload option at the top of the form */}
-      <Paper
-        variant="outlined"
-        sx={{
-          p: 2,
-          mb: 3,
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center',
-          borderColor: 'primary.main',
-          bgcolor: 'background.paper'
-        }}
-      >
-        <Typography variant="h6" gutterBottom>
-          Upload Question JSON
-        </Typography>
-        <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
-          Upload a JSON file with question details to automatically populate the form.
-          <br />
-          The file should include question structure with title, description, type, and other relevant fields.
-        </Typography>
-        
-        <input
-          type="file"
-          accept=".json"
-          onChange={handleFileUpload}
-          style={{ display: 'none' }}
-          ref={fileInputRef}
-        />
-        
-        <Button
-          variant="contained"
-          startIcon={isUploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
-          onClick={handleUploadButtonClick}
-          disabled={isUploading}
-          sx={{ width: 'fit-content' }}
+      <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 3 }}>
+        {/* Add JSON upload option at the top of the form */}
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            borderColor: 'primary.main',
+            bgcolor: 'background.paper',
+            width: '48%'
+          }}
         >
-          {isUploading ? 'Processing...' : 'Upload Question JSON'}
-        </Button>
-      </Paper>
+          <Typography variant="h6" gutterBottom>
+            Upload Question JSON
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
+            Upload a JSON file with question details to automatically populate the form.
+          </Typography>
+          
+          <input
+            type="file"
+            accept=".json"
+            onChange={handleFileUpload}
+            style={{ display: 'none' }}
+            ref={fileInputRef}
+          />
+          
+          <Button
+            variant="contained"
+            startIcon={isUploading ? <CircularProgress size={20} /> : <CloudUploadIcon />}
+            onClick={handleUploadButtonClick}
+            disabled={isUploading}
+            sx={{ width: 'fit-content' }}
+          >
+            {isUploading ? 'Processing...' : 'Upload Question JSON'}
+          </Button>
+        </Paper>
+        
+        {/* Add search functionality */}
+        <Paper
+          variant="outlined"
+          sx={{
+            p: 2,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            borderColor: 'secondary.main',
+            bgcolor: 'background.paper',
+            width: '48%'
+          }}
+        >
+          <Typography variant="h6" gutterBottom>
+            Search Existing Questions
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 2, textAlign: 'center' }}>
+            Search for existing questions to load into the form.
+          </Typography>
+          
+          <Button
+            variant="contained"
+            color="secondary"
+            startIcon={<SearchIcon />}
+            onClick={toggleSearchDialog}
+            sx={{ width: 'fit-content' }}
+          >
+            Search Questions
+          </Button>
+          
+          {/* Search Dialog */}
+          <Dialog 
+            open={isSearchDialogOpen} 
+            onClose={toggleSearchDialog}
+            fullWidth
+            maxWidth="md"
+          >
+            <DialogTitle>
+              Search Questions
+              <IconButton
+                aria-label="close"
+                onClick={toggleSearchDialog}
+                sx={{
+                  position: 'absolute',
+                  right: 8,
+                  top: 8,
+                  color: (theme) => theme.palette.grey[500],
+                }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent>
+              <Box sx={{ display: 'flex', mb: 2 }}>
+                <TextField
+                  label="Search by title, description, or tags"
+                  variant="outlined"
+                  fullWidth
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onKeyPress={(e) => {
+                    if (e.key === 'Enter') {
+                      e.preventDefault();
+                      handleSearchQuestions();
+                    }
+                  }}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton 
+                          edge="end" 
+                          onClick={handleSearchQuestions}
+                          disabled={isSearching}
+                        >
+                          <SearchIcon />
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
+                />
+              </Box>
+              
+              {isSearching ? (
+                <Box sx={{ display: 'flex', justifyContent: 'center', p: 3 }}>
+                  <CircularProgress />
+                </Box>
+              ) : searchResults.length > 0 ? (
+                <TableContainer component={Paper} variant="outlined">
+                  <Table size="small">
+                    <TableHead>
+                      <TableRow>
+                        <TableCell>Title</TableCell>
+                        <TableCell>Type</TableCell>
+                        <TableCell>Difficulty</TableCell>
+                        <TableCell>Marks</TableCell>
+                        <TableCell>Actions</TableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {searchResults.map((question) => (
+                        <TableRow key={question._id} hover>
+                          <TableCell>{question.title}</TableCell>
+                          <TableCell>
+                            <Chip 
+                              size="small" 
+                              color={question.type === 'programming' ? 'primary' : 'secondary'}
+                              label={question.type === 'programming' ? 'Programming' : 'MCQ'}
+                            />
+                          </TableCell>
+                          <TableCell>{question.difficultyLevel}</TableCell>
+                          <TableCell>{question.marks}</TableCell>
+                          <TableCell>
+                            <Button
+                              size="small"
+                              startIcon={<ContentCopyIcon />}
+                              onClick={() => handleLoadQuestion(question)}
+                            >
+                              Load
+                            </Button>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              ) : (
+                <Box sx={{ textAlign: 'center', p: 3, color: 'text.secondary' }}>
+                  No search results. Enter keywords and press search.
+                </Box>
+              )}
+            </DialogContent>
+            <DialogActions>
+              <Button onClick={toggleSearchDialog}>Close</Button>
+            </DialogActions>
+          </Dialog>
+        </Paper>
+      </Box>
       
       {/* Always show all tabs but disable ones that aren't applicable */}
       <Tabs 

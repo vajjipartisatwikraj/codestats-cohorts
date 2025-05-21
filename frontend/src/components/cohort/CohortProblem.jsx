@@ -186,7 +186,66 @@ const CohortProblem = () => {
   useEffect(() => {
     fetchQuestionDetails();
     fetchAllSubmissions();
-  }, [cohortId, moduleId, questionId, token]);
+    
+    // Check for saved state from previous submission
+    const savedState = sessionStorage.getItem('cohortProblem_state');
+    const submissionSuccess = sessionStorage.getItem('submission_success_flag');
+    
+    if (savedState && submissionSuccess && savedState !== 'undefined') {
+      try {
+        const parsedState = JSON.parse(savedState);
+        
+        // Verify this is the same question/cohort/module
+        if (parsedState.questionId === questionId && 
+            parsedState.cohortId === cohortId && 
+            parsedState.moduleId === moduleId) {
+          
+          // Restore code and language
+          if (parsedState.code) {
+            setCode(parsedState.code);
+          }
+          
+          if (parsedState.language) {
+            setLanguage(parsedState.language);
+          }
+          
+          // Restore test results
+          if (parsedState.testResults) {
+            setTestResults(parsedState.testResults);
+          }
+          
+          // Add the new submission to the submissions array
+          if (parsedState.submission) {
+            setSubmissions(prev => {
+              // Check if submission already exists to avoid duplicates
+              if (!prev.some(s => s._id === parsedState.submission._id)) {
+                return [parsedState.submission, ...prev];
+              }
+              return prev;
+            });
+          }
+          
+          // Show success message
+          if (parsedState.allPassed) {
+            toast.success('Submission saved successfully! All test cases passed.', {
+              autoClose: 3000,
+              delay: 1000 // Slight delay to ensure it appears after page load
+            });
+          } else {
+            toast.warn('Submission saved, but some test cases failed.', {
+              autoClose: 3000,
+              delay: 1000
+            });
+          }
+        }
+      } catch (error) {
+        console.error('Error restoring submission state:', error);
+      }
+    }
+    
+    // Clear the success flag but keep the state for potential future use
+    sessionStorage.removeItem('submission_success_flag');
+  }, [cohortId, moduleId, questionId, token, setCode, setLanguage, setTestResults, setSubmissions]);
   
   // Update code when language changes
   useEffect(() => {
@@ -750,21 +809,44 @@ const CohortProblem = () => {
         
         // Update submissions state directly instead of refetching everything
         const newSubmission = response.data;
+        
         if (newSubmission) {
+          // Save state to sessionStorage before refreshing
+          const stateToSave = {
+            code,
+            language,
+            questionId,
+            cohortId,
+            moduleId,
+            testResults: processedHiddenResults,
+            submission: newSubmission,
+            allPassed
+          };
+          
+          // Save state to sessionStorage
+          sessionStorage.setItem('cohortProblem_state', JSON.stringify(stateToSave));
+          sessionStorage.setItem('submission_success_flag', 'true');
+          
+          // Show success toast before refresh
+          if (allPassed) {
+            toast.success('Solution accepted! All hidden test cases passed.');
+          } else {
+            toast.warn('Some hidden test cases failed. Your solution was not accepted.');
+          }
+          
+          // Refresh the page
+          window.location.reload();
+        } else {
           // Add the new submission to the existing submissions array
           setSubmissions(prevSubmissions => [newSubmission, ...prevSubmissions]);
+          
+          // Show success/failure toast
+          if (allPassed) {
+            toast.success('Solution accepted! All hidden test cases passed.');
+          } else {
+            toast.warn('Some hidden test cases failed. Your solution was not accepted.');
+          }
         }
-        
-        // Show success/failure toast
-        if (allPassed) {
-          toast.success('Solution accepted! All hidden test cases passed.');
-        } else {
-          toast.warn('Some hidden test cases failed. Your solution was not accepted.');
-        }
-        
-        // Don't call these methods that cause page refresh
-        // fetchQuestionDetails();
-        // fetchAllSubmissions();
       } catch (error) {
         toast.error('Failed to submit solution: ' + (error.message || 'Unknown error'));
       } finally {

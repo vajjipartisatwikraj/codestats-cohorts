@@ -1,0 +1,72 @@
+{
+  "id": "range-sum-of-bst",
+  "title": "Range Sum of BST",
+  "description": "Given the root node of a binary search tree and two integers low and high, return the sum of values of all nodes with a value in the inclusive range [low, high].",
+  "difficulty": "Easy",
+  "constraints": [
+    "The number of nodes in the tree is in the range [1, 2 * 10^4]",
+    "1 <= Node.val <= 10^5",
+    "1 <= low <= high <= 10^5",
+    "All Node.val are unique"
+  ],
+  "examples": [
+    {
+      "input": "root = [10,5,15,3,7,null,18], low = 7, high = 15",
+      "output": "32",
+      "explanation": "Nodes 7, 10, and 15 are in the range [7, 15]. 7 + 10 + 15 = 32."
+    },
+    {
+      "input": "root = [10,5,15,3,7,13,18,1,null,6], low = 6, high = 10",
+      "output": "23",
+      "explanation": "Nodes 6, 7, and 10 are in the range [6, 10]. 6 + 7 + 10 = 23."
+    }
+  ],
+  "approach": "We can solve this problem efficiently using the properties of a binary search tree. Since all nodes in the left subtree of a node have values less than the node's value, and all nodes in the right subtree have values greater than the node's value, we can skip exploring subtrees that don't contain any nodes in the range. If the current node's value is less than low, we only need to explore its right subtree. If the current node's value is greater than high, we only need to explore its left subtree. If the current node's value is between low and high (inclusive), we include it in the sum and explore both subtrees.",
+  "boilerplateCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    public int rangeSumBST(TreeNode root, int low, int high) {\n        // Your code here\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def rangeSumBST(self, root: Optional[TreeNode], low: int, high: int) -> int:\n        # Your code here\n        pass",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\npublic:\n    int rangeSumBST(TreeNode* root, int low, int high) {\n        // Your code here\n    }\n};"
+  },
+  "solutionCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    // Recursive approach\n    public int rangeSumBST(TreeNode root, int low, int high) {\n        if (root == null) {\n            return 0;\n        }\n        \n        // If current node's value is greater than high, we only need to explore left subtree\n        if (root.val > high) {\n            return rangeSumBST(root.left, low, high);\n        }\n        \n        // If current node's value is less than low, we only need to explore right subtree\n        if (root.val < low) {\n            return rangeSumBST(root.right, low, high);\n        }\n        \n        // If current node's value is in range, include it in sum and explore both subtrees\n        return root.val + rangeSumBST(root.left, low, high) + rangeSumBST(root.right, low, high);\n    }\n    \n    // Iterative approach using a stack\n    public int rangeSumBSTIterative(TreeNode root, int low, int high) {\n        int sum = 0;\n        if (root == null) {\n            return sum;\n        }\n        \n        Stack<TreeNode> stack = new Stack<>();\n        stack.push(root);\n        \n        while (!stack.isEmpty()) {\n            TreeNode node = stack.pop();\n            \n            // Check if current node's value is in range\n            if (node.val >= low && node.val <= high) {\n                sum += node.val;\n            }\n            \n            // Push right child if it might contain nodes in range\n            if (node.right != null && node.val < high) {\n                stack.push(node.right);\n            }\n            \n            // Push left child if it might contain nodes in range\n            if (node.left != null && node.val > low) {\n                stack.push(node.left);\n            }\n        }\n        \n        return sum;\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    # Recursive approach\n    def rangeSumBST(self, root: Optional[TreeNode], low: int, high: int) -> int:\n        if not root:\n            return 0\n        \n        # If current node's value is greater than high, we only need to explore left subtree\n        if root.val > high:\n            return self.rangeSumBST(root.left, low, high)\n        \n        # If current node's value is less than low, we only need to explore right subtree\n        if root.val < low:\n            return self.rangeSumBST(root.right, low, high)\n        \n        # If current node's value is in range, include it in sum and explore both subtrees\n        return root.val + self.rangeSumBST(root.left, low, high) + self.rangeSumBST(root.right, low, high)\n    \n    # Iterative approach using a stack\n    def rangeSumBSTIterative(self, root: Optional[TreeNode], low: int, high: int) -> int:\n        sum_val = 0\n        if not root:\n            return sum_val\n        \n        stack = [root]\n        \n        while stack:\n            node = stack.pop()\n            \n            # Check if current node's value is in range\n            if low <= node.val <= high:\n                sum_val += node.val\n            \n            # Push right child if it might contain nodes in range\n            if node.right and node.val < high:\n                stack.append(node.right)\n            \n            # Push left child if it might contain nodes in range\n            if node.left and node.val > low:\n                stack.append(node.left)\n        \n        return sum_val",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\npublic:\n    // Recursive approach\n    int rangeSumBST(TreeNode* root, int low, int high) {\n        if (root == nullptr) {\n            return 0;\n        }\n        \n        // If current node's value is greater than high, we only need to explore left subtree\n        if (root->val > high) {\n            return rangeSumBST(root->left, low, high);\n        }\n        \n        // If current node's value is less than low, we only need to explore right subtree\n        if (root->val < low) {\n            return rangeSumBST(root->right, low, high);\n        }\n        \n        // If current node's value is in range, include it in sum and explore both subtrees\n        return root->val + rangeSumBST(root->left, low, high) + rangeSumBST(root->right, low, high);\n    }\n    \n    // Iterative approach using a stack\n    int rangeSumBSTIterative(TreeNode* root, int low, int high) {\n        int sum = 0;\n        if (root == nullptr) {\n            return sum;\n        }\n        \n        std::stack<TreeNode*> stack;\n        stack.push(root);\n        \n        while (!stack.empty()) {\n            TreeNode* node = stack.top();\n            stack.pop();\n            \n            // Check if current node's value is in range\n            if (node->val >= low && node->val <= high) {\n                sum += node->val;\n            }\n            \n            // Push right child if it might contain nodes in range\n            if (node->right != nullptr && node->val < high) {\n                stack.push(node->right);\n            }\n            \n            // Push left child if it might contain nodes in range\n            if (node->left != nullptr && node->val > low) {\n                stack.push(node->left);\n            }\n        }\n        \n        return sum;\n    }\n};"
+  },
+  "testCases": {
+    "visible": [
+      {
+        "input": {"root": [10,5,15,3,7,null,18], "low": 7, "high": 15},
+        "output": 32
+      },
+      {
+        "input": {"root": [10,5,15,3,7,13,18,1,null,6], "low": 6, "high": 10},
+        "output": 23
+      }
+    ],
+    "hidden": [
+      {
+        "input": {"root": [10], "low": 10, "high": 10},
+        "output": 10
+      },
+      {
+        "input": {"root": [10,5,15,3,7,null,18], "low": 20, "high": 30},
+        "output": 0
+      },
+      {
+        "input": {"root": [10,5,15,3,7,13,18,1,null,6], "low": 1, "high": 18},
+        "output": 78
+      }
+    ]
+  },
+  "hints": [
+    "Use the properties of a binary search tree to optimize your solution",
+    "Remember that in a BST, all nodes in the left subtree have values less than the node's value, and all nodes in the right subtree have values greater than the node's value",
+    "If the current node's value is less than the low bound, you only need to explore its right subtree",
+    "If the current node's value is greater than the high bound, you only need to explore its left subtree",
+    "If the current node's value is within the range, add it to the sum and explore both subtrees"
+  ],
+  "companies": ["Facebook", "Amazon", "Microsoft", "Google", "Bloomberg", "Uber"],
+  "tags": ["Binary Search Tree", "Tree", "Depth-First Search", "Binary Tree"],
+  "timeComplexity": "O(n) in the worst case, where n is the number of nodes in the tree. However, the actual time complexity can be better if we can prune subtrees due to the BST property.",
+  "spaceComplexity": "O(h) for the recursive solution, where h is the height of the tree, to account for the function call stack. For the iterative solution, space complexity is also O(h) for the stack."
+} 

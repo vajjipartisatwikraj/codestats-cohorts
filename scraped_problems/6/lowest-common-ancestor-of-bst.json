@@ -1,0 +1,82 @@
+{
+  "id": "lowest-common-ancestor-of-bst",
+  "title": "Lowest Common Ancestor of a Binary Search Tree",
+  "description": "Given a binary search tree (BST), find the lowest common ancestor (LCA) node of two given nodes in the BST.\n\nAccording to the definition of LCA on Wikipedia: "The lowest common ancestor is defined between two nodes p and q as the lowest node in T that has both p and q as descendants (where we allow a node to be a descendant of itself)."",
+  "difficulty": "Medium",
+  "constraints": [
+    "The number of nodes in the tree is in the range [2, 10^5]",
+    "-10^9 <= Node.val <= 10^9",
+    "All Node.val are unique",
+    "p != q",
+    "p and q will exist in the BST"
+  ],
+  "examples": [
+    {
+      "input": "root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 8",
+      "output": "6",
+      "explanation": "The LCA of nodes 2 and 8 is 6."
+    },
+    {
+      "input": "root = [6,2,8,0,4,7,9,null,null,3,5], p = 2, q = 4",
+      "output": "2",
+      "explanation": "The LCA of nodes 2 and 4 is 2, since a node can be a descendant of itself according to the LCA definition."
+    },
+    {
+      "input": "root = [2,1], p = 2, q = 1",
+      "output": "2",
+      "explanation": "The LCA of nodes 2 and 1 is 2, since a node can be a descendant of itself according to the LCA definition."
+    }
+  ],
+  "approach": "Unlike the general binary tree LCA problem, the BST property makes finding the LCA more efficient. We can utilize the fact that in a BST, all nodes in the left subtree have values less than the node's value, and all nodes in the right subtree have values greater than the node's value. Starting from the root, we can navigate the tree based on the values of p and q:\n\n1. If both p and q are less than the current node's value, the LCA must be in the left subtree.\n2. If both p and q are greater than the current node's value, the LCA must be in the right subtree.\n3. If one is less and one is greater, or if one of them equals the current node, then the current node is the LCA.\n\nThis approach has a time complexity of O(h), where h is the height of the tree.",
+  "boilerplateCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode(int x) { val = x; }\n * }\n */\nclass Solution {\n    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {\n        // Your code here\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, x):\n#         self.val = x\n#         self.left = None\n#         self.right = None\nclass Solution:\n    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':\n        # Your code here\n        pass",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}\n * };\n */\nclass Solution {\npublic:\n    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {\n        // Your code here\n    }\n};"
+  },
+  "solutionCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode(int x) { val = x; }\n * }\n */\nclass Solution {\n    // Recursive approach\n    public TreeNode lowestCommonAncestor(TreeNode root, TreeNode p, TreeNode q) {\n        // If both p and q are less than root, LCA must be in the left subtree\n        if (p.val < root.val && q.val < root.val) {\n            return lowestCommonAncestor(root.left, p, q);\n        }\n        \n        // If both p and q are greater than root, LCA must be in the right subtree\n        if (p.val > root.val && q.val > root.val) {\n            return lowestCommonAncestor(root.right, p, q);\n        }\n        \n        // If one is less and one is greater, or one equals root, then root is the LCA\n        return root;\n    }\n    \n    // Iterative approach\n    public TreeNode lowestCommonAncestorIterative(TreeNode root, TreeNode p, TreeNode q) {\n        TreeNode curr = root;\n        \n        while (curr != null) {\n            // If both p and q are less than current, go to left subtree\n            if (p.val < curr.val && q.val < curr.val) {\n                curr = curr.left;\n            }\n            // If both p and q are greater than current, go to right subtree\n            else if (p.val > curr.val && q.val > curr.val) {\n                curr = curr.right;\n            }\n            // Found the split point or one of the nodes, this is the LCA\n            else {\n                return curr;\n            }\n        }\n        \n        return null; // Should never reach here given the problem constraints\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, x):\n#         self.val = x\n#         self.left = None\n#         self.right = None\nclass Solution:\n    # Recursive approach\n    def lowestCommonAncestor(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':\n        # If both p and q are less than root, LCA must be in the left subtree\n        if p.val < root.val and q.val < root.val:\n            return self.lowestCommonAncestor(root.left, p, q)\n        \n        # If both p and q are greater than root, LCA must be in the right subtree\n        if p.val > root.val and q.val > root.val:\n            return self.lowestCommonAncestor(root.right, p, q)\n        \n        # If one is less and one is greater, or one equals root, then root is the LCA\n        return root\n    \n    # Iterative approach\n    def lowestCommonAncestorIterative(self, root: 'TreeNode', p: 'TreeNode', q: 'TreeNode') -> 'TreeNode':\n        curr = root\n        \n        while curr:\n            # If both p and q are less than current, go to left subtree\n            if p.val < curr.val and q.val < curr.val:\n                curr = curr.left\n            # If both p and q are greater than current, go to right subtree\n            elif p.val > curr.val and q.val > curr.val:\n                curr = curr.right\n            # Found the split point or one of the nodes, this is the LCA\n            else:\n                return curr\n        \n        return None  # Should never reach here given the problem constraints",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode(int x) : val(x), left(NULL), right(NULL) {}\n * };\n */\nclass Solution {\npublic:\n    // Recursive approach\n    TreeNode* lowestCommonAncestor(TreeNode* root, TreeNode* p, TreeNode* q) {\n        // If both p and q are less than root, LCA must be in the left subtree\n        if (p->val < root->val && q->val < root->val) {\n            return lowestCommonAncestor(root->left, p, q);\n        }\n        \n        // If both p and q are greater than root, LCA must be in the right subtree\n        if (p->val > root->val && q->val > root->val) {\n            return lowestCommonAncestor(root->right, p, q);\n        }\n        \n        // If one is less and one is greater, or one equals root, then root is the LCA\n        return root;\n    }\n    \n    // Iterative approach\n    TreeNode* lowestCommonAncestorIterative(TreeNode* root, TreeNode* p, TreeNode* q) {\n        TreeNode* curr = root;\n        \n        while (curr != nullptr) {\n            // If both p and q are less than current, go to left subtree\n            if (p->val < curr->val && q->val < curr->val) {\n                curr = curr->left;\n            }\n            // If both p and q are greater than current, go to right subtree\n            else if (p->val > curr->val && q->val > curr->val) {\n                curr = curr->right;\n            }\n            // Found the split point or one of the nodes, this is the LCA\n            else {\n                return curr;\n            }\n        }\n        \n        return nullptr; // Should never reach here given the problem constraints\n    }\n};"
+  },
+  "testCases": {
+    "visible": [
+      {
+        "input": {"root": [6,2,8,0,4,7,9,null,null,3,5], "p": 2, "q": 8},
+        "output": 6
+      },
+      {
+        "input": {"root": [6,2,8,0,4,7,9,null,null,3,5], "p": 2, "q": 4},
+        "output": 2
+      },
+      {
+        "input": {"root": [2,1], "p": 2, "q": 1},
+        "output": 2
+      }
+    ],
+    "hidden": [
+      {
+        "input": {"root": [3,1,5,null,2,4,6], "p": 1, "q": 5},
+        "output": 3
+      },
+      {
+        "input": {"root": [3,1,5,null,2,4,6], "p": 2, "q": 4},
+        "output": 3
+      },
+      {
+        "input": {"root": [10,5,15,3,7,null,18], "p": 7, "q": 18},
+        "output": 10
+      }
+    ]
+  },
+  "hints": [
+    "Use the BST property to your advantage - nodes in the left subtree have values less than the node's value, and nodes in the right subtree have values greater than the node's value",
+    "Compare the values of p and q with the current node's value to determine which subtree to traverse",
+    "If p and q are on opposite sides of a node (or one of them is the node itself), that node is the LCA",
+    "You can solve this problem both recursively and iteratively",
+    "The time complexity can be O(h), where h is the height of the tree, which is better than the O(n) solution for general binary trees"
+  ],
+  "companies": ["Facebook", "Microsoft", "Amazon", "Google", "Apple", "LinkedIn"],
+  "tags": ["Binary Search Tree", "Tree", "Depth-First Search", "Binary Tree"],
+  "timeComplexity": "O(h) - where h is the height of the tree. This is because we only need to travel from the root to the LCA, which in the worst case is a leaf node.",
+  "spaceComplexity": "O(h) for the recursive solution due to the recursion stack. For the iterative solution, the space complexity is O(1) since we only use a constant amount of extra space."
+} 

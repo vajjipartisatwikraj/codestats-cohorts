@@ -1,0 +1,66 @@
+{
+  "title": "Valid Parentheses",
+  "description": "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.\n\nAn input string is valid if:\n1. Open brackets must be closed by the same type of brackets.\n2. Open brackets must be closed in the correct order.\n3. Every close bracket has a corresponding open bracket of the same type.\n\nInput Format:\n- The first line contains a single integer T, the number of test cases.\n- For each test case, one line contains a string s consisting only of the characters '(', ')', '{', '}', '[' and ']'.\n\nOutput Format:\n- For each test case, print \"true\" if the string is valid, or \"false\" otherwise.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "1 <= s.length <= 10^4",
+    "s consists of parentheses only '()[]{}'",
+    "1 <= T <= 100"
+  ],
+  "examples": [
+    {
+      "input": "3\n()\n{[]}\n([)]",
+      "output": "true\ntrue\nfalse",
+      "explanation": "Test case 1: '()' is a valid expression as the open bracket is closed by the same type.\nTest case 2: '{[]}' is valid as open brackets are closed by the same type in the correct order.\nTest case 3: '([)]' is invalid as the closing brackets do not match the opening brackets in the correct order."
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "easy",
+  "marks": 5,
+  "tags": ["Stack", "String"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Amazon", "Microsoft", "Google", "Facebook", "Apple", "LinkedIn", "Airbnb"],
+  "hints": [
+    "Consider using a stack data structure to keep track of opening brackets",
+    "When you encounter a closing bracket, check if it matches the most recent opening bracket",
+    "The string is valid if and only if the stack is empty at the end"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Determines if the input string containing parentheses is valid\n     * @param s The input string containing only parentheses characters\n     * @return true if the string is valid, false otherwise\n     */\n    public boolean isValid(String s) {\n        // Implement your solution here\n        return false; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String s = br.readLine().trim();\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                boolean result = sol.isValid(s);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Determines if the input string containing parentheses is valid\n     * @param s The input string containing only parentheses characters\n     * @return true if the string is valid, false otherwise\n     */\n    public boolean isValid(String s) {\n        Stack<Character> stack = new Stack<>();\n        \n        for (char c : s.toCharArray()) {\n            // If it's an opening bracket, push to stack\n            if (c == '(' || c == '{' || c == '[') {\n                stack.push(c);\n            } else {\n                // It's a closing bracket, check if stack is empty\n                if (stack.isEmpty()) {\n                    return false; // No matching opening bracket\n                }\n                \n                // Check if the closing bracket matches the last opening bracket\n                char top = stack.pop();\n                if ((c == ')' && top != '(') ||\n                    (c == '}' && top != '{') ||\n                    (c == ']' && top != '[')) {\n                    return false; // Mismatched brackets\n                }\n            }\n        }\n        \n        // If stack is empty, all brackets were matched correctly\n        return stack.isEmpty();\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String s = br.readLine().trim();\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                boolean result = sol.isValid(s);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <string>\n#include <stack>\n\nclass Solution {\npublic:\n    /**\n     * Determines if the input string containing parentheses is valid\n     * @param s The input string containing only parentheses characters\n     * @return true if the string is valid, false otherwise\n     */\n    bool isValid(std::string s) {\n        // Implement your solution here\n        return false; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline\n    \n    for (int i = 0; i < t; i++) {\n        std::string s;\n        std::getline(std::cin, s);\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        bool result = sol.isValid(s);\n        /*RUNTIME CALC END*/\n        \n        std::cout << (result ? \"true\" : \"false\");\n        \n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <string>\n#include <stack>\n\nclass Solution {\npublic:\n    /**\n     * Determines if the input string containing parentheses is valid\n     * @param s The input string containing only parentheses characters\n     * @return true if the string is valid, false otherwise\n     */\n    bool isValid(std::string s) {\n        std::stack<char> stack;\n        \n        for (char c : s) {\n            // If it's an opening bracket, push to stack\n            if (c == '(' || c == '{' || c == '[') {\n                stack.push(c);\n            } else {\n                // It's a closing bracket, check if stack is empty\n                if (stack.empty()) {\n                    return false; // No matching opening bracket\n                }\n                \n                // Check if the closing bracket matches the last opening bracket\n                char top = stack.top();\n                stack.pop();\n                \n                if ((c == ')' && top != '(') ||\n                    (c == '}' && top != '{') ||\n                    (c == ']' && top != '[')) {\n                    return false; // Mismatched brackets\n                }\n            }\n        }\n        \n        // If stack is empty, all brackets were matched correctly\n        return stack.empty();\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline\n    \n    for (int i = 0; i < t; i++) {\n        std::string s;\n        std::getline(std::cin, s);\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        bool result = sol.isValid(s);\n        /*RUNTIME CALC END*/\n        \n        std::cout << (result ? \"true\" : \"false\");\n        \n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\n\nclass Solution:\n    def isValid(self, s: str) -> bool:\n        \"\"\"\n        Determines if the input string containing parentheses is valid\n        :param s: The input string containing only parentheses characters\n        :return: True if the string is valid, False otherwise\n        \"\"\"\n        # Implement your solution here\n        return False # Replace with your implementation\n\ndef main():\n    try:\n        # Read number of test cases\n        t = int(input().strip())\n        \n        results = []\n        for _ in range(t):\n            s = input().strip()\n            \n            # RUNTIME CALC START\n            sol = Solution()\n            result = sol.isValid(s)\n            # RUNTIME CALC END\n            \n            results.append(str(result).lower())\n        \n        # Output all results\n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()",
+      "solutionCode": "import sys\n\nclass Solution:\n    def isValid(self, s: str) -> bool:\n        \"\"\"\n        Determines if the input string containing parentheses is valid\n        :param s: The input string containing only parentheses characters\n        :return: True if the string is valid, False otherwise\n        \"\"\"\n        stack = []\n        # Dictionary to map closing brackets to their opening brackets\n        brackets_map = {')': '(', '}': '{', ']': '['}\n        \n        for char in s:\n            # If it's an opening bracket, push to stack\n            if char in \"({[\":\n                stack.append(char)\n            else:\n                # It's a closing bracket, check if stack is empty\n                if not stack:\n                    return False  # No matching opening bracket\n                \n                # Check if the closing bracket matches the last opening bracket\n                if stack.pop() != brackets_map[char]:\n                    return False  # Mismatched brackets\n        \n        # If stack is empty, all brackets were matched correctly\n        return len(stack) == 0\n\ndef main():\n    try:\n        # Read number of test cases\n        t = int(input().strip())\n        \n        results = []\n        for _ in range(t):\n            s = input().strip()\n            \n            # RUNTIME CALC START\n            sol = Solution()\n            result = sol.isValid(s)\n            # RUNTIME CALC END\n            \n            results.append(str(result).lower())\n        \n        # Output all results\n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "3\n()\n{[]}\n([)]",
+      "output": "true\ntrue\nfalse",
+      "hidden": false,
+      "explanation": "Basic examples of valid and invalid parentheses"
+    },
+    {
+      "input": "3\n{{[()]()}}\n[({})]\n)(",
+      "output": "true\nfalse\nfalse",
+      "hidden": true,
+      "explanation": "Nested brackets, mismatched types, and a test case where closing brackets come before opening brackets"
+    }
+  ]
+} 

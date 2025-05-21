@@ -1,0 +1,71 @@
+{
+  "id": "kth-smallest-element-in-bst",
+  "title": "Kth Smallest Element in a BST",
+  "description": "Given the root of a binary search tree, and an integer k, return the kth smallest value (1-indexed) of all the values of the nodes in the tree.",
+  "difficulty": "Medium",
+  "constraints": [
+    "The number of nodes in the tree is n, where 1 <= n <= 10^4",
+    "1 <= k <= n <= 10^4",
+    "0 <= Node.val <= 10^4"
+  ],
+  "examples": [
+    {
+      "input": "root = [3,1,4,null,2], k = 1",
+      "output": "1",
+      "explanation": "The BST is:\n   3\n  / \\\n 1   4\n  \\\n   2\nThe 1st smallest element is 1."
+    },
+    {
+      "input": "root = [5,3,6,2,4,null,null,1], k = 3",
+      "output": "3",
+      "explanation": "The BST is:\n      5\n     / \\\n    3   6\n   / \\\n  2   4\n /\n1\nThe 3rd smallest element is 3."
+    }
+  ],
+  "approach": "Since a binary search tree follows the property that all values in the left subtree are less than the root, and all values in the right subtree are greater than the root, an inorder traversal of a BST gives a sorted list of elements in ascending order. To find the kth smallest element, we can perform an inorder traversal and return the kth element encountered. This can be done recursively or iteratively using a stack. Another approach is to augment the BST with information about the size of the subtree rooted at each node, which allows for more efficient querying.",
+  "boilerplateCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    public int kthSmallest(TreeNode root, int k) {\n        // Your code here\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:\n        # Your code here\n        pass",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\npublic:\n    int kthSmallest(TreeNode* root, int k) {\n        // Your code here\n    }\n};"
+  },
+  "solutionCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    // Recursive inorder traversal approach\n    private int count = 0;\n    private int result = 0;\n    \n    public int kthSmallest(TreeNode root, int k) {\n        count = 0;\n        inorderTraversal(root, k);\n        return result;\n    }\n    \n    private void inorderTraversal(TreeNode node, int k) {\n        if (node == null) return;\n        \n        // Visit left subtree\n        inorderTraversal(node.left, k);\n        \n        // Visit current node\n        count++;\n        if (count == k) {\n            result = node.val;\n            return;\n        }\n        \n        // Visit right subtree\n        inorderTraversal(node.right, k);\n    }\n    \n    // Iterative inorder traversal approach\n    public int kthSmallestIterative(TreeNode root, int k) {\n        Stack<TreeNode> stack = new Stack<>();\n        TreeNode curr = root;\n        int count = 0;\n        \n        while (curr != null || !stack.isEmpty()) {\n            // Traverse to leftmost node\n            while (curr != null) {\n                stack.push(curr);\n                curr = curr.left;\n            }\n            \n            // Visit current node\n            curr = stack.pop();\n            count++;\n            \n            if (count == k) {\n                return curr.val;\n            }\n            \n            // Move to right subtree\n            curr = curr.right;\n        }\n        \n        return -1; // This line will not be reached if k is valid\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    # Recursive inorder traversal approach\n    def kthSmallest(self, root: Optional[TreeNode], k: int) -> int:\n        self.count = 0\n        self.result = 0\n        \n        def inorder(node):\n            if not node:\n                return\n            \n            # Visit left subtree\n            inorder(node.left)\n            \n            # Visit current node\n            self.count += 1\n            if self.count == k:\n                self.result = node.val\n                return\n            \n            # Visit right subtree\n            inorder(node.right)\n        \n        inorder(root)\n        return self.result\n    \n    # Iterative inorder traversal approach\n    def kthSmallestIterative(self, root: Optional[TreeNode], k: int) -> int:\n        stack = []\n        curr = root\n        count = 0\n        \n        while curr or stack:\n            # Traverse to leftmost node\n            while curr:\n                stack.append(curr)\n                curr = curr.left\n            \n            # Visit current node\n            curr = stack.pop()\n            count += 1\n            \n            if count == k:\n                return curr.val\n            \n            # Move to right subtree\n            curr = curr.right\n        \n        return -1  # This line will not be reached if k is valid",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\nprivate:\n    int count = 0;\n    int result = 0;\n    \n    void inorderTraversal(TreeNode* node, int k) {\n        if (node == nullptr) return;\n        \n        // Visit left subtree\n        inorderTraversal(node->left, k);\n        \n        // Visit current node\n        count++;\n        if (count == k) {\n            result = node->val;\n            return;\n        }\n        \n        // Visit right subtree\n        inorderTraversal(node->right, k);\n    }\n    \npublic:\n    // Recursive inorder traversal approach\n    int kthSmallest(TreeNode* root, int k) {\n        count = 0;\n        inorderTraversal(root, k);\n        return result;\n    }\n    \n    // Iterative inorder traversal approach\n    int kthSmallestIterative(TreeNode* root, int k) {\n        std::stack<TreeNode*> stack;\n        TreeNode* curr = root;\n        int count = 0;\n        \n        while (curr != nullptr || !stack.empty()) {\n            // Traverse to leftmost node\n            while (curr != nullptr) {\n                stack.push(curr);\n                curr = curr->left;\n            }\n            \n            // Visit current node\n            curr = stack.top();\n            stack.pop();\n            count++;\n            \n            if (count == k) {\n                return curr->val;\n            }\n            \n            // Move to right subtree\n            curr = curr->right;\n        }\n        \n        return -1; // This line will not be reached if k is valid\n    }\n};"
+  },
+  "testCases": {
+    "visible": [
+      {
+        "input": {"root": [3,1,4,null,2], "k": 1},
+        "output": 1
+      },
+      {
+        "input": {"root": [5,3,6,2,4,null,null,1], "k": 3},
+        "output": 3
+      }
+    ],
+    "hidden": [
+      {
+        "input": {"root": [1], "k": 1},
+        "output": 1
+      },
+      {
+        "input": {"root": [3,1,4], "k": 2},
+        "output": 3
+      },
+      {
+        "input": {"root": [10,5,15,3,7,null,18], "k": 4},
+        "output": 7
+      }
+    ]
+  },
+  "hints": [
+    "Remember that an inorder traversal of a BST visits nodes in ascending order",
+    "Try using a recursive approach where you traverse the left subtree, then the current node, then the right subtree",
+    "You can also use an iterative approach with a stack to simulate the recursion",
+    "Keep track of how many nodes you've visited so far and return when you reach the kth node",
+    "For a follow-up challenge, consider how you would solve this if the tree was modified frequently and you needed to find the kth smallest element often"
+  ],
+  "companies": ["Amazon", "Microsoft", "Facebook", "Bloomberg", "Google", "Apple", "Uber", "LinkedIn"],
+  "tags": ["Binary Search Tree", "Tree", "Depth-First Search", "Binary Tree"],
+  "timeComplexity": "O(H + k) - where H is the height of the tree and k is the input parameter. In the worst case, this becomes O(n) for an unbalanced tree.",
+  "spaceComplexity": "O(H) - for the recursion stack or the explicit stack used in the iterative approach. In the worst case, this becomes O(n) for an unbalanced tree."
+} 

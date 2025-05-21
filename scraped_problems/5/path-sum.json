@@ -1,0 +1,78 @@
+{
+  "id": "path-sum",
+  "title": "Path Sum",
+  "description": "Given the root of a binary tree and an integer targetSum, return true if the tree has a root-to-leaf path such that adding up all the values along the path equals targetSum.\nA leaf is a node with no children.",
+  "difficulty": "Easy",
+  "constraints": [
+    "The number of nodes in the tree is in the range [0, 5000].",
+    "-1000 <= Node.val <= 1000",
+    "-1000 <= targetSum <= 1000"
+  ],
+  "examples": [
+    {
+      "input": "root = [5,4,8,11,null,13,4,7,2,null,null,null,1], targetSum = 22",
+      "output": "true",
+      "explanation": "The root-to-leaf path 5->4->11->2 sums to 22."
+    },
+    {
+      "input": "root = [1,2,3], targetSum = 5",
+      "output": "false",
+      "explanation": "There is no root-to-leaf path that sums to 5."
+    },
+    {
+      "input": "root = [], targetSum = 0",
+      "output": "false"
+    }
+  ],
+  "approach": "We can solve this problem using depth-first search (DFS) to traverse all possible paths from the root to leaf nodes. For each node, we subtract its value from the targetSum and recursively check if there exists a path from its children to a leaf node with the remaining sum. If we reach a leaf node and the remaining sum equals the node's value, we've found a valid path. The base case is when we reach a null node, which means we've gone beyond a leaf node, so we return false.",
+  "boilerplateCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    public boolean hasPathSum(TreeNode root, int targetSum) {\n        // Your code here\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def hasPathSum(self, root: Optional[TreeNode], targetSum: int) -> bool:\n        # Your code here\n        pass",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\npublic:\n    bool hasPathSum(TreeNode* root, int targetSum) {\n        // Your code here\n    }\n};"
+  },
+  "solutionCode": {
+    "java": "/**\n * Definition for a binary tree node.\n * public class TreeNode {\n *     int val;\n *     TreeNode left;\n *     TreeNode right;\n *     TreeNode() {}\n *     TreeNode(int val) { this.val = val; }\n *     TreeNode(int val, TreeNode left, TreeNode right) {\n *         this.val = val;\n *         this.left = left;\n *         this.right = right;\n *     }\n * }\n */\nclass Solution {\n    public boolean hasPathSum(TreeNode root, int targetSum) {\n        if (root == null) {\n            return false;\n        }\n        \n        // If the current node is a leaf node, check if the remaining sum equals the node value\n        if (root.left == null && root.right == null) {\n            return targetSum == root.val;\n        }\n        \n        // Recursively check the left and right subtrees with the reduced target sum\n        return hasPathSum(root.left, targetSum - root.val) || \n               hasPathSum(root.right, targetSum - root.val);\n    }\n}",
+    "python": "# Definition for a binary tree node.\n# class TreeNode:\n#     def __init__(self, val=0, left=None, right=None):\n#         self.val = val\n#         self.left = left\n#         self.right = right\nclass Solution:\n    def hasPathSum(self, root: Optional[TreeNode], targetSum: int) -> bool:\n        if not root:\n            return False\n        \n        # If the current node is a leaf node, check if the remaining sum equals the node value\n        if not root.left and not root.right:\n            return targetSum == root.val\n        \n        # Recursively check the left and right subtrees with the reduced target sum\n        return (self.hasPathSum(root.left, targetSum - root.val) or \n                self.hasPathSum(root.right, targetSum - root.val))",
+    "cpp": "/**\n * Definition for a binary tree node.\n * struct TreeNode {\n *     int val;\n *     TreeNode *left;\n *     TreeNode *right;\n *     TreeNode() : val(0), left(nullptr), right(nullptr) {}\n *     TreeNode(int x) : val(x), left(nullptr), right(nullptr) {}\n *     TreeNode(int x, TreeNode *left, TreeNode *right) : val(x), left(left), right(right) {}\n * };\n */\nclass Solution {\npublic:\n    bool hasPathSum(TreeNode* root, int targetSum) {\n        if (!root) {\n            return false;\n        }\n        \n        // If the current node is a leaf node, check if the remaining sum equals the node value\n        if (!root->left && !root->right) {\n            return targetSum == root->val;\n        }\n        \n        // Recursively check the left and right subtrees with the reduced target sum\n        return hasPathSum(root->left, targetSum - root->val) || \n               hasPathSum(root->right, targetSum - root->val);\n    }\n};"
+  },
+  "testCases": {
+    "visible": [
+      {
+        "input": {"root": [5,4,8,11,null,13,4,7,2,null,null,null,1], "targetSum": 22},
+        "output": true
+      },
+      {
+        "input": {"root": [1,2,3], "targetSum": 5},
+        "output": false
+      },
+      {
+        "input": {"root": [], "targetSum": 0},
+        "output": false
+      }
+    ],
+    "hidden": [
+      {
+        "input": {"root": [1,2], "targetSum": 1},
+        "output": false
+      },
+      {
+        "input": {"root": [1,2], "targetSum": 3},
+        "output": true
+      },
+      {
+        "input": {"root": [-2,null,-3], "targetSum": -5},
+        "output": true
+      }
+    ]
+  },
+  "hints": [
+    "Consider using a recursive approach to traverse the tree.",
+    "For each node, subtract its value from the target sum and check if the remaining sum can be achieved by its children.",
+    "A path must end at a leaf node (a node with no children).",
+    "The base case is when you reach a leaf node - check if the remaining sum equals the node's value."
+  ],
+  "companies": ["Amazon", "Facebook", "Microsoft", "Apple"],
+  "tags": ["Tree", "Depth-First Search", "Binary Tree"],
+  "timeComplexity": "O(n) - We need to visit each node once, where n is the number of nodes in the tree.",
+  "spaceComplexity": "O(h) - The maximum depth of the recursion stack is the height of the tree, which is O(n) in the worst case (skewed tree) and O(log n) in the best case (balanced tree)."
+} 

@@ -6,14 +6,12 @@
 const axios = require('axios');
 
 // RapidAPI Judge0 API endpoint
-const JUDGE0_API_URL = 'https://judge0-ce.p.rapidapi.com';
+const JUDGE0_API_URL = 'http://54.161.234.31:2358/';
 const JUDGE0_BATCH_SIZE = 10; // Max batch size for submissions
 
-// Headers for RapidAPI Judge0
+// Headers for self-hosted Judge0 instance
 const JUDGE0_API_HEADERS = {
-  'Content-Type': 'application/json',
-  'X-RapidAPI-Key': 'b317308be0mshdab1610a191e059p12c673jsn4de4146c5086',
-  'X-RapidAPI-Host': 'judge0-ce.p.rapidapi.com'
+  'Content-Type': 'application/json'
 };
 
 /**

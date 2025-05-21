@@ -37,7 +37,8 @@ import {
   Badge,
   LinearProgress,
   FormControlLabel,
-  TablePagination
+  TablePagination,
+  InputBase
 } from '@mui/material';
 import { useSwipeable } from 'react-swipeable';
 import {
@@ -190,6 +191,37 @@ const Leaderboard = () => {
         backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.3)' : 'rgba(0, 136, 204, 0.6)',
       },
     },
+  };
+
+  // Add a new custom scrollbar style for dropdowns that matches Navbar search suggestions
+  const dropdownScrollbarStyles = {
+    '&::-webkit-scrollbar': {
+      width: '4px',
+    },
+    '&::-webkit-scrollbar-track': {
+      background: darkMode ? 'transparent' : 'rgba(0, 0, 0, 0.05)',
+      marginTop: '4px',
+      marginBottom: '4px',
+    },
+    '&::-webkit-scrollbar-thumb': {
+      backgroundColor: darkMode ? 'rgba(61, 61, 61, 0.5)' : 'rgba(0, 0, 0, 0.3)',
+      borderRadius: '10px',
+    },
+    '&::-webkit-scrollbar-thumb:hover': {
+      backgroundColor: darkMode ? 'rgba(61, 61, 61, 0.7)' : 'rgba(0, 0, 0, 0.5)',
+    },
+    scrollbarWidth: 'thin',
+    scrollbarColor: `${darkMode ? 'rgba(61, 61, 61, 0.5)' : 'rgba(0, 0, 0, 0.3)'} ${darkMode ? 'transparent' : 'rgba(0, 0, 0, 0.05)'}`
+  };
+
+  // Get theme-aware colors for dropdowns
+  const dropdownThemeColors = {
+    menuBg: darkMode ? '#0A0A0A' : '#ffffff',
+    menuBorder: darkMode ? '#131313' : 'rgba(0, 0, 0, 0.1)',
+    menuShadow: darkMode ? '0 4px 20px rgba(0, 0, 0, 0.5)' : '0 4px 20px rgba(0, 0, 0, 0.1)',
+    hoverBg: darkMode ? 'rgba(255, 255, 255, 0.07)' : 'rgba(0, 0, 0, 0.04)',
+    selectedBg: darkMode ? 'rgba(0, 136, 204, 0.3)' : 'rgba(0, 136, 204, 0.1)',
+    itemText: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
   };
 
   // Add state for current user's leaderboard position
@@ -507,7 +539,7 @@ const Leaderboard = () => {
 
   const StatsCard = ({ title, value, icon: Icon, color }) => (
     <Card sx={{
-      bgcolor: darkMode ? '#1a1a1a' : '#ffffff',
+      bgcolor: darkMode ? 'rgba(23, 23, 23, 0.45)' : '#ffffff',
       p: 2,
       borderRadius: 3,
       border: darkMode ? '1px solid rgba(255,255,255,0.1)' : '1px solid rgba(0,0,0,0.1)',
@@ -665,7 +697,8 @@ const Leaderboard = () => {
             value
           };
         })
-        .filter(item => item.value > 0);
+        .filter(item => item.value > 0)
+        .sort((a, b) => b.value - a.value); // Show highest values first
     };
     
     const platformValues = getPlatformValues();
@@ -1632,22 +1665,24 @@ const Leaderboard = () => {
         sx={{
           maxWidth: '1200px',
           mx: 'auto',
-          mt: 4,
+          mt: { xs: 0, sm: 2, md: 4 },
           mb: 6,
           bgcolor: '#0585E0',
           border: `1px solid ${darkMode ? '#232323' : 'transparent'}`,
           borderRadius: '20px',
           position: 'relative',
           display: 'flex',
+          flexDirection: { xs: 'column', md: 'row' },
           alignItems: 'center',
-          minHeight: '100px',
-          overflow: 'visible'
+          minHeight: { xs: '200px', md: '100px' },
+          overflow: 'visible',
+          pb: { xs: 4, md: 0 }
         }}
       >
-        {/* Content Section (75%) */}
+        {/* Content Section (75% on desktop, 100% on mobile) */}
         <Box
           sx={{
-            width: '75%',
+            width: { xs: '100%', md: '75%' },
             p: { xs: 3, md: 3 },
             position: 'relative',
             zIndex: 2
@@ -1674,22 +1709,24 @@ const Leaderboard = () => {
               maxWidth: '600px'
             }}
           >
-            Climb the ranks and track the best — explore the leaderboard to see where you stand among top coders across all competitive programming platforms!          </Typography>
+            Climb the ranks and track the best — explore the leaderboard to see where you stand among top coders across all competitive programming platforms!
+          </Typography>
         </Box>
 
         {/* Image Section */}
         <Box
           sx={{
-            width: '23%',
-            position: 'absolute',
-            right: '5%',
-            bottom: 0,
+            width: { xs: '100%', md: '23%' },
+            position: { xs: 'relative', md: 'absolute' },
+            right: { xs: 'auto', md: '5%' },
+            bottom: { xs: '-20px', md: 0 },
             zIndex: 1,
             display: 'flex',
             alignItems: 'flex-end',
             justifyContent: 'center',
             overflow: 'visible',
-            height: '80%'
+            height: { xs: '120px', md: '80%' },
+            mt: { xs: 2, md: 0 }
           }}
         >
           <Box
@@ -1697,39 +1734,39 @@ const Leaderboard = () => {
             src="/leaderboard.png"
             alt="Programming Cohorts"
             sx={{
-              width: '90%',
+              width: { xs: '150px', md: '90%' },
               height: 'auto',
               maxWidth: 'none',
               objectFit: 'contain',
               objectPosition: 'bottom',
-              filter: darkMode ? 'drop-shadow(-20px 20px 40px rgba(50, 50, 50, 0.9))' : 'none',
-              animation: 'trophyRise 4s ease-in-out infinite, fadeIn 1.2s ease-out',
+              filter: darkMode ? 'drop-shadow(-10px 10px 20px rgba(50, 50, 50, 0.6))' : 'none',
+              animation: 'gentleFloat 6s ease-in-out infinite, simpleFadeIn 0.8s ease-out',
               transformOrigin: 'center bottom',
-              '@keyframes trophyRise': {
+              '@keyframes gentleFloat': {
                 '0%, 100%': {
-                  transform: 'translateY(0) scale(1)',
-                  filter: darkMode ? 'drop-shadow(-20px 20px 40px rgba(50, 50, 50, 0.9)) brightness(1)' : 'brightness(1)'
+                  transform: 'translateY(0)',
+                  filter: darkMode ? 'drop-shadow(-10px 10px 20px rgba(50, 50, 50, 0.6))' : 'none'
                 },
                 '50%': {
-                  transform: 'translateY(-25px) scale(1.03)',
-                  filter: darkMode ? 'drop-shadow(-20px 20px 40px rgba(50, 50, 50, 0.9)) brightness(1.1)' : 'brightness(1.1)'
+                  transform: 'translateY(-12px)',
+                  filter: darkMode ? 'drop-shadow(-10px 10px 20px rgba(50, 50, 50, 0.7))' : 'none'
                 }
               },
-              '@keyframes fadeIn': {
+              '@keyframes simpleFadeIn': {
                 '0%': {
                   opacity: 0,
-                  transform: 'translateY(30px) scale(0.9)'
+                  transform: 'translateY(15px)'
                 },
                 '100%': {
                   opacity: 1,
-                  transform: 'translateY(0) scale(1)'
+                  transform: 'translateY(0)'
                 }
               },
               '&:hover': {
                 animation: 'none',
-                transform: 'translateY(-15px) scale(1.02)',
-                transition: 'all 0.3s ease-out',
-                filter: darkMode ? 'drop-shadow(-25px 25px 50px rgba(50, 50, 50, 0.95)) brightness(1.1)' : 'brightness(1.1)'
+                transform: 'translateY(-8px)',
+                transition: 'all 0.4s ease-out',
+                filter: darkMode ? 'drop-shadow(-12px 12px 24px rgba(50, 50, 50, 0.7))' : 'brightness(1.05)'
               }
             }}
           />
@@ -1741,8 +1778,9 @@ const Leaderboard = () => {
       {/* Stats Cards */}
       <Grid container spacing={2} sx={{ mb: 3 }}>
         {getStatsCardInfo().map((stat, index) => (
-          <Grid item xs={6} sm={4} key={index}>
+          <Grid item  xs={6} sm={4} key={index}>
             <StatsCard
+              
               title={stat.title}
               value={stat.value}
               icon={stat.icon}
@@ -1795,33 +1833,59 @@ const Leaderboard = () => {
         mb: 3,
         gap: 2
       }}>
-        <TextField
-          placeholder="Search by name..."
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-          variant="outlined"
-          size="small"
-          InputProps={{
-            startAdornment: (
-              <InputAdornment position="start">
-                <Search sx={{ color: darkMode ? 'rgba(255,255,255,0.7)' : 'rgba(0,0,0,0.7)' }} />
-              </InputAdornment>
-            ),
-            sx: {
-              color: darkMode ? 'white' : 'black',
-              borderRadius: 1,
-              '& .MuiOutlinedInput-notchedOutline': {
-                borderColor: darkMode ? 'rgba(255,255,255,0.3)' : 'rgba(0,0,0,0.23)'
-              },
-              '&:hover .MuiOutlinedInput-notchedOutline': {
-                borderColor: darkMode ? 'rgba(255,255,255,0.5)' : 'rgba(0,0,0,0.5)'
-              },
-              '&.Mui-focused .MuiOutlinedInput-notchedOutline': {
-                borderColor: '#0088cc'
-              },
+        <Paper
+          component="form"
+          onSubmit={(e) => e.preventDefault()}
+          sx={{
+            p: '0px 4px',
+            display: 'flex',
+            alignItems: 'center',
+            borderRadius: '20px',
+            backgroundColor: darkMode ? 'rgba(23, 23, 23, 0.45)' : 'rgba(0, 0, 0, 0.05)',
+            border: `1px solid ${darkMode ? '#232323' : 'rgba(0, 0, 0, 0.1)'}`,
+            '&:hover': {
+              backgroundColor: darkMode ? 'rgba(35, 35, 35, 0.4)' : 'rgba(0, 0, 0, 0.08)',
             },
+            boxShadow: 'none',
+            height: '40px',
+            position: 'relative',
+            width: '100%',
+            maxWidth: '350px'
           }}
-        />
+        >
+          <IconButton 
+            sx={{ 
+              p: '5px', 
+              color: darkMode ? '#ffffff' : 'rgba(0, 0, 0, 0.5)' 
+            }} 
+            aria-label="search"
+          >
+            <Search sx={{ fontSize: 20 }} />
+          </IconButton>
+          <InputBase
+            placeholder="Search by name..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{
+              ml: 0.5,
+              flex: 1,
+              color: darkMode ? 'rgba(255, 255, 255, 0.9)' : 'rgba(0, 0, 0, 0.9)',
+              fontSize: '0.9rem',
+              '& input': {
+                padding: '0px',
+              }
+            }}
+          />
+          {loading && (
+            <CircularProgress 
+              size={16} 
+              sx={{ 
+                mr: 1, 
+                color: darkMode ? 'rgba(255, 255, 255, 0.7)' : 'rgba(0, 0, 0, 0.7)' 
+              }} 
+            />
+          )}
+        </Paper>
       </Box>
 
       {/* Filters and Sorting UI */}
@@ -1831,7 +1895,7 @@ const Leaderboard = () => {
         px: 2,
         py: 2.5,
         borderRadius: 2,
-        bgcolor: darkMode ? 'rgba(18, 18, 18, 0.98)' : '#ffffff',
+        bgcolor: darkMode ? 'rgba(23, 23, 23, 0.45)' : '#fffff',
         border: `1px solid ${darkMode ? 'rgba(255,255,255,0.08)' : 'rgba(0,0,0,0.08)'}`,
         boxShadow: darkMode ? '0 2px 10px rgba(0,0,0,0.3)' : '0 2px 8px rgba(0,0,0,0.05)',
         width: '100%',
@@ -1914,9 +1978,40 @@ const Leaderboard = () => {
                 MenuProps={{
                   PaperProps: {
                     sx: {
-                      bgcolor: darkMode ? 'rgba(18, 18, 18, 0.98)' : '#ffffff',
+                      bgcolor: dropdownThemeColors.menuBg,
+                      boxShadow: dropdownThemeColors.menuShadow,
+                      borderRadius: '10px',
+                      border: `1px solid ${dropdownThemeColors.menuBorder}`,
+                      maxHeight: '60vh',
+                      overflow: 'auto',
+                      ...dropdownScrollbarStyles,
+                      mt: 0.5,
+                      '& .MuiMenuItem-root': {
+                        fontSize: '0.9rem',
+                        py: 1,
+                        px: 2,
+                        '&:hover': {
+                          bgcolor: dropdownThemeColors.hoverBg
+                        },
+                        '&.Mui-selected': {
+                          bgcolor: dropdownThemeColors.selectedBg,
+                          color: '#0088cc',
+                          fontWeight: 500,
+                          '&:hover': {
+                            bgcolor: darkMode ? 'rgba(0, 136, 204, 0.35)' : 'rgba(0, 136, 204, 0.15)'
+                          }
+                        }
+                      }
                     }
-                  }
+                  },
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'center',
+                  },
                 }}
               >
                 <MenuItem value="ALL">All Departments</MenuItem>
@@ -1964,9 +2059,40 @@ const Leaderboard = () => {
                 MenuProps={{
                   PaperProps: {
                     sx: {
-                      bgcolor: darkMode ? 'rgba(18, 18, 18, 0.98)' : '#ffffff',
+                      bgcolor: dropdownThemeColors.menuBg,
+                      boxShadow: dropdownThemeColors.menuShadow,
+                      borderRadius: '10px',
+                      border: `1px solid ${dropdownThemeColors.menuBorder}`,
+                      maxHeight: '60vh',
+                      overflow: 'auto',
+                      ...dropdownScrollbarStyles,
+                      mt: 0.5,
+                      '& .MuiMenuItem-root': {
+                        fontSize: '0.9rem',
+                        py: 1,
+                        px: 2,
+                        '&:hover': {
+                          bgcolor: dropdownThemeColors.hoverBg
+                        },
+                        '&.Mui-selected': {
+                          bgcolor: dropdownThemeColors.selectedBg,
+                          color: '#0088cc',
+                          fontWeight: 500,
+                          '&:hover': {
+                            bgcolor: darkMode ? 'rgba(0, 136, 204, 0.35)' : 'rgba(0, 136, 204, 0.15)'
+                          }
+                        }
+                      }
                     }
-                  }
+                  },
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'center',
+                  },
                 }}
               >
                 <MenuItem value="ALL">All Years</MenuItem>
@@ -2014,9 +2140,40 @@ const Leaderboard = () => {
                 MenuProps={{
                   PaperProps: {
                     sx: {
-                      bgcolor: darkMode ? 'rgba(18, 18, 18, 0.98)' : '#ffffff',
+                      bgcolor: dropdownThemeColors.menuBg,
+                      boxShadow: dropdownThemeColors.menuShadow,
+                      borderRadius: '10px',
+                      border: `1px solid ${dropdownThemeColors.menuBorder}`,
+                      maxHeight: '60vh',
+                      overflow: 'auto',
+                      ...dropdownScrollbarStyles,
+                      mt: 0.5,
+                      '& .MuiMenuItem-root': {
+                        fontSize: '0.9rem',
+                        py: 1,
+                        px: 2,
+                        '&:hover': {
+                          bgcolor: dropdownThemeColors.hoverBg
+                        },
+                        '&.Mui-selected': {
+                          bgcolor: dropdownThemeColors.selectedBg,
+                          color: '#0088cc',
+                          fontWeight: 500,
+                          '&:hover': {
+                            bgcolor: darkMode ? 'rgba(0, 136, 204, 0.35)' : 'rgba(0, 136, 204, 0.15)'
+                          }
+                        }
+                      }
                     }
-                  }
+                  },
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'center',
+                  },
                 }}
               >
                 <MenuItem value="All">All Sections</MenuItem>
@@ -2064,9 +2221,40 @@ const Leaderboard = () => {
                 MenuProps={{
                   PaperProps: {
                     sx: {
-                      bgcolor: darkMode ? 'rgba(18, 18, 18, 0.98)' : '#ffffff',
+                      bgcolor: dropdownThemeColors.menuBg,
+                      boxShadow: dropdownThemeColors.menuShadow,
+                      borderRadius: '10px',
+                      border: `1px solid ${dropdownThemeColors.menuBorder}`,
+                      maxHeight: '60vh',
+                      overflow: 'auto',
+                      ...dropdownScrollbarStyles,
+                      mt: 0.5,
+                      '& .MuiMenuItem-root': {
+                        fontSize: '0.9rem',
+                        py: 1,
+                        px: 2,
+                        '&:hover': {
+                          bgcolor: dropdownThemeColors.hoverBg
+                        },
+                        '&.Mui-selected': {
+                          bgcolor: dropdownThemeColors.selectedBg,
+                          color: '#0088cc',
+                          fontWeight: 500,
+                          '&:hover': {
+                            bgcolor: darkMode ? 'rgba(0, 136, 204, 0.35)' : 'rgba(0, 136, 204, 0.15)'
+                          }
+                        }
+                      }
                     }
-                  }
+                  },
+                  anchorOrigin: {
+                    vertical: 'bottom',
+                    horizontal: 'center',
+                  },
+                  transformOrigin: {
+                    vertical: 'top',
+                    horizontal: 'center',
+                  },
                 }}
               >
                 <MenuItem value="desc">Highest First</MenuItem>
@@ -2210,7 +2398,8 @@ const Leaderboard = () => {
           ...scrollbarStyles
         }}
       >
-        <TableContainer sx={{ 
+        <TableContainer sx={{
+          borderRadius: 2,
           width: '100%',
           maxWidth: '100%',
           overflowX: 'auto',

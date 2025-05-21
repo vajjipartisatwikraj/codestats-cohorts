@@ -1,0 +1,74 @@
+{
+  "title": "Reveal Cards In Increasing Order",
+  "description": "You are given an integer array deck. There is a deck of cards where every card has a unique integer. The integer on the ith card is deck[i].\n\nYou can order the deck in any order you want. Initially, all the cards start face down (unrevealed) in one deck.\n\nYou will do the following steps repeatedly until all cards are revealed:\n\n1. Take the top card of the deck, reveal it, and take it out of the deck.\n2. If there are still cards in the deck, put the next top card of the deck at the bottom of the deck.\n3. If there are still unrevealed cards, go back to step 1. Otherwise, stop.\n\nReturn an ordering of the deck that would reveal the cards in increasing order.\n\nNote that the first entry in the answer is considered to be the top of the deck.\n\nInput Format:\n- The first line contains a single integer n, the number of cards in the deck.\n- The second line contains n space-separated integers representing the values on the cards.\n\nOutput Format:\n- A single line containing n space-separated integers representing the order of the deck that would reveal the cards in increasing order.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "1 <= deck.length <= 1000",
+    "1 <= deck[i] <= 10^6",
+    "All the values of deck are unique"
+  ],
+  "examples": [
+    {
+      "input": "7\n17 13 11 2 3 5 7",
+      "output": "2 13 3 11 5 17 7",
+      "explanation": "We get the deck in the order [2,13,3,11,5,17,7] (this order actually doesn't matter), and reorder it.\nAfter reordering, the deck starts as [2,13,3,11,5,17,7], where 2 is the top of the deck.\nWe reveal 2, and move 13 to the bottom. The deck is now [3,11,5,17,7,13].\nWe reveal 3, and move 11 to the bottom. The deck is now [5,17,7,13,11].\nWe reveal 5, and move 17 to the bottom. The deck is now [7,13,11,17].\nWe reveal 7, and move 13 to the bottom. The deck is now [11,17,13].\nWe reveal 11, and move 17 to the bottom. The deck is now [13,17].\nWe reveal 13, and move 17 to the bottom. The deck is now [17].\nWe reveal 17.\nSince all the cards revealed are in increasing order, the answer is correct."
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "medium",
+  "marks": 10,
+  "tags": ["Queue", "Array", "Simulation"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Amazon", "Google", "Facebook", "Microsoft", "Apple"],
+  "hints": [
+    "Think about simulating the process in reverse",
+    "If we know the final order, we can figure out what the initial order should be",
+    "Sort the deck first to get the order of reveals",
+    "Use a queue to simulate placing cards at the bottom of the deck",
+    "Reconstruct the original deck from the sorted deck"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Returns an ordering of the deck that would reveal the cards in increasing order\n     * @param deck Array of integers representing card values\n     * @return Array representing the order of the deck\n     */\n    public int[] deckRevealedIncreasing(int[] deck) {\n        // Implement your solution here\n        return new int[0]; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int n = Integer.parseInt(br.readLine().trim());\n            \n            String[] deckStr = br.readLine().trim().split(\" \");\n            int[] deck = new int[n];\n            for (int i = 0; i < n; i++) {\n                deck[i] = Integer.parseInt(deckStr[i]);\n            }\n            \n            /*RUNTIME CALC START*/\n            Solution sol = new Solution();\n            int[] result = sol.deckRevealedIncreasing(deck);\n            /*RUNTIME CALC END*/\n            \n            StringBuilder output = new StringBuilder();\n            for (int i = 0; i < result.length; i++) {\n                output.append(result[i]);\n                if (i < result.length - 1) {\n                    output.append(\" \");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Returns an ordering of the deck that would reveal the cards in increasing order\n     * @param deck Array of integers representing card values\n     * @return Array representing the order of the deck\n     */\n    public int[] deckRevealedIncreasing(int[] deck) {\n        int n = deck.length;\n        \n        // Sort the deck in ascending order\n        Arrays.sort(deck);\n        \n        // Initialize result array and queue for indices\n        int[] result = new int[n];\n        Queue<Integer> indices = new LinkedList<>();\n        \n        // Fill the queue with indices from 0 to n-1\n        for (int i = 0; i < n; i++) {\n            indices.add(i);\n        }\n        \n        // Simulate the reverse process\n        for (int i = 0; i < n; i++) {\n            // Get the next position in the result array\n            result[indices.poll()] = deck[i];\n            \n            // Move the next index to the back of the queue\n            if (!indices.isEmpty()) {\n                indices.add(indices.poll());\n            }\n        }\n        \n        return result;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int n = Integer.parseInt(br.readLine().trim());\n            \n            String[] deckStr = br.readLine().trim().split(\" \");\n            int[] deck = new int[n];\n            for (int i = 0; i < n; i++) {\n                deck[i] = Integer.parseInt(deckStr[i]);\n            }\n            \n            /*RUNTIME CALC START*/\n            Solution sol = new Solution();\n            int[] result = sol.deckRevealedIncreasing(deck);\n            /*RUNTIME CALC END*/\n            \n            StringBuilder output = new StringBuilder();\n            for (int i = 0; i < result.length; i++) {\n                output.append(result[i]);\n                if (i < result.length - 1) {\n                    output.append(\" \");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\n\nclass Solution {\npublic:\n    /**\n     * Returns an ordering of the deck that would reveal the cards in increasing order\n     * @param deck Vector of integers representing card values\n     * @return Vector representing the order of the deck\n     */\n    std::vector<int> deckRevealedIncreasing(std::vector<int>& deck) {\n        // Implement your solution here\n        return {}; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int n;\n    std::cin >> n;\n    \n    std::vector<int> deck(n);\n    for (int i = 0; i < n; i++) {\n        std::cin >> deck[i];\n    }\n    \n    /*RUNTIME CALC START*/\n    Solution sol;\n    std::vector<int> result = sol.deckRevealedIncreasing(deck);\n    /*RUNTIME CALC END*/\n    \n    for (int i = 0; i < result.size(); i++) {\n        std::cout << result[i];\n        if (i < result.size() - 1) {\n            std::cout << \" \";\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <vector>\n#include <queue>\n#include <algorithm>\n\nclass Solution {\npublic:\n    /**\n     * Returns an ordering of the deck that would reveal the cards in increasing order\n     * @param deck Vector of integers representing card values\n     * @return Vector representing the order of the deck\n     */\n    std::vector<int> deckRevealedIncreasing(std::vector<int>& deck) {\n        int n = deck.size();\n        \n        // Sort the deck in ascending order\n        std::sort(deck.begin(), deck.end());\n        \n        // Initialize result array and queue for indices\n        std::vector<int> result(n);\n        std::queue<int> indices;\n        \n        // Fill the queue with indices from 0 to n-1\n        for (int i = 0; i < n; i++) {\n            indices.push(i);\n        }\n        \n        // Simulate the reverse process\n        for (int i = 0; i < n; i++) {\n            // Get the next position in the result array\n            int index = indices.front();\n            indices.pop();\n            result[index] = deck[i];\n            \n            // Move the next index to the back of the queue\n            if (!indices.empty()) {\n                index = indices.front();\n                indices.pop();\n                indices.push(index);\n            }\n        }\n        \n        return result;\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int n;\n    std::cin >> n;\n    \n    std::vector<int> deck(n);\n    for (int i = 0; i < n; i++) {\n        std::cin >> deck[i];\n    }\n    \n    /*RUNTIME CALC START*/\n    Solution sol;\n    std::vector<int> result = sol.deckRevealedIncreasing(deck);\n    /*RUNTIME CALC END*/\n    \n    for (int i = 0; i < result.size(); i++) {\n        std::cout << result[i];\n        if (i < result.size() - 1) {\n            std::cout << \" \";\n        }\n    }\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\nfrom collections import deque\nfrom typing import List\n\nclass Solution:\n    def deckRevealedIncreasing(self, deck: List[int]) -> List[int]:\n        \"\"\"\n        Returns an ordering of the deck that would reveal the cards in increasing order\n        :param deck: List of integers representing card values\n        :return: List representing the order of the deck\n        \"\"\"\n        # Implement your solution here\n        return []  # Replace with your implementation\n\ndef main():\n    try:\n        n = int(input().strip())\n        deck = list(map(int, input().strip().split()))\n        \n        # RUNTIME CALC START\n        sol = Solution()\n        result = sol.deckRevealedIncreasing(deck)\n        # RUNTIME CALC END\n        \n        print(' '.join(map(str, result)))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()",
+      "solutionCode": "import sys\nfrom collections import deque\nfrom typing import List\n\nclass Solution:\n    def deckRevealedIncreasing(self, deck: List[int]) -> List[int]:\n        \"\"\"\n        Returns an ordering of the deck that would reveal the cards in increasing order\n        :param deck: List of integers representing card values\n        :return: List representing the order of the deck\n        \"\"\"\n        n = len(deck)\n        \n        # Sort the deck in ascending order\n        deck.sort()\n        \n        # Initialize result array and queue for indices\n        result = [0] * n\n        indices = deque(range(n))\n        \n        # Simulate the reverse process\n        for i in range(n):\n            # Get the next position in the result array\n            index = indices.popleft()\n            result[index] = deck[i]\n            \n            # Move the next index to the back of the queue\n            if indices:\n                indices.append(indices.popleft())\n        \n        return result\n\ndef main():\n    try:\n        n = int(input().strip())\n        deck = list(map(int, input().strip().split()))\n        \n        # RUNTIME CALC START\n        sol = Solution()\n        result = sol.deckRevealedIncreasing(deck)\n        # RUNTIME CALC END\n        \n        print(' '.join(map(str, result)))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "7\n17 13 11 2 3 5 7",
+      "output": "2 13 3 11 5 17 7",
+      "hidden": false,
+      "explanation": "The order of the deck that would reveal the cards in increasing order"
+    },
+    {
+      "input": "3\n1 2 3",
+      "output": "1 3 2",
+      "hidden": false,
+      "explanation": "Simple test case with small deck"
+    },
+    {
+      "input": "10\n10 9 8 7 6 5 4 3 2 1",
+      "output": "1 6 2 7 3 8 4 9 5 10",
+      "hidden": true,
+      "explanation": "Test case with descending order input"
+    }
+  ]
+} 

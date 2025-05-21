@@ -1328,7 +1328,21 @@ const Navbar = () => {
             </Menu>
             
             {/* User Profile Section with Details */}
-            <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Box 
+              onClick={() => navigate('/profile?setup=true')}
+              sx={{ 
+                display: 'flex', 
+                alignItems: 'center', 
+                gap: 2,
+                cursor: 'pointer',
+                p: 1,
+                borderRadius: 2,
+                transition: 'all 0.2s ease',
+                '&:hover': {
+                  backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'
+                }
+              }}
+            >
               {/* Vertical Separator */}
               <Box sx={{ 
                 height: '100%', 
@@ -1381,81 +1395,7 @@ const Navbar = () => {
                   {`${user?.year || 'II'} Year, ${user?.department || 'CSE'}-${user?.section || 'E'}`}
                 </Typography>
               </Box>
-              <Tooltip title="More Options">
-                <IconButton 
-                  onClick={handleOpenUserMenu}
-                  sx={{ 
-                    color: themeColors.iconColor,
-                    '&:hover': {
-                      backgroundColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.04)'
-                    }
-                  }}
-                >
-                  <MoreVertIcon />
-                </IconButton>
-              </Tooltip>
             </Box>
-
-            {/* User menu */}
-            <Menu
-              sx={{ mt: '45px' }}
-              id="menu-appbar"
-              anchorEl={anchorElUser}
-              anchorOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              keepMounted
-              transformOrigin={{
-                vertical: 'top',
-                horizontal: 'right',
-              }}
-              open={Boolean(anchorElUser)}
-              onClose={handleCloseUserMenu}
-              PaperProps={{
-                sx: { 
-                  backgroundColor: darkMode ? '#1e1e1e' : '#ffffff',
-                  color: themeColors.text,
-                  borderRadius: '8px',
-                  minWidth: 180,
-                  boxShadow: darkMode 
-                    ? '0 4px 12px rgba(0, 0, 0, 0.4)' 
-                    : '0 0 0 1px rgba(0, 0, 0, 0.08), 0 4px 12px rgba(0, 0, 0, 0.05)'
-                }
-              }}
-              container={() => document.getElementById('dialog-container') || document.body}
-              disableEnforceFocus
-            >
-              <MenuItem 
-                onClick={() => {
-                  navigate('/profile?setup=true');
-                  handleCloseUserMenu();
-                }}
-                sx={{
-                  py: 1.5,
-                  px: 2,
-                  color: themeColors.text,
-                  '&:hover': {
-                    background: themeColors.menuHover,
-                  }
-                }}
-              >
-                <Typography>Profile</Typography>
-              </MenuItem>
-              <MenuItem 
-                onClick={handleLogout}
-                sx={{
-                  py: 1.5,
-                  px: 2,
-                  color: '#ff4d4d',
-                  '&:hover': {
-                    background: 'rgba(255, 77, 77, 0.1)',
-                  }
-                }}
-              >
-                <Typography>Logout</Typography>
-              </MenuItem>
-            </Menu>
           </Box>
         </Toolbar>
       </Container>
@@ -1473,7 +1413,7 @@ const Navbar = () => {
       >
         <Divider 
           sx={{
-            borderColor: darkMode ? 'rgba(52, 52, 52, 0.5)' : 'rgba(0, 0, 0, 0.2)'
+            borderColor: darkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.2)'
           }}
         />
       </Box>

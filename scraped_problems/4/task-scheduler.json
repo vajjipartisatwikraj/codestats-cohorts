@@ -1,0 +1,79 @@
+{
+  "title": "Task Scheduler",
+  "description": "Given a characters array tasks, representing the tasks a CPU needs to do, where each letter represents a different task. Tasks could be done in any order. Each task is done in one unit of time. For each unit of time, the CPU could complete either one task or just be idle.\n\nHowever, there is a non-negative integer n that represents the cooldown period between two same tasks (the same letter in the array), that is that there must be at least n units of time between any two same tasks.\n\nReturn the least number of units of time that the CPU will take to finish all the given tasks.\n\nInput Format:\n- The first line contains two integers: the number of tasks and the cooldown period n.\n- The second line contains a string of uppercase English letters, where each letter represents a task.\n\nOutput Format:\n- A single integer representing the least number of units of time needed to finish all tasks.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "1 <= task.length <= 10^4",
+    "tasks[i] is upper-case English letter",
+    "0 <= n <= 100"
+  ],
+  "examples": [
+    {
+      "input": "6 2\nAAAABC",
+      "output": "8",
+      "explanation": "A -> B -> idle -> A -> C -> idle -> A -> A\nExplanation: There are 4 tasks of type A, 1 task of type B, and 1 task of type C.\nWith a cooldown of n=2, the execution sequence could be: A -> B -> idle -> A -> C -> idle -> A -> A"
+    },
+    {
+      "input": "6 0\nAAABBC",
+      "output": "6",
+      "explanation": "A -> A -> A -> B -> B -> C\nExplanation: With no cooldown period, we can simply execute all tasks in order."
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "medium",
+  "marks": 10,
+  "tags": ["Queue", "Greedy", "Heap", "Priority Queue"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Facebook", "Amazon", "Microsoft", "Apple", "Google", "Uber", "Netflix"],
+  "hints": [
+    "Count the frequency of each task",
+    "The most frequent tasks will be the limiting factor",
+    "You need to schedule the most frequent tasks first, with the required cooldown between them",
+    "Priority queue or sorting can help to always pick the most frequent remaining task",
+    "For each time slot, pick the task with the highest count that isn't on cooldown"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Calculates the least number of units of time needed to finish all tasks with the given cooldown period\n     * @param tasks Array of characters representing tasks\n     * @param n Cooldown period between two same tasks\n     * @return The least units of time needed\n     */\n    public int leastInterval(char[] tasks, int n) {\n        // Implement your solution here\n        return 0; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            String[] firstLine = br.readLine().trim().split(\" \");\n            int taskCount = Integer.parseInt(firstLine[0]);\n            int n = Integer.parseInt(firstLine[1]);\n            \n            String taskString = br.readLine().trim();\n            char[] tasks = taskString.toCharArray();\n            \n            /*RUNTIME CALC START*/\n            Solution sol = new Solution();\n            int result = sol.leastInterval(tasks, n);\n            /*RUNTIME CALC END*/\n            \n            System.out.println(result);\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Calculates the least number of units of time needed to finish all tasks with the given cooldown period\n     * @param tasks Array of characters representing tasks\n     * @param n Cooldown period between two same tasks\n     * @return The least units of time needed\n     */\n    public int leastInterval(char[] tasks, int n) {\n        // Count the frequency of each task\n        int[] frequencies = new int[26];\n        for (char task : tasks) {\n            frequencies[task - 'A']++;\n        }\n        \n        // Sort the frequencies in ascending order\n        Arrays.sort(frequencies);\n        \n        // Get the maximum frequency\n        int maxFreq = frequencies[25];\n        \n        // Calculate idle slots needed: (maxFreq - 1) * n\n        int idleSlots = (maxFreq - 1) * n;\n        \n        // Fill idle slots with other tasks\n        for (int i = 24; i >= 0 && idleSlots > 0; i--) {\n            idleSlots -= Math.min(maxFreq - 1, frequencies[i]);\n        }\n        \n        // If there are still idle slots, we need to add them to the task count\n        // Otherwise, we can just return the number of tasks\n        idleSlots = Math.max(0, idleSlots);\n        \n        return tasks.length + idleSlots;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            String[] firstLine = br.readLine().trim().split(\" \");\n            int taskCount = Integer.parseInt(firstLine[0]);\n            int n = Integer.parseInt(firstLine[1]);\n            \n            String taskString = br.readLine().trim();\n            char[] tasks = taskString.toCharArray();\n            \n            /*RUNTIME CALC START*/\n            Solution sol = new Solution();\n            int result = sol.leastInterval(tasks, n);\n            /*RUNTIME CALC END*/\n            \n            System.out.println(result);\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <string>\n\nclass Solution {\npublic:\n    /**\n     * Calculates the least number of units of time needed to finish all tasks with the given cooldown period\n     * @param tasks String representing tasks\n     * @param n Cooldown period between two same tasks\n     * @return The least units of time needed\n     */\n    int leastInterval(std::string tasks, int n) {\n        // Implement your solution here\n        return 0; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int taskCount, n;\n    std::cin >> taskCount >> n;\n    \n    std::string tasks;\n    std::cin >> tasks;\n    \n    /*RUNTIME CALC START*/\n    Solution sol;\n    int result = sol.leastInterval(tasks, n);\n    /*RUNTIME CALC END*/\n    \n    std::cout << result << std::endl;\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <vector>\n#include <algorithm>\n#include <string>\n\nclass Solution {\npublic:\n    /**\n     * Calculates the least number of units of time needed to finish all tasks with the given cooldown period\n     * @param tasks String representing tasks\n     * @param n Cooldown period between two same tasks\n     * @return The least units of time needed\n     */\n    int leastInterval(std::string tasks, int n) {\n        // Count the frequency of each task\n        std::vector<int> frequencies(26, 0);\n        for (char task : tasks) {\n            frequencies[task - 'A']++;\n        }\n        \n        // Sort the frequencies in ascending order\n        std::sort(frequencies.begin(), frequencies.end());\n        \n        // Get the maximum frequency\n        int maxFreq = frequencies[25];\n        \n        // Calculate idle slots needed: (maxFreq - 1) * n\n        int idleSlots = (maxFreq - 1) * n;\n        \n        // Fill idle slots with other tasks\n        for (int i = 24; i >= 0 && idleSlots > 0; i--) {\n            idleSlots -= std::min(maxFreq - 1, frequencies[i]);\n        }\n        \n        // If there are still idle slots, we need to add them to the task count\n        // Otherwise, we can just return the number of tasks\n        idleSlots = std::max(0, idleSlots);\n        \n        return tasks.length() + idleSlots;\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int taskCount, n;\n    std::cin >> taskCount >> n;\n    \n    std::string tasks;\n    std::cin >> tasks;\n    \n    /*RUNTIME CALC START*/\n    Solution sol;\n    int result = sol.leastInterval(tasks, n);\n    /*RUNTIME CALC END*/\n    \n    std::cout << result << std::endl;\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\nfrom collections import Counter\n\nclass Solution:\n    def leastInterval(self, tasks: str, n: int) -> int:\n        \"\"\"\n        Calculates the least number of units of time needed to finish all tasks with the given cooldown period\n        :param tasks: String representing tasks\n        :param n: Cooldown period between two same tasks\n        :return: The least units of time needed\n        \"\"\"\n        # Implement your solution here\n        return 0  # Replace with your implementation\n\ndef main():\n    try:\n        line = input().strip().split()\n        task_count, n = int(line[0]), int(line[1])\n        \n        tasks = input().strip()\n        \n        # RUNTIME CALC START\n        sol = Solution()\n        result = sol.leastInterval(tasks, n)\n        # RUNTIME CALC END\n        \n        print(result)\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()",
+      "solutionCode": "import sys\nfrom collections import Counter\n\nclass Solution:\n    def leastInterval(self, tasks: str, n: int) -> int:\n        \"\"\"\n        Calculates the least number of units of time needed to finish all tasks with the given cooldown period\n        :param tasks: String representing tasks\n        :param n: Cooldown period between two same tasks\n        :return: The least units of time needed\n        \"\"\"\n        # Count the frequency of each task\n        task_counts = Counter(tasks)\n        frequencies = list(task_counts.values())\n        \n        # Get the maximum frequency\n        max_freq = max(frequencies) if frequencies else 0\n        \n        # Count how many tasks have the maximum frequency\n        max_count = frequencies.count(max_freq)\n        \n        # Formula: (max_freq - 1) * (n + 1) + max_count\n        # This gives us the minimum time needed with idle slots\n        result = (max_freq - 1) * (n + 1) + max_count\n        \n        # Return the maximum of the formula and the actual number of tasks\n        # (in case we don't need any idle slots)\n        return max(result, len(tasks))\n\ndef main():\n    try:\n        line = input().strip().split()\n        task_count, n = int(line[0]), int(line[1])\n        \n        tasks = input().strip()\n        \n        # RUNTIME CALC START\n        sol = Solution()\n        result = sol.leastInterval(tasks, n)\n        # RUNTIME CALC END\n        \n        print(result)\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "6 2\nAAAABC",
+      "output": "8",
+      "hidden": false,
+      "explanation": "A -> B -> idle -> A -> C -> idle -> A -> A"
+    },
+    {
+      "input": "6 0\nAAABBC",
+      "output": "6",
+      "hidden": false,
+      "explanation": "No cooldown period means we can execute all tasks in sequence"
+    },
+    {
+      "input": "10 2\nABCADEAFGA",
+      "output": "12",
+      "hidden": true,
+      "explanation": "Test case with more diverse tasks and cooldown"
+    }
+  ]
+} 

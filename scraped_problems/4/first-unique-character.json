@@ -1,0 +1,67 @@
+{
+  "title": "First Unique Character in a String",
+  "description": "Given a string s, find the first non-repeating character in it and return its index. If it does not exist, return -1.\n\nInput Format:\n- The first line contains a single integer T, the number of test cases.\n- For each test case, one line contains a string s consisting of lowercase English letters.\n\nOutput Format:\n- For each test case, print a single integer representing the index of the first unique character in the string. If there is no such character, print -1.",
+  "constraints": {
+    "timeLimit": 1000,
+    "memoryLimit": 256
+  },
+  "constraintsDesc": [
+    "1 <= s.length <= 10^5",
+    "s consists of only lowercase English letters",
+    "1 <= T <= 10"
+  ],
+  "examples": [
+    {
+      "input": "3\nleetcode\nloveleetcode\naabb",
+      "output": "0\n2\n-1",
+      "explanation": "Test case 1:\nIn the string \"leetcode\", the first non-repeating character is 'l', which appears at index 0.\n\nTest case 2:\nIn the string \"loveleetcode\", the character 'v' is the first character that appears only once, at index 2.\n\nTest case 3:\nIn the string \"aabb\", there are no characters that appear only once, so return -1."
+    }
+  ],
+  "type": "programming",
+  "difficultyLevel": "easy",
+  "marks": 5,
+  "tags": ["Queue", "Hash Table", "String", "Counting"],
+  "maintag": "Data Structures & Algorithms",
+  "companies": ["Amazon", "Microsoft", "Google", "Facebook", "Bloomberg", "Apple", "Oracle"],
+  "hints": [
+    "You can use a hash table to count the frequency of each character",
+    "After counting, go through the string again to find the first character with a frequency of 1",
+    "A queue can be used to keep track of the order of characters for faster lookup",
+    "The queue+hashmap approach can give you a solution that scans the string just once"
+  ],
+  "languages": [
+    {
+      "name": "java",
+      "version": "15.0.2",
+      "boilerplateCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Finds the first non-repeating character in the given string and returns its index\n     * @param s The input string\n     * @return The index of the first non-repeating character, -1 if no such character exists\n     */\n    public int firstUniqChar(String s) {\n        // Implement your solution here\n        return -1; // Replace with your implementation\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String s = br.readLine().trim();\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                int result = sol.firstUniqChar(s);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}",
+      "solutionCode": "import java.util.*;\nimport java.io.*;\n\nclass Solution {\n    /**\n     * Finds the first non-repeating character in the given string and returns its index\n     * @param s The input string\n     * @return The index of the first non-repeating character, -1 if no such character exists\n     */\n    public int firstUniqChar(String s) {\n        // Create a hash map to store character frequencies\n        Map<Character, Integer> frequencyMap = new HashMap<>();\n        \n        // Count the frequency of each character\n        for (char c : s.toCharArray()) {\n            frequencyMap.put(c, frequencyMap.getOrDefault(c, 0) + 1);\n        }\n        \n        // Find the first character with frequency 1\n        for (int i = 0; i < s.length(); i++) {\n            if (frequencyMap.get(s.charAt(i)) == 1) {\n                return i;\n            }\n        }\n        \n        // No unique character found\n        return -1;\n    }\n}\n\npublic class Main {\n    public static void main(String[] args) {\n        try {\n            BufferedReader br = new BufferedReader(new InputStreamReader(System.in));\n            int t = Integer.parseInt(br.readLine().trim());\n            \n            StringBuilder output = new StringBuilder();\n            \n            for (int i = 0; i < t; i++) {\n                String s = br.readLine().trim();\n                \n                /*RUNTIME CALC START*/\n                Solution sol = new Solution();\n                int result = sol.firstUniqChar(s);\n                /*RUNTIME CALC END*/\n                \n                output.append(result);\n                \n                if (i < t - 1) {\n                    output.append(\"\\n\");\n                }\n            }\n            \n            System.out.println(output.toString());\n            \n        } catch (Exception e) {\n            e.printStackTrace();\n        }\n    }\n}"
+    },
+    {
+      "name": "cpp",
+      "version": "17",
+      "boilerplateCode": "#include <iostream>\n#include <string>\n#include <unordered_map>\n\nclass Solution {\npublic:\n    /**\n     * Finds the first non-repeating character in the given string and returns its index\n     * @param s The input string\n     * @return The index of the first non-repeating character, -1 if no such character exists\n     */\n    int firstUniqChar(std::string s) {\n        // Implement your solution here\n        return -1; // Replace with your implementation\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline\n    \n    for (int i = 0; i < t; i++) {\n        std::string s;\n        std::getline(std::cin, s);\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        int result = sol.firstUniqChar(s);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        \n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}",
+      "solutionCode": "#include <iostream>\n#include <string>\n#include <unordered_map>\n\nclass Solution {\npublic:\n    /**\n     * Finds the first non-repeating character in the given string and returns its index\n     * @param s The input string\n     * @return The index of the first non-repeating character, -1 if no such character exists\n     */\n    int firstUniqChar(std::string s) {\n        // Create a hash map to store character frequencies\n        std::unordered_map<char, int> frequencyMap;\n        \n        // Count the frequency of each character\n        for (char c : s) {\n            frequencyMap[c]++;\n        }\n        \n        // Find the first character with frequency 1\n        for (int i = 0; i < s.length(); i++) {\n            if (frequencyMap[s[i]] == 1) {\n                return i;\n            }\n        }\n        \n        // No unique character found\n        return -1;\n    }\n};\n\nint main() {\n    std::ios_base::sync_with_stdio(false);\n    std::cin.tie(nullptr);\n    \n    int t;\n    std::cin >> t;\n    std::cin.ignore(); // Consume newline\n    \n    for (int i = 0; i < t; i++) {\n        std::string s;\n        std::getline(std::cin, s);\n        \n        /*RUNTIME CALC START*/\n        Solution sol;\n        int result = sol.firstUniqChar(s);\n        /*RUNTIME CALC END*/\n        \n        std::cout << result;\n        \n        if (i < t - 1) {\n            std::cout << \"\\n\";\n        }\n    }\n    \n    return 0;\n}"
+    },
+    {
+      "name": "python",
+      "version": "3.9.0",
+      "boilerplateCode": "import sys\nfrom collections import Counter\n\nclass Solution:\n    def firstUniqChar(self, s: str) -> int:\n        \"\"\"\n        Finds the first non-repeating character in the given string and returns its index\n        :param s: The input string\n        :return: The index of the first non-repeating character, -1 if no such character exists\n        \"\"\"\n        # Implement your solution here\n        return -1 # Replace with your implementation\n\ndef main():\n    try:\n        t = int(input().strip())\n        \n        results = []\n        for _ in range(t):\n            s = input().strip()\n            \n            # RUNTIME CALC START\n            sol = Solution()\n            result = sol.firstUniqChar(s)\n            # RUNTIME CALC END\n            \n            results.append(str(result))\n        \n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()",
+      "solutionCode": "import sys\nfrom collections import Counter\n\nclass Solution:\n    def firstUniqChar(self, s: str) -> int:\n        \"\"\"\n        Finds the first non-repeating character in the given string and returns its index\n        :param s: The input string\n        :return: The index of the first non-repeating character, -1 if no such character exists\n        \"\"\"\n        # Count the frequency of each character\n        char_count = Counter(s)\n        \n        # Find the first character with frequency 1\n        for i, char in enumerate(s):\n            if char_count[char] == 1:\n                return i\n        \n        # No unique character found\n        return -1\n\ndef main():\n    try:\n        t = int(input().strip())\n        \n        results = []\n        for _ in range(t):\n            s = input().strip()\n            \n            # RUNTIME CALC START\n            sol = Solution()\n            result = sol.firstUniqChar(s)\n            # RUNTIME CALC END\n            \n            results.append(str(result))\n        \n        print('\\n'.join(results))\n    except Exception as e:\n        print(f\"Error: {e}\", file=sys.stderr)\n\nif __name__ == \"__main__\":\n    main()"
+    }
+  ],
+  "defaultLanguage": "java",
+  "testCases": [
+    {
+      "input": "3\nleetcode\nloveleetcode\naabb",
+      "output": "0\n2\n-1",
+      "hidden": false,
+      "explanation": "Basic test cases with different strings"
+    },
+    {
+      "input": "3\nz\nccodingproblem\ndeeddbeef",
+      "output": "0\n0\n7",
+      "hidden": true,
+      "explanation": "Test cases with single character, first character unique, and unique character in the middle"
+    }
+  ]
+} 
